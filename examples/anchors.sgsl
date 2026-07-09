@@ -1,0 +1,182 @@
+scene AnchorTest
+
+# ==========================================================
+# GROUND
+# No anchor — backward compatibility test.
+# The center remains exactly at the position given by `at`.
+# ==========================================================
+
+block Ground
+    at 0 -0.10 0
+    size 20 0.20 14
+    color lightgray
+
+# ==========================================================
+# TEST CENTER
+#
+# No anchor and explicit center/center/center should produce
+# identical position interpretation.
+# ==========================================================
+
+block LegacyCenterBlock
+    at -3 1 0
+    size 2 2 2
+    color gray
+
+block ExplicitCenterBlock
+    anchor center center center
+    at 3 1 0
+    size 2 2 2
+    color blue
+
+# Expected centers:
+#
+# LegacyCenterBlock:   (-3, 1, 0)
+# ExplicitCenterBlock: ( 3, 1, 0)
+
+# ==========================================================
+# TEST BOTTOM
+#
+# Both blocks should stand directly on Ground.
+# Ground has its top surface at Y = 0.
+# ==========================================================
+
+block BottomAnchoredBlock
+    anchor center bottom center
+    at -3 0 4
+    size 2 3 2
+    color #42A5F5
+
+# Expected center:
+# (-3, 1.5, 4)
+
+block TopAnchoredBlock
+    anchor center top center
+    at 3 3 4
+    size 2 3 2
+    color #AB47BC
+
+# Expected center:
+# (3, 1.5, 4)
+#
+# BottomAnchoredBlock and TopAnchoredBlock should have
+# the same center height and stand at the same level.
+
+# ==========================================================
+# TEST FOUR WALLS
+#
+# Outer outline:
+#
+# X = -8 .. 8
+# Z = -5 .. 5
+#
+# All walls start at Y = 0.
+# ==========================================================
+
+block FrontWall
+    anchor center bottom front
+    at 0 0 -5
+    size 16 4 0.35
+    color white
+
+# Expected center:
+# (0, 2, -4.825)
+
+block BackWall
+    anchor center bottom back
+    at 0 0 5
+    size 16 4 0.35
+    color white
+
+# Expected center:
+# (0, 2, 4.825)
+
+block LeftWall
+    anchor left bottom center
+    at -8 0 0
+    size 0.35 4 10
+    color white
+
+# Expected center:
+# (-7.825, 2, 0)
+
+block RightWall
+    anchor right bottom center
+    at 8 0 0
+    size 0.35 4 10
+    color white
+
+# Expected center:
+# (7.825, 2, 0)
+
+# ==========================================================
+# TEST CORNER
+#
+# The left, bottom, front corner of the block should be
+# exactly at the point (-1, 0, -1).
+# ==========================================================
+
+block CornerAnchoredBlock
+    anchor left bottom front
+    at -1 0 -1
+    size 2 2 2
+    color #FF7043
+
+# Expected center:
+# (0, 1, 0)
+
+# ==========================================================
+# TEST TOP-ALIGNED ROOF
+#
+# The top face of the roof should sit exactly at Y = 6.
+# ==========================================================
+
+block TopAlignedRoof
+    anchor center top center
+    at 0 6 0
+    size 6 0.5 4
+    color lightgray
+
+# Expected center:
+# (0, 5.75, 0)
+
+# ==========================================================
+# TEST TOUCHING CORNERS
+#
+# These two blocks should touch exactly at one corner:
+# (6, 2, -2)
+# ==========================================================
+
+block CornerA
+    anchor right top back
+    at 6 2 -2
+    size 2 2 2
+    color #66BB6A
+
+# Expected center:
+# (5, 1, -3)
+
+block CornerB
+    anchor left bottom front
+    at 6 2 -2
+    size 2 2 2
+    color #EF5350
+
+# Expected center:
+# (7, 3, -1)
+
+# ==========================================================
+# TEST MIXED AXES
+#
+# This block checks all three anchor axes at once.
+# Its selected point should be exactly at (8, 0, 5).
+# ==========================================================
+
+block MixedAnchorBlock
+    anchor right bottom back
+    at 8 0 5
+    size 2 4 6
+    color #29B6F6
+
+# Expected center:
+# (7, 2, 2)

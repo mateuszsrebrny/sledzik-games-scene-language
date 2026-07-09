@@ -20,6 +20,9 @@ class SGSLTransformer(Transformer):
     def size(self, items):
         return ("size", list(items))
 
+    def anchor(self, items):
+        return ("anchor", list(items))
+
     def color(self, items):
         return ("color", items[0])
 
@@ -36,6 +39,8 @@ class SGSLTransformer(Transformer):
             "name": name,
         }
         for key, value in items[1:]:
+            if key in data:
+                raise ValueError(f"Duplicate property {key!r} in block {name!r}")
             data[key] = value
         return data
 

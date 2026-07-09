@@ -13,7 +13,7 @@ def render(scene: dict) -> dict:
             {
                 "type": obj["type"],
                 "name": obj["name"],
-                "position": obj["at"],
+                "position": obj["position"],
                 "size": obj["size"],
                 "color": resolve_color(obj["color"]),
             }

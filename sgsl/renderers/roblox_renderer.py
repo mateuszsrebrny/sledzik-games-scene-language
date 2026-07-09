@@ -23,7 +23,7 @@ def render(scene: dict) -> str:
 
     for obj in scene["objects"]:
         red, green, blue = color_to_rgb(obj["color"])
-        x, y, z = obj["at"]
+        x, y, z = obj["position"]
         sx, sy, sz = obj["size"]
         lines.extend(
             [

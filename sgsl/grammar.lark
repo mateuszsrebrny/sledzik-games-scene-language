@@ -8,11 +8,14 @@ block: "block" NAME property*
 
 property: at
         | size
+        | anchor
         | color
 
 at: "at" NUMBER NUMBER NUMBER
 
 size: "size" NUMBER NUMBER NUMBER
+
+anchor: "anchor" NAME NAME NAME
 
 color: "color" COLOR
 
@@ -21,7 +24,7 @@ NAME: /[A-Za-z_][A-Za-z0-9_]*/
 COLOR: /#[0-9a-fA-F]{6}|[A-Za-z_][A-Za-z0-9_]*/
 
 NUMBER: /-?\d+(\.\d+)?/
-COMMENT: /#[^0-9a-fA-F\n][^\n]*/
+COMMENT: /#(?![0-9a-fA-F]{6}\b)[^\n]*/
 
 %import common.WS
 %ignore WS

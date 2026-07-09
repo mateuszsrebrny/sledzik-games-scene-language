@@ -31,7 +31,7 @@ pip install -r sgsl/requirements.txt
 build_preview.py          CLI entrypoint
 examples/                 Example scenes
 preview/index.html        Static viewer
-preview/scene.json        Generated preview data
+preview/scene.json        Generated preview data (not committed)
 preview/vendor/           Local Three.js files
 sgsl/grammar.lark         Grammar
 sgsl/parser.py            Parse + validate scene files
@@ -78,6 +78,8 @@ This writes:
 preview/scene.json
 ```
 
+`preview/scene.json` is a generated build artifact and is not tracked in git.
+
 Start a local server:
 
 ```bash
@@ -97,5 +99,6 @@ http://localhost:8000/
 ## Notes
 
 - `preview/index.html` is static.
+- `preview/scene.json` should be regenerated locally from SGSL sources.
 - JavaScript does not parse SGSL directly.
 - The browser loads local Three.js files from `preview/vendor/`.

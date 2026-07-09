@@ -1,0 +1,16 @@
+scene MainFactory
+
+block Floor
+    at 0 -0.15 0
+    size 16 0.3 10
+    color lightgray
+
+block FrontWall
+    at 0 3.5 -4.825
+    size 16 7 0.35
+    color white
+
+block BackWall
+    at 0 3.5 4.825
+    size 16 7 0.35
+    color white

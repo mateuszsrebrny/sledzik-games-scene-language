@@ -1,0 +1,50 @@
+{
+  "scene": "MainFactory",
+  "objects": [
+    {
+      "type": "block",
+      "name": "Floor",
+      "position": [
+        0.0,
+        -0.15,
+        0.0
+      ],
+      "size": [
+        16.0,
+        0.3,
+        10.0
+      ],
+      "color": "#d2d2d2"
+    },
+    {
+      "type": "block",
+      "name": "FrontWall",
+      "position": [
+        0.0,
+        3.5,
+        -4.825
+      ],
+      "size": [
+        16.0,
+        7.0,
+        0.35
+      ],
+      "color": "#ffffff"
+    },
+    {
+      "type": "block",
+      "name": "BackWall",
+      "position": [
+        0.0,
+        3.5,
+        4.825
+      ],
+      "size": [
+        16.0,
+        7.0,
+        0.35
+      ],
+      "color": "#ffffff"
+    }
+  ]
+}

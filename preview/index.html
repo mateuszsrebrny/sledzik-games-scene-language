@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SGSL Preview</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: "Segoe UI", sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background: #ffffff;
+      color: #1f2933;
+      overflow: hidden;
+    }
+
+    #app {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+    }
+
+    #meta {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      padding: 10px 12px;
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid #d9e2ec;
+      border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+      z-index: 1;
+    }
+
+    #title {
+      margin: 0 0 4px;
+      font-size: 16px;
+    }
+
+    #stats {
+      margin: 0;
+      font-size: 13px;
+      color: #52606d;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div id="meta">
+      <h1 id="title">Loading scene...</h1>
+      <p id="stats">Fetching preview/scene.json</p>
+    </div>
+  </div>
+
+  <script type="module">
+    import * as THREE from "./vendor/three.module.js";
+    import { OrbitControls } from "./vendor/OrbitControls.js";
+
+    const container = document.getElementById("app");
+    const title = document.getElementById("title");
+    const stats = document.getElementById("stats");
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0xffffff, 1);
+    container.appendChild(renderer.domElement);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(18, 12, 18);
+    camera.lookAt(0, 3, 0);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.target.set(0, 3, 0);
+    controls.enableDamping = true;
+    controls.mouseButtons.LEFT = THREE.MOUSE.ROTATE;
+    controls.mouseButtons.RIGHT = THREE.MOUSE.PAN;
+
+    scene.add(new THREE.AmbientLight(0xffffff, 0.75));
+
+    const directional = new THREE.DirectionalLight(0xffffff, 1.1);
+    directional.position.set(12, 18, 10);
+    scene.add(directional);
+
+    scene.add(new THREE.GridHelper(50, 50, 0x94a3b8, 0xd9e2ec));
+    scene.add(new THREE.AxesHelper(4));
+
+    async function loadScene() {
+      const response = await fetch("./scene.json", { cache: "no-store" });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const payload = await response.json();
+      title.textContent = payload.scene;
+      stats.textContent = `${payload.objects.length} object(s)`;
+
+      for (const obj of payload.objects) {
+        if (obj.type !== "block") {
+          continue;
+        }
+
+        const geometry = new THREE.BoxGeometry(...obj.size);
+        const material = new THREE.MeshStandardMaterial({ color: obj.color });
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.position.set(...obj.position);
+        mesh.name = obj.name;
+        scene.add(mesh);
+      }
+    }
+
+    function onResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    window.addEventListener("resize", onResize);
+
+    loadScene().catch((error) => {
+      title.textContent = "Failed to load scene";
+      stats.textContent = String(error);
+      console.error(error);
+    });
+
+    function animate() {
+      controls.update();
+      renderer.render(scene, camera);
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+  </script>
+</body>
+</html>

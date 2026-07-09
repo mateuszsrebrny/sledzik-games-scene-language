@@ -1,0 +1,26 @@
+start: scene
+
+scene: "scene" NAME statement*
+
+statement: block
+
+block: "block" NAME property*
+
+property: at
+        | size
+        | color
+
+at: "at" NUMBER NUMBER NUMBER
+
+size: "size" NUMBER NUMBER NUMBER
+
+color: "color" COLOR
+
+NAME: /[A-Za-z_][A-Za-z0-9_]*/
+
+COLOR: /#[0-9a-fA-F]{6}|[A-Za-z_][A-Za-z0-9_]*/
+
+NUMBER: /-?\d+(\.\d+)?/
+
+%import common.WS
+%ignore WS

@@ -29,6 +29,7 @@ pip install -r sgsl/requirements.txt
 
 ```text
 build_preview.py          CLI entrypoint
+build_roblox.py          Roblox Lua generator
 examples/                 Example scenes
 preview/index.html        Static viewer
 preview/scene.json        Generated preview data (not committed)
@@ -80,6 +81,18 @@ preview/scene.json
 
 `preview/scene.json` is a generated build artifact and is not tracked in git.
 
+Generate Roblox Lua:
+
+```bash
+python build_roblox.py examples/factory.sgsl
+```
+
+This writes:
+
+```text
+build/factory.lua
+```
+
 Start a local server:
 
 ```bash
@@ -100,5 +113,6 @@ http://localhost:8000/
 
 - `preview/index.html` is static.
 - `preview/scene.json` should be regenerated locally from SGSL sources.
+- `build/*.lua` is generated from SGSL sources.
 - JavaScript does not parse SGSL directly.
 - The browser loads local Three.js files from `preview/vendor/`.

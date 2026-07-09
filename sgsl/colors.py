@@ -1,6 +1,8 @@
 COLORS = {
     "white": "#ffffff",
+    "darkgray": "#5a5a5a",
     "gray": "#969696",
+    "steelgray": "#8a949e",
     "lightgray": "#d2d2d2",
     "blue": "#3278ff",
 }

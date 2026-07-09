@@ -87,7 +87,11 @@ python -m http.server
 Open:
 
 ```text
+If you run the server from the repository root:
 http://localhost:8000/preview/
+
+If you run the server from inside the preview directory:
+http://localhost:8000/
 ```
 
 ## Notes

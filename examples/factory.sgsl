@@ -45,18 +45,38 @@ block BackWall
     size 18.0 18.0 0.35
     color white
 
-block LeftWall
-    at -8.825 9.00 0
-    size 0.35 18.0 18.0
+block LeftWallFront
+    at -8.825 9.00 -7.50
+    size 0.35 18.0 3.0
     color white
 
-block RightWall
-    at 8.825 9.00 0
-    size 0.35 18.0 18.0
+block LeftWallBack
+    at -8.825 9.00 7.50
+    size 0.35 18.0 3.0
+    color white
+
+block LeftWallTop
+    at -8.825 14.60 0
+    size 0.35 6.80 12.0
+    color white
+
+block RightWallFront
+    at 8.825 9.00 -7.50
+    size 0.35 18.0 3.0
+    color white
+
+block RightWallBack
+    at 8.825 9.00 7.50
+    size 0.35 18.0 3.0
+    color white
+
+block RightWallTop
+    at 8.825 14.60 0
+    size 0.35 6.80 12.0
     color white
 
 block Roof
-    at 0 18.175 0
+    at 0 17.75 0
     size 17.30 0.30 17.30
     color lightgray
 
@@ -91,13 +111,13 @@ block LeftAnnexFloor
     color lightgray
 
 block LeftAnnexFront
-    at -15.00 6.00 -5.825
-    size 12.00 12.00 0.35
+    at -14.825 6.00 -5.825
+    size 12.35 12.00 0.35
     color white
 
 block LeftAnnexBack
-    at -15.00 6.00 5.825
-    size 12.00 12.00 0.35
+    at -14.825 6.00 5.825
+    size 12.35 12.00 0.35
     color white
 
 block LeftAnnexLeft
@@ -106,7 +126,7 @@ block LeftAnnexLeft
     color white
 
 block LeftAnnexRoof
-    at -15.00 12.175 0
+    at -15.00 11.75 0
     size 11.30 0.30 11.30
     color lightgray
 
@@ -135,13 +155,13 @@ block RightAnnexFloor
     color lightgray
 
 block RightAnnexFront
-    at 15.00 6.00 -5.825
-    size 12.00 12.00 0.35
+    at 14.825 6.00 -5.825
+    size 12.35 12.00 0.35
     color white
 
 block RightAnnexBack
-    at 15.00 6.00 5.825
-    size 12.00 12.00 0.35
+    at 14.825 6.00 5.825
+    size 12.35 12.00 0.35
     color white
 
 block RightAnnexRight
@@ -150,7 +170,7 @@ block RightAnnexRight
     color white
 
 block RightAnnexRoof
-    at 15.00 12.175 0
+    at 15.00 11.75 0
     size 11.30 0.30 11.30
     color lightgray
 

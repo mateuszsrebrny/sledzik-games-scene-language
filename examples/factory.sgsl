@@ -2,50 +2,139 @@ scene MainFactoryHall
 
 block Floor
     at 0 -0.15 0
-    size 16.0 0.30 10.0
+    size 18.0 0.30 18.0
     color lightgray
 
 block FrontWall
-    at 0 3.50 -4.825
-    size 16.0 7.0 0.35
+    at 0 9.00 -8.825
+    size 18.0 18.0 0.35
     color white
 
 block BackWall
-    at 0 3.50 4.825
-    size 16.0 7.0 0.35
+    at 0 9.00 8.825
+    size 18.0 18.0 0.35
     color white
 
 block LeftWall
-    at -7.825 3.50 0
-    size 0.35 7.0 10.0
+    at -8.825 9.00 0
+    size 0.35 18.0 18.0
     color white
 
 block RightWall
-    at 7.825 3.50 0
-    size 0.35 7.0 10.0
+    at 8.825 9.00 0
+    size 0.35 18.0 18.0
     color white
 
 block Roof
-    at 0 7.175 0
-    size 15.30 0.30 9.30
+    at 0 18.175 0
+    size 17.30 0.30 17.30
     color lightgray
 
 block CorniceFront
-    at 0 7.275 -5.00
-    size 16.00 0.55 0.70
+    at 0 19.00 -9.00
+    size 18.00 2.00 1.20
     color blue
 
 block CorniceBack
-    at 0 7.275 5.00
-    size 16.00 0.55 0.70
+    at 0 19.00 9.00
+    size 18.00 2.00 1.20
     color blue
 
 block CorniceLeft
-    at -8.00 7.275 0
-    size 0.70 0.55 10.70
+    at -9.00 19.00 0
+    size 1.20 2.00 19.20
     color blue
 
 block CorniceRight
-    at 8.00 7.275 0
-    size 0.70 0.55 10.70
+    at 9.00 19.00 0
+    size 1.20 2.00 19.20
+    color blue
+
+
+# ==========================================================
+# LEFT ANNEX
+# ==========================================================
+
+block LeftAnnexFloor
+    at -15.00 -0.15 0
+    size 12.00 0.30 12.00
+    color lightgray
+
+block LeftAnnexFront
+    at -15.00 6.00 -5.825
+    size 12.00 12.00 0.35
+    color white
+
+block LeftAnnexBack
+    at -15.00 6.00 5.825
+    size 12.00 12.00 0.35
+    color white
+
+block LeftAnnexLeft
+    at -20.825 6.00 0
+    size 0.35 12.00 12.00
+    color white
+
+block LeftAnnexRoof
+    at -15.00 12.175 0
+    size 11.30 0.30 11.30
+    color lightgray
+
+block LeftAnnexCorniceFront
+    at -15.00 13.00 -6.00
+    size 12.00 2.00 1.20
+    color blue
+
+block LeftAnnexCorniceBack
+    at -15.00 13.00 6.00
+    size 12.00 2.00 1.20
+    color blue
+
+block LeftAnnexCorniceLeft
+    at -21.00 13.00 0
+    size 1.20 2.00 13.20
+    color blue
+
+# ==========================================================
+# RIGHT ANNEX
+# ==========================================================
+
+block RightAnnexFloor
+    at 15.00 -0.15 0
+    size 12.00 0.30 12.00
+    color lightgray
+
+block RightAnnexFront
+    at 15.00 6.00 -5.825
+    size 12.00 12.00 0.35
+    color white
+
+block RightAnnexBack
+    at 15.00 6.00 5.825
+    size 12.00 12.00 0.35
+    color white
+
+block RightAnnexRight
+    at 20.825 6.00 0
+    size 0.35 12.00 12.00
+    color white
+
+block RightAnnexRoof
+    at 15.00 12.175 0
+    size 11.30 0.30 11.30
+    color lightgray
+
+block RightAnnexCorniceFront
+    at 15.00 13.00 -6.00
+    size 12.00 2.00 1.20
+    color blue
+
+block RightAnnexCorniceBack
+    at 15.00 13.00 6.00
+    size 12.00 2.00 1.20
+    color blue
+
+block RightAnnexCorniceRight
+    at 21.00 13.00 0
+    size 1.20 2.00 13.20
     color blue

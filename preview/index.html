@@ -80,12 +80,6 @@
     controls.mouseButtons.LEFT = THREE.MOUSE.ROTATE;
     controls.mouseButtons.RIGHT = THREE.MOUSE.PAN;
 
-    scene.add(new THREE.AmbientLight(0xffffff, 0.75));
-
-    const directional = new THREE.DirectionalLight(0xffffff, 1.1);
-    directional.position.set(12, 18, 10);
-    scene.add(directional);
-
     scene.add(new THREE.GridHelper(50, 50, 0x94a3b8, 0xd9e2ec));
     scene.add(new THREE.AxesHelper(4));
 
@@ -105,7 +99,7 @@
         }
 
         const geometry = new THREE.BoxGeometry(...obj.size);
-        const material = new THREE.MeshStandardMaterial({ color: obj.color });
+        const material = new THREE.MeshBasicMaterial({ color: obj.color });
         const mesh = new THREE.Mesh(geometry, material);
         mesh.position.set(...obj.position);
         mesh.name = obj.name;

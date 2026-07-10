@@ -6,38 +6,38 @@ block Floor
     color lightgray
 
 block MainPlinthFrontLeft
-    at -7.50 0.30 -9.00
-    size 3.00 0.60 0.20
+    at -7.55 0.60 -9.00
+    size 3.10 1.20 0.20
     color darkgray
 
 block MainPlinthFrontRight
-    at 7.50 0.30 -9.00
-    size 3.00 0.60 0.20
+    at 7.55 0.60 -9.00
+    size 3.10 1.20 0.20
     color darkgray
 
 block MainPlinthBack
-    at 0 0.30 9.00
-    size 18.00 0.60 0.20
+    at 0 0.60 9.00
+    size 18.20 1.20 0.20
     color darkgray
 
 block MainPlinthLeftFront
-    at -9.00 0.30 -7.50
-    size 0.20 0.60 3.00
+    at -9.00 0.60 -7.55
+    size 0.20 1.20 3.10
     color darkgray
 
 block MainPlinthLeftBack
-    at -9.00 0.30 7.50
-    size 0.20 0.60 3.00
+    at -9.00 0.60 7.55
+    size 0.20 1.20 3.10
     color darkgray
 
 block MainPlinthRightFront
-    at 9.00 0.30 -7.50
-    size 0.20 0.60 3.00
+    at 9.00 0.60 -7.55
+    size 0.20 1.20 3.10
     color darkgray
 
 block MainPlinthRightBack
-    at 9.00 0.30 7.50
-    size 0.20 0.60 3.00
+    at 9.00 0.60 7.55
+    size 0.20 1.20 3.10
     color darkgray
 
 block FrontWallLeft
@@ -218,18 +218,18 @@ block LeftAnnexFloor
     color lightgray
 
 block LeftAnnexPlinthFront
-    at -15.00 0.30 -6.00
-    size 12.00 0.60 0.20
+    at -15.05 0.60 -6.00
+    size 12.10 1.20 0.20
     color darkgray
 
 block LeftAnnexPlinthBack
-    at -15.00 0.30 6.00
-    size 12.00 0.60 0.20
+    at -15.05 0.60 6.00
+    size 12.10 1.20 0.20
     color darkgray
 
 block LeftAnnexPlinthLeft
-    at -21.00 0.30 0
-    size 0.20 0.60 12.00
+    at -21.00 0.60 0
+    size 0.20 1.20 12.10
     color darkgray
 
 block LeftAnnexFrontBottom
@@ -493,23 +493,23 @@ block RightAnnexFloor
     color lightgray
 
 block RightAnnexPlinthFrontLeft
-    at 9.9125 0.30 -6.00
-    size 1.825 0.60 0.20
+    at 9.9125 0.60 -6.00
+    size 1.825 1.20 0.20
     color darkgray
 
 block RightAnnexPlinthFrontRight
-    at 19.7375 0.30 -6.00
-    size 2.525 0.60 0.20
+    at 19.7875 0.60 -6.00
+    size 2.625 1.20 0.20
     color darkgray
 
 block RightAnnexPlinthBack
-    at 15.00 0.30 6.00
-    size 12.00 0.60 0.20
+    at 15.05 0.60 6.00
+    size 12.10 1.20 0.20
     color darkgray
 
 block RightAnnexPlinthRight
-    at 21.00 0.30 0
-    size 0.20 0.60 12.00
+    at 21.00 0.60 0
+    size 0.20 1.20 12.10
     color darkgray
 
 block RightAnnexFrontLeft

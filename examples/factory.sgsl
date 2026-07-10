@@ -40,9 +40,81 @@ block GarageDoor
     size 11.30 2.60 0.20
     color steelgray
 
-block BackWall
-    at 0 9.00 8.825
-    size 18.0 18.0 0.35
+block BackWallBottom
+    at 0 1.50 8.825
+    size 18.0 3.0 0.35
+    color white
+
+block BackWallTop
+    at 0 13.50 8.825
+    size 18.0 9.0 0.35
+    color white
+
+block BackWallLeft
+    at -6.75 6.00 8.825
+    size 4.5 6.0 0.35
+    color white
+
+block BackWindow1FrameLeft
+    at -4.325 6.00 8.825
+    size 0.35 6.00 0.35
+    color darkgray
+
+block BackWindow1FrameRight
+    at -0.675 6.00 8.825
+    size 0.35 6.00 0.35
+    color darkgray
+
+block BackWindow1FrameTop
+    at -2.50 8.825 8.825
+    size 4.00 0.35 0.35
+    color darkgray
+
+block BackWindow1FrameBottom
+    at -2.50 3.175 8.825
+    size 4.00 0.35 0.35
+    color darkgray
+
+block BackWindow1Glass
+    at -2.50 6.00 8.825
+    size 3.30 5.30 0.12
+    color #b7ddff
+    transparency 0.45
+
+block BackWallMiddle
+    at 0 6.00 8.825
+    size 1.0 6.0 0.35
+    color white
+
+block BackWindow2FrameLeft
+    at 0.675 6.00 8.825
+    size 0.35 6.00 0.35
+    color darkgray
+
+block BackWindow2FrameRight
+    at 4.325 6.00 8.825
+    size 0.35 6.00 0.35
+    color darkgray
+
+block BackWindow2FrameTop
+    at 2.50 8.825 8.825
+    size 4.00 0.35 0.35
+    color darkgray
+
+block BackWindow2FrameBottom
+    at 2.50 3.175 8.825
+    size 4.00 0.35 0.35
+    color darkgray
+
+block BackWindow2Glass
+    at 2.50 6.00 8.825
+    size 3.30 5.30 0.12
+    color #b7ddff
+    transparency 0.45
+
+block BackWallRight
+    at 6.75 6.00 8.825
+    size 4.5 6.0 0.35
     color white
 
 block LeftWallFront
@@ -110,14 +182,158 @@ block LeftAnnexFloor
     size 12.00 0.30 12.00
     color lightgray
 
-block LeftAnnexFront
-    at -14.825 6.00 -5.825
-    size 12.35 12.00 0.35
+block LeftAnnexFrontBottom
+    at -14.825 1.50 -5.825
+    size 12.35 3.00 0.35
     color white
 
-block LeftAnnexBack
+block LeftAnnexFrontTop
+    at -14.825 10.50 -5.825
+    size 12.35 3.00 0.35
+    color white
+
+block LeftAnnexFrontLeft
+    at -20.08125 6.00 -5.825
+    size 1.8375 6.00 0.35
+    color white
+
+block LeftAnnexFrontWindow1FrameLeft
+    at -18.9875 6.00 -5.825
+    size 0.35 6.00 0.35
+    color darkgray
+
+block LeftAnnexFrontWindow1FrameRight
+    at -15.3375 6.00 -5.825
+    size 0.35 6.00 0.35
+    color darkgray
+
+block LeftAnnexFrontWindow1FrameTop
+    at -17.1625 8.825 -5.825
+    size 4.00 0.35 0.35
+    color darkgray
+
+block LeftAnnexFrontWindow1FrameBottom
+    at -17.1625 3.175 -5.825
+    size 4.00 0.35 0.35
+    color darkgray
+
+block LeftAnnexFrontWindow1Glass
+    at -17.1625 6.00 -5.825
+    size 3.30 5.30 0.12
+    color #b7ddff
+    transparency 0.45
+
+block LeftAnnexFrontMiddle
+    at -14.825 6.00 -5.825
+    size 0.675 6.00 0.35
+    color white
+
+block LeftAnnexFrontWindow2FrameLeft
+    at -14.3125 6.00 -5.825
+    size 0.35 6.00 0.35
+    color darkgray
+
+block LeftAnnexFrontWindow2FrameRight
+    at -10.6625 6.00 -5.825
+    size 0.35 6.00 0.35
+    color darkgray
+
+block LeftAnnexFrontWindow2FrameTop
+    at -12.4875 8.825 -5.825
+    size 4.00 0.35 0.35
+    color darkgray
+
+block LeftAnnexFrontWindow2FrameBottom
+    at -12.4875 3.175 -5.825
+    size 4.00 0.35 0.35
+    color darkgray
+
+block LeftAnnexFrontWindow2Glass
+    at -12.4875 6.00 -5.825
+    size 3.30 5.30 0.12
+    color #b7ddff
+    transparency 0.45
+
+block LeftAnnexFrontRight
+    at -9.56875 6.00 -5.825
+    size 1.8375 6.00 0.35
+    color white
+
+block LeftAnnexBackBottom
+    at -14.825 1.50 5.825
+    size 12.35 3.00 0.35
+    color white
+
+block LeftAnnexBackTop
+    at -14.825 10.50 5.825
+    size 12.35 3.00 0.35
+    color white
+
+block LeftAnnexBackLeft
+    at -20.08125 6.00 5.825
+    size 1.8375 6.00 0.35
+    color white
+
+block LeftAnnexBackWindow1FrameLeft
+    at -18.9875 6.00 5.825
+    size 0.35 6.00 0.35
+    color darkgray
+
+block LeftAnnexBackWindow1FrameRight
+    at -15.3375 6.00 5.825
+    size 0.35 6.00 0.35
+    color darkgray
+
+block LeftAnnexBackWindow1FrameTop
+    at -17.1625 8.825 5.825
+    size 4.00 0.35 0.35
+    color darkgray
+
+block LeftAnnexBackWindow1FrameBottom
+    at -17.1625 3.175 5.825
+    size 4.00 0.35 0.35
+    color darkgray
+
+block LeftAnnexBackWindow1Glass
+    at -17.1625 6.00 5.825
+    size 3.30 5.30 0.12
+    color #b7ddff
+    transparency 0.45
+
+block LeftAnnexBackMiddle
     at -14.825 6.00 5.825
-    size 12.35 12.00 0.35
+    size 0.675 6.00 0.35
+    color white
+
+block LeftAnnexBackWindow2FrameLeft
+    at -14.3125 6.00 5.825
+    size 0.35 6.00 0.35
+    color darkgray
+
+block LeftAnnexBackWindow2FrameRight
+    at -10.6625 6.00 5.825
+    size 0.35 6.00 0.35
+    color darkgray
+
+block LeftAnnexBackWindow2FrameTop
+    at -12.4875 8.825 5.825
+    size 4.00 0.35 0.35
+    color darkgray
+
+block LeftAnnexBackWindow2FrameBottom
+    at -12.4875 3.175 5.825
+    size 4.00 0.35 0.35
+    color darkgray
+
+block LeftAnnexBackWindow2Glass
+    at -12.4875 6.00 5.825
+    size 3.30 5.30 0.12
+    color #b7ddff
+    transparency 0.45
+
+block LeftAnnexBackRight
+    at -9.56875 6.00 5.825
+    size 1.8375 6.00 0.35
     color white
 
 block LeftAnnexLeftBottom
@@ -261,9 +477,81 @@ block RightAnnexGarageDoor
     size 7.30 9.00 0.20
     color steelgray
 
-block RightAnnexBack
+block RightAnnexBackBottom
+    at 14.825 1.50 5.825
+    size 12.35 3.00 0.35
+    color white
+
+block RightAnnexBackTop
+    at 14.825 10.50 5.825
+    size 12.35 3.00 0.35
+    color white
+
+block RightAnnexBackLeft
+    at 9.56875 6.00 5.825
+    size 1.8375 6.00 0.35
+    color white
+
+block RightAnnexBackWindow1FrameLeft
+    at 10.6625 6.00 5.825
+    size 0.35 6.00 0.35
+    color darkgray
+
+block RightAnnexBackWindow1FrameRight
+    at 14.3125 6.00 5.825
+    size 0.35 6.00 0.35
+    color darkgray
+
+block RightAnnexBackWindow1FrameTop
+    at 12.4875 8.825 5.825
+    size 4.00 0.35 0.35
+    color darkgray
+
+block RightAnnexBackWindow1FrameBottom
+    at 12.4875 3.175 5.825
+    size 4.00 0.35 0.35
+    color darkgray
+
+block RightAnnexBackWindow1Glass
+    at 12.4875 6.00 5.825
+    size 3.30 5.30 0.12
+    color #b7ddff
+    transparency 0.45
+
+block RightAnnexBackMiddle
     at 14.825 6.00 5.825
-    size 12.35 12.00 0.35
+    size 0.675 6.00 0.35
+    color white
+
+block RightAnnexBackWindow2FrameLeft
+    at 15.3375 6.00 5.825
+    size 0.35 6.00 0.35
+    color darkgray
+
+block RightAnnexBackWindow2FrameRight
+    at 18.9875 6.00 5.825
+    size 0.35 6.00 0.35
+    color darkgray
+
+block RightAnnexBackWindow2FrameTop
+    at 17.1625 8.825 5.825
+    size 4.00 0.35 0.35
+    color darkgray
+
+block RightAnnexBackWindow2FrameBottom
+    at 17.1625 3.175 5.825
+    size 4.00 0.35 0.35
+    color darkgray
+
+block RightAnnexBackWindow2Glass
+    at 17.1625 6.00 5.825
+    size 3.30 5.30 0.12
+    color #b7ddff
+    transparency 0.45
+
+block RightAnnexBackRight
+    at 20.08125 6.00 5.825
+    size 1.8375 6.00 0.35
     color white
 
 block RightAnnexRightBottom

@@ -16,6 +16,7 @@ def render(scene: dict) -> dict:
                 "position": obj["position"],
                 "size": obj["size"],
                 "color": resolve_color(obj["color"]),
+                "transparency": obj["transparency"],
             }
             for obj in scene["objects"]
         ],

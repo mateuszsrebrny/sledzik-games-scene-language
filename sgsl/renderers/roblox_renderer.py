@@ -25,18 +25,21 @@ def render(scene: dict) -> str:
         red, green, blue = color_to_rgb(obj["color"])
         x, y, z = obj["position"]
         sx, sy, sz = obj["size"]
+        transparency = obj["transparency"]
+        material = "Glass" if transparency > 0 else "SmoothPlastic"
         lines.extend(
             [
                 "do",
                 "    local part = Instance.new(\"Part\")",
                 f"    part.Name = {obj['name']!r}",
                 "    part.Anchored = true",
-                "    part.Material = Enum.Material.SmoothPlastic",
+                f"    part.Material = Enum.Material.{material}",
                 "    part.TopSurface = Enum.SurfaceType.Smooth",
                 "    part.BottomSurface = Enum.SurfaceType.Smooth",
                 f"    part.Size = Vector3.new({sx}, {sy}, {sz})",
                 f"    part.CFrame = CFrame.new({x}, {y}, {z})",
                 f"    part.Color = Color3.fromRGB({red}, {green}, {blue})",
+                f"    part.Transparency = {transparency}",
                 "    part.Parent = sceneFolder",
                 "end",
                 "",

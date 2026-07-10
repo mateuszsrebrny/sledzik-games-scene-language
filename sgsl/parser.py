@@ -46,6 +46,7 @@ def _validate_block(obj: dict) -> None:
         joined = ", ".join(missing)
         raise SGSLValidationError(f"Block {obj.get('name', '<unnamed>')} is missing: {joined}")
     _validate_anchor(obj)
+    _validate_transparency(obj)
 
 
 def _validate_anchor(obj: dict) -> None:
@@ -68,6 +69,14 @@ def _validate_anchor(obj: dict) -> None:
     if anchor[2] not in allowed_z:
         raise SGSLValidationError(
             f"Block {obj['name']} has invalid Z anchor {anchor[2]!r}; expected front, center, or back"
+        )
+
+
+def _validate_transparency(obj: dict) -> None:
+    transparency = obj.setdefault("transparency", 0.0)
+    if not 0.0 <= transparency <= 1.0:
+        raise SGSLValidationError(
+            f"Block {obj['name']} has invalid transparency {transparency!r}; expected a value from 0.0 to 1.0"
         )
 
 

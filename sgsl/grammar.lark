@@ -10,6 +10,7 @@ property: at
         | size
         | anchor
         | color
+        | transparency
 
 at: "at" NUMBER NUMBER NUMBER
 
@@ -18,6 +19,8 @@ size: "size" NUMBER NUMBER NUMBER
 anchor: "anchor" NAME NAME NAME
 
 color: "color" COLOR
+
+transparency: "transparency" NUMBER
 
 NAME: /[A-Za-z_][A-Za-z0-9_]*/
 

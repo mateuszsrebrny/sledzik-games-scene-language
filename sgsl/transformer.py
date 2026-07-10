@@ -26,6 +26,9 @@ class SGSLTransformer(Transformer):
     def color(self, items):
         return ("color", items[0])
 
+    def transparency(self, items):
+        return ("transparency", items[0])
+
     def property(self, items):
         return items[0]
 

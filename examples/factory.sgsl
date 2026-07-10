@@ -120,9 +120,81 @@ block LeftAnnexBack
     size 12.35 12.00 0.35
     color white
 
-block LeftAnnexLeft
+block LeftAnnexLeftBottom
+    at -20.825 1.50 0
+    size 0.35 3.00 12.00
+    color white
+
+block LeftAnnexLeftTop
+    at -20.825 10.50 0
+    size 0.35 3.00 12.00
+    color white
+
+block LeftAnnexLeftLeft
+    at -20.825 6.00 -5.25
+    size 0.35 6.00 1.50
+    color white
+
+block LeftAnnexWindow1FrameLeft
+    at -20.825 6.00 -4.325
+    size 0.35 6.00 0.35
+    color darkgray
+
+block LeftAnnexWindow1FrameRight
+    at -20.825 6.00 -0.675
+    size 0.35 6.00 0.35
+    color darkgray
+
+block LeftAnnexWindow1FrameTop
+    at -20.825 8.825 -2.50
+    size 0.35 0.35 4.00
+    color darkgray
+
+block LeftAnnexWindow1FrameBottom
+    at -20.825 3.175 -2.50
+    size 0.35 0.35 4.00
+    color darkgray
+
+block LeftAnnexWindow1Glass
+    at -20.825 6.00 -2.50
+    size 0.12 5.30 3.30
+    color #b7ddff
+    transparency 0.45
+
+block LeftAnnexLeftMiddle
     at -20.825 6.00 0
-    size 0.35 12.00 12.00
+    size 0.35 6.00 1.00
+    color white
+
+block LeftAnnexWindow2FrameLeft
+    at -20.825 6.00 0.675
+    size 0.35 6.00 0.35
+    color darkgray
+
+block LeftAnnexWindow2FrameRight
+    at -20.825 6.00 4.325
+    size 0.35 6.00 0.35
+    color darkgray
+
+block LeftAnnexWindow2FrameTop
+    at -20.825 8.825 2.50
+    size 0.35 0.35 4.00
+    color darkgray
+
+block LeftAnnexWindow2FrameBottom
+    at -20.825 3.175 2.50
+    size 0.35 0.35 4.00
+    color darkgray
+
+block LeftAnnexWindow2Glass
+    at -20.825 6.00 2.50
+    size 0.12 5.30 3.30
+    color #b7ddff
+    transparency 0.45
+
+block LeftAnnexLeftRight
+    at -20.825 6.00 5.25
+    size 0.35 6.00 1.50
     color white
 
 block LeftAnnexRoof
@@ -194,9 +266,81 @@ block RightAnnexBack
     size 12.35 12.00 0.35
     color white
 
-block RightAnnexRight
+block RightAnnexRightBottom
+    at 20.825 1.50 0
+    size 0.35 3.00 12.00
+    color white
+
+block RightAnnexRightTop
+    at 20.825 10.50 0
+    size 0.35 3.00 12.00
+    color white
+
+block RightAnnexRightLeft
+    at 20.825 6.00 -5.25
+    size 0.35 6.00 1.50
+    color white
+
+block RightAnnexWindow1FrameLeft
+    at 20.825 6.00 -4.325
+    size 0.35 6.00 0.35
+    color darkgray
+
+block RightAnnexWindow1FrameRight
+    at 20.825 6.00 -0.675
+    size 0.35 6.00 0.35
+    color darkgray
+
+block RightAnnexWindow1FrameTop
+    at 20.825 8.825 -2.50
+    size 0.35 0.35 4.00
+    color darkgray
+
+block RightAnnexWindow1FrameBottom
+    at 20.825 3.175 -2.50
+    size 0.35 0.35 4.00
+    color darkgray
+
+block RightAnnexWindow1Glass
+    at 20.825 6.00 -2.50
+    size 0.12 5.30 3.30
+    color #b7ddff
+    transparency 0.45
+
+block RightAnnexRightMiddle
     at 20.825 6.00 0
-    size 0.35 12.00 12.00
+    size 0.35 6.00 1.00
+    color white
+
+block RightAnnexWindow2FrameLeft
+    at 20.825 6.00 0.675
+    size 0.35 6.00 0.35
+    color darkgray
+
+block RightAnnexWindow2FrameRight
+    at 20.825 6.00 4.325
+    size 0.35 6.00 0.35
+    color darkgray
+
+block RightAnnexWindow2FrameTop
+    at 20.825 8.825 2.50
+    size 0.35 0.35 4.00
+    color darkgray
+
+block RightAnnexWindow2FrameBottom
+    at 20.825 3.175 2.50
+    size 0.35 0.35 4.00
+    color darkgray
+
+block RightAnnexWindow2Glass
+    at 20.825 6.00 2.50
+    size 0.12 5.30 3.30
+    color #b7ddff
+    transparency 0.45
+
+block RightAnnexRightRight
+    at 20.825 6.00 5.25
+    size 0.35 6.00 1.50
     color white
 
 block RightAnnexRoof

@@ -4,23 +4,32 @@ import json
 from pathlib import Path
 
 from sgsl.colors import resolve_color
+from sgsl.primitives import iter_render_objects
 
 
 def render(scene: dict) -> dict:
     return {
         "scene": scene["scene"],
-        "objects": [
-            {
-                "type": obj["type"],
-                "name": obj["name"],
-                "position": obj["position"],
-                "size": obj["size"],
-                "color": resolve_color(obj["color"]),
-                "transparency": obj["transparency"],
-            }
-            for obj in scene["objects"]
-        ],
+        "objects": [_render_object(obj) for obj in iter_render_objects(scene)],
     }
+
+
+def _render_object(obj: dict) -> dict:
+    payload = {
+        "type": obj["type"],
+        "name": obj["name"],
+        "position": obj["position"],
+        "color": resolve_color(obj["color"]),
+        "transparency": obj["transparency"],
+    }
+    if obj["type"] == "block":
+        payload["size"] = obj["size"]
+    elif obj["type"] == "cylinder":
+        payload["radius"] = obj["radius"]
+        payload["height"] = obj["height"]
+    else:
+        raise ValueError(f"Unsupported render object type: {obj['type']}")
+    return payload
 
 
 def write(scene: dict, output_path: str | Path) -> Path:

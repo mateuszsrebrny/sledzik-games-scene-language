@@ -20,6 +20,27 @@ class SGSLTransformer(Transformer):
     def size(self, items):
         return ("size", list(items))
 
+    def radius(self, items):
+        return ("radius", items[0])
+
+    def radius_inner(self, items):
+        return ("radius_inner", items[0])
+
+    def radius_outer(self, items):
+        return ("radius_outer", items[0])
+
+    def radius_top(self, items):
+        return ("radius_top", items[0])
+
+    def radius_bottom(self, items):
+        return ("radius_bottom", items[0])
+
+    def height(self, items):
+        return ("height", items[0])
+
+    def segments(self, items):
+        return ("segments", items[0])
+
     def anchor(self, items):
         return ("anchor", list(items))
 
@@ -36,19 +57,31 @@ class SGSLTransformer(Transformer):
         return items[0]
 
     def block(self, items):
-        name = items[0]
-        data = {
-            "type": "block",
-            "name": name,
-        }
-        for key, value in items[1:]:
-            if key in data:
-                raise ValueError(f"Duplicate property {key!r} in block {name!r}")
-            data[key] = value
-        return data
+        return self._build_object("block", items)
+
+    def cylinder(self, items):
+        return self._build_object("cylinder", items)
+
+    def frustum(self, items):
+        return self._build_object("frustum", items)
+
+    def ring(self, items):
+        return self._build_object("ring", items)
 
     def scene(self, items):
         return {
             "scene": items[0],
             "objects": items[1:],
         }
+
+    def _build_object(self, object_type, items):
+        name = items[0]
+        data = {
+            "type": object_type,
+            "name": name,
+        }
+        for key, value in items[1:]:
+            if key in data:
+                raise ValueError(f"Duplicate property {key!r} in {object_type} {name!r}")
+            data[key] = value
+        return data

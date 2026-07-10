@@ -94,11 +94,15 @@
       stats.textContent = `${payload.objects.length} object(s)`;
 
       for (const obj of payload.objects) {
-        if (obj.type !== "block") {
+        let geometry;
+        if (obj.type === "block") {
+          geometry = new THREE.BoxGeometry(...obj.size);
+        } else if (obj.type === "cylinder") {
+          geometry = new THREE.CylinderGeometry(obj.radius, obj.radius, obj.height, 32);
+        } else {
           continue;
         }
 
-        const geometry = new THREE.BoxGeometry(...obj.size);
         const material = new THREE.MeshBasicMaterial({
           color: obj.color,
           transparent: obj.transparency > 0,

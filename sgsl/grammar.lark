@@ -3,11 +3,27 @@ start: scene
 scene: "scene" NAME statement*
 
 statement: block
+         | cylinder
+         | frustum
+         | ring
 
 block: "block" NAME property*
 
+cylinder: "cylinder" NAME property*
+
+frustum: "frustum" NAME property*
+
+ring: "ring" NAME property*
+
 property: at
         | size
+        | radius
+        | radius_inner
+        | radius_outer
+        | radius_top
+        | radius_bottom
+        | height
+        | segments
         | anchor
         | color
         | transparency
@@ -15,6 +31,20 @@ property: at
 at: "at" NUMBER NUMBER NUMBER
 
 size: "size" NUMBER NUMBER NUMBER
+
+radius: "radius" NUMBER
+
+radius_inner: "radius_inner" NUMBER
+
+radius_outer: "radius_outer" NUMBER
+
+radius_top: "radius_top" NUMBER
+
+radius_bottom: "radius_bottom" NUMBER
+
+height: "height" NUMBER
+
+segments: "segments" NUMBER
 
 anchor: "anchor" NAME NAME NAME
 

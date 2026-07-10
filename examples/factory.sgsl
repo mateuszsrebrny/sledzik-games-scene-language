@@ -720,3 +720,87 @@ block RightAnnexCorniceRight
     at 21.00 13.00 0
     size 1.20 2.00 13.20
     color blue
+
+# ==========================================================
+# CHIMNEY
+# ==========================================================
+
+cylinder ChimneyBase
+    at 11 12.90 0
+    radius 1.35
+    height 2.00
+    color lightgray
+
+cylinder ChimneyBody
+    at 11 17.90 0
+    radius 1.125
+    height 8.00
+    color white
+
+ring ChimneyTop
+    at 11 22.90 0
+    radius_inner 0.675
+    radius_outer 1.50
+    height 2.00
+    segments 32
+    color blue
+
+# ==========================================================
+# LEFT STORAGE TANK
+# ==========================================================
+
+cylinder Tank1Bottom
+    at -14 0.50 -10
+    radius 1.80
+    height 1.00
+    color darkgray
+
+cylinder Tank1Body
+    at -14 4.50 -10
+    radius 1.60
+    height 7.00
+    color white
+
+cylinder Tank1Top
+    at -14 8.50 -10
+    radius 1.80
+    height 1.00
+    color gray
+
+frustum Tank1Cap
+    at -14 9.25 -10
+    radius_bottom 0.35
+    radius_top 0.15
+    height 0.50
+    segments 8
+    color gray
+
+# ==========================================================
+# RIGHT STORAGE TANK
+# ==========================================================
+
+cylinder Tank2Bottom
+    at -10 0.50 -10
+    radius 1.80
+    height 1.00
+    color darkgray
+
+cylinder Tank2Body
+    at -10 4.50 -10
+    radius 1.60
+    height 7.00
+    color white
+
+cylinder Tank2Top
+    at -10 8.50 -10
+    radius 1.80
+    height 1.00
+    color gray
+
+frustum Tank2Cap
+    at -10 9.25 -10
+    radius_bottom 0.35
+    radius_top 0.15
+    height 0.50
+    segments 8
+    color gray

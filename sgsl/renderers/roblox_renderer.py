@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from sgsl.colors import color_to_rgb
+from sgsl.primitives import iter_render_objects
 
 
 def render(scene: dict) -> str:
@@ -21,32 +22,54 @@ def render(scene: dict) -> str:
         "",
     ]
 
-    for obj in scene["objects"]:
+    for obj in iter_render_objects(scene):
         red, green, blue = color_to_rgb(obj["color"])
-        x, y, z = obj["position"]
-        sx, sy, sz = obj["size"]
-        transparency = obj["transparency"]
-        material = "Glass" if transparency > 0 else "SmoothPlastic"
-        lines.extend(
-            [
-                "do",
-                "    local part = Instance.new(\"Part\")",
-                f"    part.Name = {obj['name']!r}",
-                "    part.Anchored = true",
-                f"    part.Material = Enum.Material.{material}",
-                "    part.TopSurface = Enum.SurfaceType.Smooth",
-                "    part.BottomSurface = Enum.SurfaceType.Smooth",
-                f"    part.Size = Vector3.new({sx}, {sy}, {sz})",
-                f"    part.CFrame = CFrame.new({x}, {y}, {z})",
-                f"    part.Color = Color3.fromRGB({red}, {green}, {blue})",
-                f"    part.Transparency = {transparency}",
-                "    part.Parent = sceneFolder",
-                "end",
-                "",
-            ]
-        )
+        lines.extend(_render_part(obj, red, green, blue))
 
     return "\n".join(lines).rstrip() + "\n"
+
+
+def _render_part(obj: dict, red: int, green: int, blue: int) -> list[str]:
+    x, y, z = obj["position"]
+    transparency = obj["transparency"]
+    material = "Glass" if transparency > 0 else "SmoothPlastic"
+
+    if obj["type"] == "block":
+        sx, sy, sz = obj["size"]
+        size_line = f"    part.Size = Vector3.new({sx}, {sy}, {sz})"
+        cframe_line = f"    part.CFrame = CFrame.new({x}, {y}, {z})"
+        shape_line = None
+    elif obj["type"] == "cylinder":
+        diameter = obj["radius"] * 2
+        size_line = f"    part.Size = Vector3.new({obj['height']}, {diameter}, {diameter})"
+        cframe_line = f"    part.CFrame = CFrame.new({x}, {y}, {z}) * CFrame.Angles(0, 0, math.rad(90))"
+        shape_line = "    part.Shape = Enum.PartType.Cylinder"
+    else:
+        raise ValueError(f"Unsupported render object type: {obj['type']}")
+
+    lines = [
+        "do",
+        "    local part = Instance.new(\"Part\")",
+        f"    part.Name = {obj['name']!r}",
+        "    part.Anchored = true",
+    ]
+    if shape_line is not None:
+        lines.append(shape_line)
+    lines.extend(
+        [
+            f"    part.Material = Enum.Material.{material}",
+            "    part.TopSurface = Enum.SurfaceType.Smooth",
+            "    part.BottomSurface = Enum.SurfaceType.Smooth",
+            size_line,
+            cframe_line,
+            f"    part.Color = Color3.fromRGB({red}, {green}, {blue})",
+            f"    part.Transparency = {transparency}",
+            "    part.Parent = sceneFolder",
+            "end",
+            "",
+        ]
+    )
+    return lines
 
 
 def write(scene: dict, output_path: str | Path) -> Path:

@@ -5,6 +5,41 @@ block Floor
     size 18.0 0.30 18.0
     color lightgray
 
+block MainPlinthFrontLeft
+    at -7.50 0.30 -9.00
+    size 3.00 0.60 0.20
+    color darkgray
+
+block MainPlinthFrontRight
+    at 7.50 0.30 -9.00
+    size 3.00 0.60 0.20
+    color darkgray
+
+block MainPlinthBack
+    at 0 0.30 9.00
+    size 18.00 0.60 0.20
+    color darkgray
+
+block MainPlinthLeftFront
+    at -9.00 0.30 -7.50
+    size 0.20 0.60 3.00
+    color darkgray
+
+block MainPlinthLeftBack
+    at -9.00 0.30 7.50
+    size 0.20 0.60 3.00
+    color darkgray
+
+block MainPlinthRightFront
+    at 9.00 0.30 -7.50
+    size 0.20 0.60 3.00
+    color darkgray
+
+block MainPlinthRightBack
+    at 9.00 0.30 7.50
+    size 0.20 0.60 3.00
+    color darkgray
+
 block FrontWallLeft
     at -7.50 9.00 -8.825
     size 3.0 18.0 0.35
@@ -181,6 +216,21 @@ block LeftAnnexFloor
     at -15.00 -0.15 0
     size 12.00 0.30 12.00
     color lightgray
+
+block LeftAnnexPlinthFront
+    at -15.00 0.30 -6.00
+    size 12.00 0.60 0.20
+    color darkgray
+
+block LeftAnnexPlinthBack
+    at -15.00 0.30 6.00
+    size 12.00 0.60 0.20
+    color darkgray
+
+block LeftAnnexPlinthLeft
+    at -21.00 0.30 0
+    size 0.20 0.60 12.00
+    color darkgray
 
 block LeftAnnexFrontBottom
     at -14.825 1.50 -5.825
@@ -441,6 +491,26 @@ block RightAnnexFloor
     at 15.00 -0.15 0
     size 12.00 0.30 12.00
     color lightgray
+
+block RightAnnexPlinthFrontLeft
+    at 9.9125 0.30 -6.00
+    size 1.825 0.60 0.20
+    color darkgray
+
+block RightAnnexPlinthFrontRight
+    at 19.7375 0.30 -6.00
+    size 2.525 0.60 0.20
+    color darkgray
+
+block RightAnnexPlinthBack
+    at 15.00 0.30 6.00
+    size 12.00 0.60 0.20
+    color darkgray
+
+block RightAnnexPlinthRight
+    at 21.00 0.30 0
+    size 0.20 0.60 12.00
+    color darkgray
 
 block RightAnnexFrontLeft
     at 9.7375 6.00 -5.825

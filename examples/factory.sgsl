@@ -1,5 +1,41 @@
 scene MainFactoryHall
 
+component StorageTank
+    param radius 1.60
+    param bottomRadius 1.80
+    param bodyHeight 7.00
+    param bottomHeight 1.00
+    param topHeight 1.00
+    param roofHeight 0.50
+    param roofTopRadius 0.15
+    param roofSegments 8
+
+    cylinder Bottom
+        at 0 (bottomHeight / 2) 0
+        radius bottomRadius
+        height bottomHeight
+        color darkgray
+
+    cylinder Body
+        at 0 (bottomHeight + bodyHeight / 2) 0
+        radius radius
+        height bodyHeight
+        color white
+
+    cylinder Top
+        at 0 (bottomHeight + bodyHeight + topHeight / 2) 0
+        radius bottomRadius
+        height topHeight
+        color gray
+
+    frustum Cap
+        at 0 (bottomHeight + bodyHeight + topHeight + roofHeight / 2) 0
+        radius_bottom 0.35
+        radius_top roofTopRadius
+        height roofHeight
+        segments roofSegments
+        color gray
+
 block Floor
     at 0 -0.15 0
     size 18.0 0.30 18.0
@@ -761,58 +797,12 @@ ring ChimneyTop
 # LEFT STORAGE TANK
 # ==========================================================
 
-cylinder Tank1Bottom
-    at -16 0.50 -10
-    radius 1.80
-    height 1.00
-    color darkgray
-
-cylinder Tank1Body
-    at -16 4.50 -10
-    radius 1.60
-    height 7.00
-    color white
-
-cylinder Tank1Top
-    at -16 8.50 -10
-    radius 1.80
-    height 1.00
-    color gray
-
-frustum Tank1Cap
-    at -16 9.25 -10
-    radius_bottom 0.35
-    radius_top 0.15
-    height 0.50
-    segments 8
-    color gray
+instance Tank1 StorageTank
+    at -16 0 -10
 
 # ==========================================================
 # RIGHT STORAGE TANK
 # ==========================================================
 
-cylinder Tank2Bottom
-    at -12 0.50 -10
-    radius 1.80
-    height 1.00
-    color darkgray
-
-cylinder Tank2Body
-    at -12 4.50 -10
-    radius 1.60
-    height 7.00
-    color white
-
-cylinder Tank2Top
-    at -12 8.50 -10
-    radius 1.80
-    height 1.00
-    color gray
-
-frustum Tank2Cap
-    at -12 9.25 -10
-    radius_bottom 0.35
-    radius_top 0.15
-    height 0.50
-    segments 8
-    color gray
+instance Tank2 StorageTank
+    at -12 0 -10

@@ -1,4 +1,5 @@
 COLORS = {
+    "red": "#d83a34",
     "white": "#ffffff",
     "darkgray": "#5a5a5a",
     "gray": "#969696",

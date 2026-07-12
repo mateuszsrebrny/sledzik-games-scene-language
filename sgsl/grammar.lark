@@ -2,10 +2,14 @@ start: scene
 
 scene: "scene" NAME statement*
 
-statement: block
-         | cylinder
-         | frustum
-         | ring
+statement: object
+         | component
+         | instance
+
+object: block
+      | cylinder
+      | frustum
+      | ring
 
 block: "block" NAME property*
 
@@ -14,6 +18,21 @@ cylinder: "cylinder" NAME property*
 frustum: "frustum" NAME property*
 
 ring: "ring" NAME property*
+
+component: "component" NAME component_statement*
+
+component_statement: param
+                   | object
+
+param: "param" NAME expression
+
+instance: "instance" NAME NAME instance_property*
+
+instance_property: at
+                 | rotate
+                 | set_param
+
+set_param: "set" NAME expression
 
 property: at
         | size
@@ -29,31 +48,48 @@ property: at
         | color
         | transparency
 
-at: "at" NUMBER NUMBER NUMBER
+at: "at" expression expression expression
 
-size: "size" NUMBER NUMBER NUMBER
+size: "size" expression expression expression
 
-radius: "radius" NUMBER
+radius: "radius" expression
 
-radius_inner: "radius_inner" NUMBER
+radius_inner: "radius_inner" expression
 
-radius_outer: "radius_outer" NUMBER
+radius_outer: "radius_outer" expression
 
-radius_top: "radius_top" NUMBER
+radius_top: "radius_top" expression
 
-radius_bottom: "radius_bottom" NUMBER
+radius_bottom: "radius_bottom" expression
 
-height: "height" NUMBER
+height: "height" expression
 
-segments: "segments" NUMBER
+segments: "segments" expression
 
 anchor: "anchor" NAME NAME NAME
 
-rotate: "rotate" NUMBER NUMBER NUMBER
+rotate: "rotate" expression expression expression
 
 color: "color" COLOR
 
-transparency: "transparency" NUMBER
+transparency: "transparency" expression
+
+?expression: sum
+
+?sum: sum "+" product   -> add
+    | sum "-" product   -> sub
+    | product
+
+?product: product "*" unary  -> mul
+        | product "/" unary  -> div
+        | unary
+
+?unary: "-" unary            -> neg
+      | atom
+
+?atom: NUMBER                -> number
+     | NAME                  -> variable
+     | "(" expression ")"
 
 NAME: /[A-Za-z_][A-Za-z0-9_]*/
 

@@ -14,6 +14,27 @@ class SGSLTransformer(Transformer):
     def COLOR(self, value):
         return str(value)
 
+    def number(self, items):
+        return ("number", items[0])
+
+    def variable(self, items):
+        return ("variable", items[0])
+
+    def add(self, items):
+        return ("add", items[0], items[1])
+
+    def sub(self, items):
+        return ("sub", items[0], items[1])
+
+    def mul(self, items):
+        return ("mul", items[0], items[1])
+
+    def div(self, items):
+        return ("div", items[0], items[1])
+
+    def neg(self, items):
+        return ("neg", items[0])
+
     def at(self, items):
         return ("at", list(items))
 
@@ -53,10 +74,25 @@ class SGSLTransformer(Transformer):
     def transparency(self, items):
         return ("transparency", items[0])
 
+    def param(self, items):
+        return {"type": "param", "name": items[0], "value": items[1]}
+
+    def set_param(self, items):
+        return ("parameter_overrides", (items[0], items[1]))
+
     def property(self, items):
         return items[0]
 
+    def instance_property(self, items):
+        return items[0]
+
+    def component_statement(self, items):
+        return items[0]
+
     def statement(self, items):
+        return items[0]
+
+    def object(self, items):
         return items[0]
 
     def block(self, items):
@@ -71,10 +107,53 @@ class SGSLTransformer(Transformer):
     def ring(self, items):
         return self._build_object("ring", items)
 
+    def component(self, items):
+        name = items[0]
+        parameters: list[dict] = []
+        objects: list[dict] = []
+        seen_object_names: set[str] = set()
+
+        for item in items[1:]:
+            if item["type"] == "param":
+                parameters.append({"name": item["name"], "value": item["value"]})
+                continue
+            if item["name"] in seen_object_names:
+                raise ValueError(f"Duplicate object name {item['name']!r} in component {name!r}")
+            seen_object_names.add(item["name"])
+            objects.append(item)
+
+        return {
+            "type": "component_definition",
+            "name": name,
+            "parameters": parameters,
+            "objects": objects,
+        }
+
+    def instance(self, items):
+        name = items[0]
+        component_name = items[1]
+        data = {
+            "type": "component_instance",
+            "name": name,
+            "component": component_name,
+            "parameter_overrides": {},
+        }
+        for key, value in items[2:]:
+            if key == "parameter_overrides":
+                param_name, param_value = value
+                if param_name in data["parameter_overrides"]:
+                    raise ValueError(f"Duplicate parameter override {param_name!r} in instance {name!r}")
+                data["parameter_overrides"][param_name] = param_value
+                continue
+            if key in data:
+                raise ValueError(f"Duplicate property {key!r} in component instance {name!r}")
+            data[key] = value
+        return data
+
     def scene(self, items):
         return {
             "scene": items[0],
-            "objects": items[1:],
+            "statements": items[1:],
         }
 
     def _build_object(self, object_type, items):

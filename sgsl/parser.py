@@ -21,6 +21,7 @@ def _load_grammar() -> str:
 _GRAMMAR = _load_grammar()
 _PARSER = Lark(_GRAMMAR, start="start", parser="lalr")
 _STATEMENT_PARSER = Lark(_GRAMMAR, start="statement", parser="lalr")
+_MAX_COMPONENT_DEPTH = 64
 
 
 def parse_text(source: str) -> dict:
@@ -116,7 +117,20 @@ def _evaluate_top_level_object(obj: dict) -> dict:
     return evaluated
 
 
-def _expand_instance(instance: dict, components: dict[str, dict]) -> list[dict]:
+def _expand_instance(
+    instance: dict,
+    components: dict[str, dict],
+    parent_transform: list[list[float]] | None = None,
+    parent_parameters: dict[str, float] | None = None,
+    path: str | None = None,
+    depth: int = 0,
+) -> list[dict]:
+    if depth >= _MAX_COMPONENT_DEPTH:
+        raise SGSLValidationError(
+            f"Component expansion exceeded maximum nesting depth of {_MAX_COMPONENT_DEPTH}. "
+            "Possible recursive component reference."
+        )
+
     component_name = instance["component"]
     try:
         component = components[component_name]
@@ -125,34 +139,66 @@ def _expand_instance(instance: dict, components: dict[str, dict]) -> list[dict]:
             f"Instance {instance['name']!r} references unknown component {component_name!r}."
         ) from exc
 
-    parameter_values = _resolve_component_parameters(component, instance)
-    instance_at = _evaluate_vector(instance.get("at", [_number_node(0), _number_node(0), _number_node(0)]), parameter_values)
+    parent_transform = parent_transform or _identity_transform()
+    parent_parameters = parent_parameters or {}
+    parameter_values = _resolve_component_parameters(component, instance, parent_parameters)
+    expression_environment = {**parameter_values, **parent_parameters}
+    instance_at = _evaluate_vector(
+        instance.get("at", [_number_node(0), _number_node(0), _number_node(0)]),
+        expression_environment,
+    )
     instance_rotation = _evaluate_vector(
         instance.get("rotation", [_number_node(0), _number_node(0), _number_node(0)]),
-        parameter_values,
+        expression_environment,
     )
+    world_transform = _multiply_transforms(
+        parent_transform,
+        _make_transform(instance_at, instance_rotation),
+    )
+    instance_path = f"{path}.{instance['name']}" if path else instance["name"]
 
     expanded: list[dict] = []
     for template in component["objects"]:
+        if template["type"] == "component_instance":
+            expanded.extend(
+                _expand_instance(
+                    template,
+                    components,
+                    world_transform,
+                    parameter_values,
+                    instance_path,
+                    depth + 1,
+                )
+            )
+            continue
+
         obj = copy.deepcopy(template)
         _evaluate_object_expressions(obj, parameter_values)
         _resolve_scene({"objects": [obj]})
-        obj["position"] = _apply_instance_transform(obj["position"], instance_at, instance_rotation)
+        object_transform = _multiply_transforms(
+            world_transform,
+            _make_transform(obj["position"], obj["rotation"]),
+        )
+        obj["position"] = _transform_position(object_transform)
         obj["at"] = obj["position"]
         obj["anchor"] = ["center", "center", "center"]
-        obj["rotation"] = _compose_rotations(instance_rotation, obj["rotation"])
-        obj["name"] = f"{instance['name']}.{obj['name']}"
+        obj["rotation"] = _transform_rotation(object_transform)
+        obj["name"] = f"{instance_path}.{obj['name']}"
         expanded.append(obj)
 
     return expanded
 
 
-def _resolve_component_parameters(component: dict, instance: dict) -> dict[str, float]:
+def _resolve_component_parameters(
+    component: dict,
+    instance: dict,
+    parent_parameters: dict[str, float],
+) -> dict[str, float]:
     values: dict[str, float] = {}
     parameter_names = [param["name"] for param in component["parameters"]]
 
     for param in component["parameters"]:
-        values[param["name"]] = _evaluate_expression(param["value"], values)
+        values[param["name"]] = _evaluate_expression(param["value"], {**parent_parameters, **values})
 
     for name, expression in instance["parameter_overrides"].items():
         if name not in parameter_names:
@@ -161,7 +207,7 @@ def _resolve_component_parameters(component: dict, instance: dict) -> dict[str, 
                 f"Instance {instance['name']!r} of component {component['name']!r} "
                 f"sets unknown parameter {name!r}. Available parameters: {available}"
             )
-        values[name] = _evaluate_expression(expression, values)
+        values[name] = _evaluate_expression(expression, {**values, **parent_parameters})
 
     return values
 
@@ -229,37 +275,51 @@ def _number_node(value: float):
     return ("number", float(value))
 
 
-def _apply_instance_transform(local_position: list[float], instance_at: list[float], instance_rotation: list[float]) -> list[float]:
-    rotated = _rotate_vector(local_position, instance_rotation)
+def _identity_transform() -> list[list[float]]:
     return [
-        instance_at[0] + rotated[0],
-        instance_at[1] + rotated[1],
-        instance_at[2] + rotated[2],
+        [1.0, 0.0, 0.0, 0.0],
+        [0.0, 1.0, 0.0, 0.0],
+        [0.0, 0.0, 1.0, 0.0],
+        [0.0, 0.0, 0.0, 1.0],
     ]
 
 
-def _rotate_vector(vector: list[float], rotation: list[float]) -> list[float]:
-    x, y, z = vector
+def _make_transform(position: list[float], rotation: list[float]) -> list[list[float]]:
     rx, ry, rz = (math.radians(value) for value in rotation)
-
     cos_x, sin_x = math.cos(rx), math.sin(rx)
-    y, z = y * cos_x - z * sin_x, y * sin_x + z * cos_x
-
     cos_y, sin_y = math.cos(ry), math.sin(ry)
-    x, z = x * cos_y + z * sin_y, -x * sin_y + z * cos_y
-
     cos_z, sin_z = math.cos(rz), math.sin(rz)
-    x, y = x * cos_z - y * sin_z, x * sin_z + y * cos_z
 
-    return [x, y, z]
-
-
-def _compose_rotations(instance_rotation: list[float], local_rotation: list[float]) -> list[float]:
     return [
-        instance_rotation[0] + local_rotation[0],
-        instance_rotation[1] + local_rotation[1],
-        instance_rotation[2] + local_rotation[2],
+        [cos_z * cos_y, cos_z * sin_y * sin_x - sin_z * cos_x, cos_z * sin_y * cos_x + sin_z * sin_x, position[0]],
+        [sin_z * cos_y, sin_z * sin_y * sin_x + cos_z * cos_x, sin_z * sin_y * cos_x - cos_z * sin_x, position[1]],
+        [-sin_y, cos_y * sin_x, cos_y * cos_x, position[2]],
+        [0.0, 0.0, 0.0, 1.0],
     ]
+
+
+def _multiply_transforms(left: list[list[float]], right: list[list[float]]) -> list[list[float]]:
+    return [
+        [sum(left[row][index] * right[index][column] for index in range(4)) for column in range(4)]
+        for row in range(4)
+    ]
+
+
+def _transform_position(transform: list[list[float]]) -> list[float]:
+    return [transform[0][3], transform[1][3], transform[2][3]]
+
+
+def _transform_rotation(transform: list[list[float]]) -> list[float]:
+    # Extract XYZ Euler angles from the Rz * Ry * Rx rotation matrix.
+    sin_y = max(-1.0, min(1.0, -transform[2][0]))
+    y = math.asin(sin_y)
+    if abs(math.cos(y)) > 1e-9:
+        x = math.atan2(transform[2][1], transform[2][2])
+        z = math.atan2(transform[1][0], transform[0][0])
+    else:
+        x = math.atan2(-transform[1][2], transform[1][1])
+        z = 0.0
+    return [math.degrees(x), math.degrees(y), math.degrees(z)]
 
 
 def _validate_scene(scene: dict) -> None:

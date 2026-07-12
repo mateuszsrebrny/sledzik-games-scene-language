@@ -36,30 +36,49 @@ component StorageTank
         segments roofSegments
         color gray
 
-component Window
+component WindowFrame
+    param frameWidth 4.00
+    param frameHeight 6.00
+    param frameThickness 0.35
+    param frameDepth 0.35
+
     block FrameLeft
-        at -1.825 0 0
-        size 0.35 6.00 0.35
+        at (-frameWidth / 2 + frameThickness / 2) 0 0
+        size frameThickness frameHeight frameDepth
         color darkgray
 
     block FrameRight
-        at 1.825 0 0
-        size 0.35 6.00 0.35
+        at (frameWidth / 2 - frameThickness / 2) 0 0
+        size frameThickness frameHeight frameDepth
         color darkgray
 
     block FrameTop
-        at 0 2.825 0
-        size 4.00 0.35 0.35
+        at 0 (frameHeight / 2 - frameThickness / 2) 0
+        size frameWidth frameThickness frameDepth
         color darkgray
 
     block FrameBottom
-        at 0 -2.825 0
-        size 4.00 0.35 0.35
+        at 0 (-frameHeight / 2 + frameThickness / 2) 0
+        size frameWidth frameThickness frameDepth
         color darkgray
+
+component Window
+    param windowWidth 4.00
+    param windowHeight 6.00
+    param windowFrameThickness 0.35
+    param windowFrameDepth 0.35
+    param windowGlassDepth 0.12
+
+    instance Frame WindowFrame
+        at 0 0 0
+        set frameWidth windowWidth
+        set frameHeight windowHeight
+        set frameThickness windowFrameThickness
+        set frameDepth windowFrameDepth
 
     block Glass
         at 0 0 0
-        size 3.30 5.30 0.12
+        size (windowWidth - 2 * windowFrameThickness) (windowHeight - 2 * windowFrameThickness) windowGlassDepth
         color #b7ddff
         transparency 0.45
 

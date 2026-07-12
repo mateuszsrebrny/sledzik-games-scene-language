@@ -106,6 +106,23 @@ Notes:
 Language docs:
 - [Rotation](docs/ROTATE.md)
 - [Components](docs/COMPONENTS.md)
+- [Nested components](docs/NESTED_COMPONENTS.md)
+
+Components may contain instances of other components. For example:
+
+```sgsl
+component Window
+    instance Frame WindowFrame
+        set frameWidth windowWidth
+
+    block Glass
+        at 0 0 0
+        size windowWidth windowHeight 0.12
+        color lightblue
+```
+
+Nested position and rotation are composed through the complete component tree.
+Expanded objects use full names such as `Factory01.Hall01.Window01.Glass`.
 
 Built-in color names:
 - `white`

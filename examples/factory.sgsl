@@ -36,7 +36,7 @@ component StorageTank
         segments roofSegments
         color gray
 
-component FrontWindow
+component Window
     block FrameLeft
         at -1.825 0 0
         size 0.35 6.00 0.35
@@ -60,33 +60,6 @@ component FrontWindow
     block Glass
         at 0 0 0
         size 3.30 5.30 0.12
-        color #b7ddff
-        transparency 0.45
-
-component SideWindow
-    block FrameLeft
-        at 0 0 -1.825
-        size 0.35 6.00 0.35
-        color darkgray
-
-    block FrameRight
-        at 0 0 1.825
-        size 0.35 6.00 0.35
-        color darkgray
-
-    block FrameTop
-        at 0 2.825 0
-        size 0.35 0.35 4.00
-        color darkgray
-
-    block FrameBottom
-        at 0 -2.825 0
-        size 0.35 0.35 4.00
-        color darkgray
-
-    block Glass
-        at 0 0 0
-        size 0.12 5.30 3.30
         color #b7ddff
         transparency 0.45
 
@@ -180,7 +153,7 @@ block BackWallLeft
     size 4.5 6.0 0.35
     color white
 
-instance BackWindow1 FrontWindow
+instance BackWindow1 Window
     at -2.50 6.00 8.825
 
 block BackWallMiddle
@@ -188,7 +161,7 @@ block BackWallMiddle
     size 1.0 6.0 0.35
     color white
 
-instance BackWindow2 FrontWindow
+instance BackWindow2 Window
     at 2.50 6.00 8.825
 
 block BackWallRight
@@ -291,7 +264,7 @@ block LeftAnnexFrontLeft
     size 1.8375 6.00 0.35
     color white
 
-instance LeftAnnexFrontWindow1 FrontWindow
+instance LeftAnnexFrontWindow1 Window
     at -17.1625 6.00 -5.825
 
 block LeftAnnexFrontMiddle
@@ -299,7 +272,7 @@ block LeftAnnexFrontMiddle
     size 0.675 6.00 0.35
     color white
 
-instance LeftAnnexFrontWindow2 FrontWindow
+instance LeftAnnexFrontWindow2 Window
     at -12.4875 6.00 -5.825
 
 block LeftAnnexFrontRight
@@ -322,7 +295,7 @@ block LeftAnnexBackLeft
     size 1.8375 6.00 0.35
     color white
 
-instance LeftAnnexBackWindow1 FrontWindow
+instance LeftAnnexBackWindow1 Window
     at -17.1625 6.00 5.825
 
 block LeftAnnexBackMiddle
@@ -330,7 +303,7 @@ block LeftAnnexBackMiddle
     size 0.675 6.00 0.35
     color white
 
-instance LeftAnnexBackWindow2 FrontWindow
+instance LeftAnnexBackWindow2 Window
     at -12.4875 6.00 5.825
 
 block LeftAnnexBackRight
@@ -353,16 +326,18 @@ block LeftAnnexLeftLeft
     size 0.35 6.00 1.50
     color white
 
-instance LeftAnnexWindow1 SideWindow
+instance LeftAnnexWindow1 Window
     at -20.825 6.00 -2.50
+    rotate 0 90 0
 
 block LeftAnnexLeftMiddle
     at -20.825 6.00 0
     size 0.35 6.00 1.00
     color white
 
-instance LeftAnnexWindow2 SideWindow
+instance LeftAnnexWindow2 Window
     at -20.825 6.00 2.50
+    rotate 0 90 0
 
 block LeftAnnexLeftRight
     at -20.825 6.00 5.25
@@ -468,7 +443,7 @@ block RightAnnexBackLeft
     size 1.8375 6.00 0.35
     color white
 
-instance RightAnnexBackWindow1 FrontWindow
+instance RightAnnexBackWindow1 Window
     at 12.4875 6.00 5.825
 
 block RightAnnexBackMiddle
@@ -476,7 +451,7 @@ block RightAnnexBackMiddle
     size 0.675 6.00 0.35
     color white
 
-instance RightAnnexBackWindow2 FrontWindow
+instance RightAnnexBackWindow2 Window
     at 17.1625 6.00 5.825
 
 block RightAnnexBackRight
@@ -499,16 +474,18 @@ block RightAnnexRightLeft
     size 0.35 6.00 1.50
     color white
 
-instance RightAnnexWindow1 SideWindow
+instance RightAnnexWindow1 Window
     at 20.825 6.00 -2.50
+    rotate 0 90 0
 
 block RightAnnexRightMiddle
     at 20.825 6.00 0
     size 0.35 6.00 1.00
     color white
 
-instance RightAnnexWindow2 SideWindow
+instance RightAnnexWindow2 Window
     at 20.825 6.00 2.50
+    rotate 0 90 0
 
 block RightAnnexRightRight
     at 20.825 6.00 5.25

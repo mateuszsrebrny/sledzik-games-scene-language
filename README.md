@@ -135,6 +135,24 @@ This writes:
 build/factory.lua
 ```
 
+Generate a Rojo-friendly ModuleScript:
+
+```bash
+python build_roblox.py examples/factory.sgsl --rojo-module
+```
+
+Module mode returns a function that accepts an optional parent, requires the shared primitives module, creates the scene under that parent, and returns the scene folder. The default builder require expression is:
+
+```lua
+game.ReplicatedStorage.SceneLanguagePrimitives
+```
+
+Override it when your Roblox project exposes the primitives somewhere else:
+
+```bash
+python build_roblox.py examples/factory.sgsl --rojo-module --builder-require game.ReplicatedStorage.Shared.SceneLanguagePrimitives
+```
+
 Try the primitives example:
 
 ```bash

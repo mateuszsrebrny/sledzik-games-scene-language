@@ -1,16 +1,34 @@
 from __future__ import annotations
 
-import sys
+import argparse
 
 from sgsl.build_roblox import build_roblox
 
 
 def main() -> int:
-    if len(sys.argv) != 2:
-        print("Usage: python build_roblox.py <scene.sgsl>")
-        return 1
+    parser = argparse.ArgumentParser(description="Generate Roblox Lua from an SGSL scene.")
+    parser.add_argument("source", help="Path to the source .sgsl file")
+    parser.add_argument("--output", "-o", help="Output Lua path")
+    parser.add_argument(
+        "--module",
+        "--rojo-module",
+        action="store_true",
+        help="Generate a reusable ModuleScript function instead of a standalone workspace script",
+    )
+    parser.add_argument(
+        "--builder-require",
+        default="game.ReplicatedStorage.SceneLanguagePrimitives",
+        help="Lua expression used by module mode to require the Builder module",
+    )
+    args = parser.parse_args()
 
-    output_path = build_roblox(sys.argv[1])
+    mode = "module" if args.module else "standalone"
+    output_path = build_roblox(
+        args.source,
+        args.output,
+        mode=mode,
+        builder_require=args.builder_require,
+    )
     print(f"{output_path} written")
     return 0
 

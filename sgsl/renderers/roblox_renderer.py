@@ -129,6 +129,8 @@ def _render_object(obj: dict, red: int, green: int, blue: int) -> list[str]:
         return _render_frustum(obj, red, green, blue)
     if obj["type"] == "ring":
         return _render_ring(obj, red, green, blue)
+    if obj["type"] == "pipe_arc":
+        return _render_expanded(obj, red, green, blue)
     return _render_part(obj, red, green, blue)
 
 
@@ -190,6 +192,10 @@ def _render_frustum(obj: dict, red: int, green: int, blue: int) -> list[str]:
 
 
 def _render_ring(obj: dict, red: int, green: int, blue: int) -> list[str]:
+    return _render_expanded(obj, red, green, blue)
+
+
+def _render_expanded(obj: dict, red: int, green: int, blue: int) -> list[str]:
     lines: list[str] = []
     for expanded in iter_render_objects({"scene": "", "objects": [obj]}):
         lines.extend(_render_part(expanded, red, green, blue))

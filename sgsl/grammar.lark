@@ -10,6 +10,7 @@ object: block
       | cylinder
       | frustum
       | ring
+      | pipe_arc
 
 block: "block" NAME property*
 
@@ -18,6 +19,8 @@ cylinder: "cylinder" NAME property*
 frustum: "frustum" NAME property*
 
 ring: "ring" NAME property*
+
+pipe_arc: "pipeArc" NAME property*
 
 component: "component" NAME component_statement*
 
@@ -42,6 +45,9 @@ property: at
         | radius_outer
         | radius_top
         | radius_bottom
+        | pipe_radius
+        | bend_radius
+        | angle
         | height
         | segments
         | anchor
@@ -62,6 +68,12 @@ radius_outer: "radius_outer" expression
 radius_top: "radius_top" expression
 
 radius_bottom: "radius_bottom" expression
+
+pipe_radius: "pipeRadius" expression
+
+bend_radius: "bendRadius" expression
+
+angle: "angle" expression
 
 height: "height" expression
 

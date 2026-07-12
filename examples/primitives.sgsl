@@ -58,3 +58,20 @@ ring WhiteRing
     segments 32
     rotate 0 35 20
     color white
+
+pipeArc PositivePipeArc
+    at -2 0.8 -4
+    pipeRadius 0.18
+    bendRadius 2.0
+    angle 90
+    segments 12
+    color blue
+
+pipeArc RotatedNegativePipeArc
+    at 3 1.0 -4
+    pipeRadius 0.22
+    bendRadius 1.8
+    angle -120
+    segments 16
+    rotate 35 20 10
+    color steelgray

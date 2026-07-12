@@ -232,6 +232,12 @@ def _evaluate_object_expressions(obj: dict, environment: dict[str, float]) -> No
         obj["radius_top"] = _evaluate_expression(obj["radius_top"], environment)
     if "radius_bottom" in obj:
         obj["radius_bottom"] = _evaluate_expression(obj["radius_bottom"], environment)
+    if "pipe_radius" in obj:
+        obj["pipe_radius"] = _evaluate_expression(obj["pipe_radius"], environment)
+    if "bend_radius" in obj:
+        obj["bend_radius"] = _evaluate_expression(obj["bend_radius"], environment)
+    if "angle" in obj:
+        obj["angle"] = _evaluate_expression(obj["angle"], environment)
     if "height" in obj:
         obj["height"] = _evaluate_expression(obj["height"], environment)
     if "segments" in obj:
@@ -354,6 +360,13 @@ def _validate_object(obj: dict) -> None:
             raise SGSLValidationError(
                 f"Ring {obj['name']} has invalid radii; radius_inner must be smaller than radius_outer"
             )
+    elif object_type == "pipe_arc":
+        _validate_required_fields(obj, ("at", "pipe_radius", "bend_radius", "angle", "segments", "color"))
+        _validate_positive_number(obj, "pipe_radius")
+        _validate_positive_number(obj, "bend_radius")
+        _validate_positive_integer(obj, "segments")
+        if obj["angle"] == 0:
+            raise SGSLValidationError(f"Pipe arc {obj['name']} has invalid angle 0; expected a non-zero angle")
     else:
         raise SGSLValidationError(f"Unsupported object type: {object_type}")
 
@@ -447,6 +460,9 @@ def _resolve_scene(scene: dict) -> None:
 
 def _resolve_position(obj: dict) -> list[float]:
     at_x, at_y, at_z = obj["at"]
+    if obj["type"] == "pipe_arc":
+        return [at_x, at_y, at_z]
+
     size_x, size_y, size_z = _get_object_bounds(obj)
     anchor_x, anchor_y, anchor_z = obj["anchor"]
 
@@ -486,6 +502,10 @@ def _get_object_bounds(obj: dict) -> tuple[float, float, float]:
     if obj["type"] == "ring":
         diameter = obj["radius_outer"] * 2
         return diameter, obj["height"], diameter
+
+    if obj["type"] == "pipe_arc":
+        diameter = 2 * (obj["bend_radius"] + obj["pipe_radius"])
+        return diameter, diameter, obj["pipe_radius"] * 2
 
     max_radius = max(obj["radius_bottom"], obj["radius_top"])
     diameter = max_radius * 2

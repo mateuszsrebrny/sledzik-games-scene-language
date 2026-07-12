@@ -36,6 +36,60 @@ component StorageTank
         segments roofSegments
         color gray
 
+component FrontWindow
+    block FrameLeft
+        at -1.825 0 0
+        size 0.35 6.00 0.35
+        color darkgray
+
+    block FrameRight
+        at 1.825 0 0
+        size 0.35 6.00 0.35
+        color darkgray
+
+    block FrameTop
+        at 0 2.825 0
+        size 4.00 0.35 0.35
+        color darkgray
+
+    block FrameBottom
+        at 0 -2.825 0
+        size 4.00 0.35 0.35
+        color darkgray
+
+    block Glass
+        at 0 0 0
+        size 3.30 5.30 0.12
+        color #b7ddff
+        transparency 0.45
+
+component SideWindow
+    block FrameLeft
+        at 0 0 -1.825
+        size 0.35 6.00 0.35
+        color darkgray
+
+    block FrameRight
+        at 0 0 1.825
+        size 0.35 6.00 0.35
+        color darkgray
+
+    block FrameTop
+        at 0 2.825 0
+        size 0.35 0.35 4.00
+        color darkgray
+
+    block FrameBottom
+        at 0 -2.825 0
+        size 0.35 0.35 4.00
+        color darkgray
+
+    block Glass
+        at 0 0 0
+        size 0.12 5.30 3.30
+        color #b7ddff
+        transparency 0.45
+
 block Floor
     at 0 -0.15 0
     size 18.0 0.30 18.0
@@ -126,62 +180,16 @@ block BackWallLeft
     size 4.5 6.0 0.35
     color white
 
-block BackWindow1FrameLeft
-    at -4.325 6.00 8.825
-    size 0.35 6.00 0.35
-    color darkgray
-
-block BackWindow1FrameRight
-    at -0.675 6.00 8.825
-    size 0.35 6.00 0.35
-    color darkgray
-
-block BackWindow1FrameTop
-    at -2.50 8.825 8.825
-    size 4.00 0.35 0.35
-    color darkgray
-
-block BackWindow1FrameBottom
-    at -2.50 3.175 8.825
-    size 4.00 0.35 0.35
-    color darkgray
-
-block BackWindow1Glass
+instance BackWindow1 FrontWindow
     at -2.50 6.00 8.825
-    size 3.30 5.30 0.12
-    color #b7ddff
-    transparency 0.45
 
 block BackWallMiddle
     at 0 6.00 8.825
     size 1.0 6.0 0.35
     color white
 
-block BackWindow2FrameLeft
-    at 0.675 6.00 8.825
-    size 0.35 6.00 0.35
-    color darkgray
-
-block BackWindow2FrameRight
-    at 4.325 6.00 8.825
-    size 0.35 6.00 0.35
-    color darkgray
-
-block BackWindow2FrameTop
-    at 2.50 8.825 8.825
-    size 4.00 0.35 0.35
-    color darkgray
-
-block BackWindow2FrameBottom
-    at 2.50 3.175 8.825
-    size 4.00 0.35 0.35
-    color darkgray
-
-block BackWindow2Glass
+instance BackWindow2 FrontWindow
     at 2.50 6.00 8.825
-    size 3.30 5.30 0.12
-    color #b7ddff
-    transparency 0.45
 
 block BackWallRight
     at 6.75 6.00 8.825
@@ -283,62 +291,16 @@ block LeftAnnexFrontLeft
     size 1.8375 6.00 0.35
     color white
 
-block LeftAnnexFrontWindow1FrameLeft
-    at -18.9875 6.00 -5.825
-    size 0.35 6.00 0.35
-    color darkgray
-
-block LeftAnnexFrontWindow1FrameRight
-    at -15.3375 6.00 -5.825
-    size 0.35 6.00 0.35
-    color darkgray
-
-block LeftAnnexFrontWindow1FrameTop
-    at -17.1625 8.825 -5.825
-    size 4.00 0.35 0.35
-    color darkgray
-
-block LeftAnnexFrontWindow1FrameBottom
-    at -17.1625 3.175 -5.825
-    size 4.00 0.35 0.35
-    color darkgray
-
-block LeftAnnexFrontWindow1Glass
+instance LeftAnnexFrontWindow1 FrontWindow
     at -17.1625 6.00 -5.825
-    size 3.30 5.30 0.12
-    color #b7ddff
-    transparency 0.45
 
 block LeftAnnexFrontMiddle
     at -14.825 6.00 -5.825
     size 0.675 6.00 0.35
     color white
 
-block LeftAnnexFrontWindow2FrameLeft
-    at -14.3125 6.00 -5.825
-    size 0.35 6.00 0.35
-    color darkgray
-
-block LeftAnnexFrontWindow2FrameRight
-    at -10.6625 6.00 -5.825
-    size 0.35 6.00 0.35
-    color darkgray
-
-block LeftAnnexFrontWindow2FrameTop
-    at -12.4875 8.825 -5.825
-    size 4.00 0.35 0.35
-    color darkgray
-
-block LeftAnnexFrontWindow2FrameBottom
-    at -12.4875 3.175 -5.825
-    size 4.00 0.35 0.35
-    color darkgray
-
-block LeftAnnexFrontWindow2Glass
+instance LeftAnnexFrontWindow2 FrontWindow
     at -12.4875 6.00 -5.825
-    size 3.30 5.30 0.12
-    color #b7ddff
-    transparency 0.45
 
 block LeftAnnexFrontRight
     at -9.56875 6.00 -5.825
@@ -360,62 +322,16 @@ block LeftAnnexBackLeft
     size 1.8375 6.00 0.35
     color white
 
-block LeftAnnexBackWindow1FrameLeft
-    at -18.9875 6.00 5.825
-    size 0.35 6.00 0.35
-    color darkgray
-
-block LeftAnnexBackWindow1FrameRight
-    at -15.3375 6.00 5.825
-    size 0.35 6.00 0.35
-    color darkgray
-
-block LeftAnnexBackWindow1FrameTop
-    at -17.1625 8.825 5.825
-    size 4.00 0.35 0.35
-    color darkgray
-
-block LeftAnnexBackWindow1FrameBottom
-    at -17.1625 3.175 5.825
-    size 4.00 0.35 0.35
-    color darkgray
-
-block LeftAnnexBackWindow1Glass
+instance LeftAnnexBackWindow1 FrontWindow
     at -17.1625 6.00 5.825
-    size 3.30 5.30 0.12
-    color #b7ddff
-    transparency 0.45
 
 block LeftAnnexBackMiddle
     at -14.825 6.00 5.825
     size 0.675 6.00 0.35
     color white
 
-block LeftAnnexBackWindow2FrameLeft
-    at -14.3125 6.00 5.825
-    size 0.35 6.00 0.35
-    color darkgray
-
-block LeftAnnexBackWindow2FrameRight
-    at -10.6625 6.00 5.825
-    size 0.35 6.00 0.35
-    color darkgray
-
-block LeftAnnexBackWindow2FrameTop
-    at -12.4875 8.825 5.825
-    size 4.00 0.35 0.35
-    color darkgray
-
-block LeftAnnexBackWindow2FrameBottom
-    at -12.4875 3.175 5.825
-    size 4.00 0.35 0.35
-    color darkgray
-
-block LeftAnnexBackWindow2Glass
+instance LeftAnnexBackWindow2 FrontWindow
     at -12.4875 6.00 5.825
-    size 3.30 5.30 0.12
-    color #b7ddff
-    transparency 0.45
 
 block LeftAnnexBackRight
     at -9.56875 6.00 5.825
@@ -437,62 +353,16 @@ block LeftAnnexLeftLeft
     size 0.35 6.00 1.50
     color white
 
-block LeftAnnexWindow1FrameLeft
-    at -20.825 6.00 -4.325
-    size 0.35 6.00 0.35
-    color darkgray
-
-block LeftAnnexWindow1FrameRight
-    at -20.825 6.00 -0.675
-    size 0.35 6.00 0.35
-    color darkgray
-
-block LeftAnnexWindow1FrameTop
-    at -20.825 8.825 -2.50
-    size 0.35 0.35 4.00
-    color darkgray
-
-block LeftAnnexWindow1FrameBottom
-    at -20.825 3.175 -2.50
-    size 0.35 0.35 4.00
-    color darkgray
-
-block LeftAnnexWindow1Glass
+instance LeftAnnexWindow1 SideWindow
     at -20.825 6.00 -2.50
-    size 0.12 5.30 3.30
-    color #b7ddff
-    transparency 0.45
 
 block LeftAnnexLeftMiddle
     at -20.825 6.00 0
     size 0.35 6.00 1.00
     color white
 
-block LeftAnnexWindow2FrameLeft
-    at -20.825 6.00 0.675
-    size 0.35 6.00 0.35
-    color darkgray
-
-block LeftAnnexWindow2FrameRight
-    at -20.825 6.00 4.325
-    size 0.35 6.00 0.35
-    color darkgray
-
-block LeftAnnexWindow2FrameTop
-    at -20.825 8.825 2.50
-    size 0.35 0.35 4.00
-    color darkgray
-
-block LeftAnnexWindow2FrameBottom
-    at -20.825 3.175 2.50
-    size 0.35 0.35 4.00
-    color darkgray
-
-block LeftAnnexWindow2Glass
+instance LeftAnnexWindow2 SideWindow
     at -20.825 6.00 2.50
-    size 0.12 5.30 3.30
-    color #b7ddff
-    transparency 0.45
 
 block LeftAnnexLeftRight
     at -20.825 6.00 5.25
@@ -598,62 +468,16 @@ block RightAnnexBackLeft
     size 1.8375 6.00 0.35
     color white
 
-block RightAnnexBackWindow1FrameLeft
-    at 10.6625 6.00 5.825
-    size 0.35 6.00 0.35
-    color darkgray
-
-block RightAnnexBackWindow1FrameRight
-    at 14.3125 6.00 5.825
-    size 0.35 6.00 0.35
-    color darkgray
-
-block RightAnnexBackWindow1FrameTop
-    at 12.4875 8.825 5.825
-    size 4.00 0.35 0.35
-    color darkgray
-
-block RightAnnexBackWindow1FrameBottom
-    at 12.4875 3.175 5.825
-    size 4.00 0.35 0.35
-    color darkgray
-
-block RightAnnexBackWindow1Glass
+instance RightAnnexBackWindow1 FrontWindow
     at 12.4875 6.00 5.825
-    size 3.30 5.30 0.12
-    color #b7ddff
-    transparency 0.45
 
 block RightAnnexBackMiddle
     at 14.825 6.00 5.825
     size 0.675 6.00 0.35
     color white
 
-block RightAnnexBackWindow2FrameLeft
-    at 15.3375 6.00 5.825
-    size 0.35 6.00 0.35
-    color darkgray
-
-block RightAnnexBackWindow2FrameRight
-    at 18.9875 6.00 5.825
-    size 0.35 6.00 0.35
-    color darkgray
-
-block RightAnnexBackWindow2FrameTop
-    at 17.1625 8.825 5.825
-    size 4.00 0.35 0.35
-    color darkgray
-
-block RightAnnexBackWindow2FrameBottom
-    at 17.1625 3.175 5.825
-    size 4.00 0.35 0.35
-    color darkgray
-
-block RightAnnexBackWindow2Glass
+instance RightAnnexBackWindow2 FrontWindow
     at 17.1625 6.00 5.825
-    size 3.30 5.30 0.12
-    color #b7ddff
-    transparency 0.45
 
 block RightAnnexBackRight
     at 20.08125 6.00 5.825
@@ -675,62 +499,16 @@ block RightAnnexRightLeft
     size 0.35 6.00 1.50
     color white
 
-block RightAnnexWindow1FrameLeft
-    at 20.825 6.00 -4.325
-    size 0.35 6.00 0.35
-    color darkgray
-
-block RightAnnexWindow1FrameRight
-    at 20.825 6.00 -0.675
-    size 0.35 6.00 0.35
-    color darkgray
-
-block RightAnnexWindow1FrameTop
-    at 20.825 8.825 -2.50
-    size 0.35 0.35 4.00
-    color darkgray
-
-block RightAnnexWindow1FrameBottom
-    at 20.825 3.175 -2.50
-    size 0.35 0.35 4.00
-    color darkgray
-
-block RightAnnexWindow1Glass
+instance RightAnnexWindow1 SideWindow
     at 20.825 6.00 -2.50
-    size 0.12 5.30 3.30
-    color #b7ddff
-    transparency 0.45
 
 block RightAnnexRightMiddle
     at 20.825 6.00 0
     size 0.35 6.00 1.00
     color white
 
-block RightAnnexWindow2FrameLeft
-    at 20.825 6.00 0.675
-    size 0.35 6.00 0.35
-    color darkgray
-
-block RightAnnexWindow2FrameRight
-    at 20.825 6.00 4.325
-    size 0.35 6.00 0.35
-    color darkgray
-
-block RightAnnexWindow2FrameTop
-    at 20.825 8.825 2.50
-    size 0.35 0.35 4.00
-    color darkgray
-
-block RightAnnexWindow2FrameBottom
-    at 20.825 3.175 2.50
-    size 0.35 0.35 4.00
-    color darkgray
-
-block RightAnnexWindow2Glass
+instance RightAnnexWindow2 SideWindow
     at 20.825 6.00 2.50
-    size 0.12 5.30 3.30
-    color #b7ddff
-    transparency 0.45
 
 block RightAnnexRightRight
     at 20.825 6.00 5.25

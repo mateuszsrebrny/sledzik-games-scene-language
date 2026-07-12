@@ -6,11 +6,12 @@ Current scope:
 - Parse `.sgsl` files with Python and Lark.
 - Build `preview/scene.json`.
 - View the result in a static Three.js previewer.
+- Support reusable `component` / `instance` scene fragments.
+- Support `rotate` transforms on scene objects and instances.
 
 Not in scope right now:
 - GLB export
 - Groups
-- Rotation
 
 ## Requirements
 
@@ -36,6 +37,7 @@ sgsl/grammar.lark         Grammar
 sgsl/parser.py            Parse + validate scene files
 sgsl/transformer.py       Lark transformer
 sgsl/renderers/html_renderer.py
+docs/                    Language extensions and proposals
 ```
 
 ## SGSL Example
@@ -100,6 +102,10 @@ Notes:
 - `cylinder` is vertical along the Y axis.
 - `frustum` is currently approximated by a stack of thin cylinders in both preview and Roblox output.
 - `ring` is currently approximated by a ring of small block segments in both preview and Roblox output.
+
+Language docs:
+- [Rotation](docs/ROTATE.md)
+- [Components](docs/COMPONENTS.md)
 
 Built-in color names:
 - `white`

@@ -1,0 +1,13 @@
+component PipeElbow
+    param elbowPipeRadius 0.20
+    param elbowBendRadius 1.50
+    param elbowAngle 90
+    param elbowSegments 12
+
+    pipeArc Bend
+        at 0 0 0
+        pipeRadius elbowPipeRadius
+        bendRadius elbowBendRadius
+        angle elbowAngle
+        segments elbowSegments
+        color steelgray

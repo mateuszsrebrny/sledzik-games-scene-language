@@ -1,0 +1,12 @@
+scene ImportShowcase
+
+import "components/pipe_elbow.sgsl"
+
+instance PositiveElbow PipeElbow
+    at -2 1 0
+
+instance NegativeElbow PipeElbow
+    at 2 1 0
+    rotate 25 20 0
+    set elbowAngle -120
+    set elbowBendRadius 2.00

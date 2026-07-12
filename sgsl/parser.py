@@ -25,7 +25,9 @@ _MAX_COMPONENT_DEPTH = 64
 
 
 def parse_text(source: str) -> dict:
-    raw_scene = _parse_source_blocks(source)
+    raw_scene = _parse_source_blocks(source, require_scene=True)
+    if any(statement["type"] == "import" for statement in raw_scene["statements"]):
+        raise SGSLValidationError("Imports require a source file; use parse_file() instead of parse_text().")
     scene = _expand_scene(raw_scene)
     _validate_scene(scene)
     _resolve_scene(scene)
@@ -33,15 +35,20 @@ def parse_text(source: str) -> dict:
 
 
 def parse_file(path: str | Path) -> dict:
-    file_path = Path(path)
-    return parse_text(file_path.read_text(encoding="utf-8"))
+    raw_scene = _load_import_graph(Path(path))
+    scene = _expand_scene(raw_scene)
+    _validate_scene(scene)
+    _resolve_scene(scene)
+    return scene
 
 
-def _parse_source_blocks(source: str) -> dict:
+def _parse_source_blocks(source: str, *, require_scene: bool) -> dict:
     lines = source.splitlines()
-    scene_name = _parse_scene_name(lines)
+    scene_name, statement_lines = _extract_scene(lines)
+    if require_scene and scene_name is None:
+        raise SGSLValidationError("Scene name is missing.")
     statements = []
-    for block in _split_top_level_blocks(lines[1:]):
+    for block in _split_top_level_blocks(statement_lines):
         tree = _STATEMENT_PARSER.parse(block)
         statements.append(SGSLTransformer().transform(tree))
     return {
@@ -50,16 +57,68 @@ def _parse_source_blocks(source: str) -> dict:
     }
 
 
-def _parse_scene_name(lines: list[str]) -> str:
+def _extract_scene(lines: list[str]) -> tuple[str | None, list[str]]:
+    scene_name: str | None = None
+    statement_lines: list[str] = []
     for line in lines:
         stripped = line.strip()
-        if not stripped or stripped.startswith("#"):
+        match = re.fullmatch(r"scene\s+([A-Za-z_][A-Za-z0-9_]*)", stripped) if stripped else None
+        if match:
+            if line.startswith((" ", "\t")):
+                raise SGSLValidationError("Scene declaration must be a top-level statement.")
+            if scene_name is not None:
+                raise SGSLValidationError("A file may declare only one scene.")
+            scene_name = match.group(1)
             continue
-        match = re.fullmatch(r"scene\s+([A-Za-z_][A-Za-z0-9_]*)", stripped)
-        if not match:
-            raise SGSLValidationError("Expected first top-level statement to be 'scene <Name>'.")
-        return match.group(1)
-    raise SGSLValidationError("Scene name is missing.")
+        statement_lines.append(line)
+    return scene_name, statement_lines
+
+
+def _load_import_graph(entry_path: Path) -> dict:
+    entry = entry_path.expanduser().resolve()
+    loaded: set[Path] = set()
+    active: list[Path] = []
+
+    def load(path: Path, importer: Path | None = None, import_text: str | None = None) -> tuple[str | None, list[dict]]:
+        canonical = path.expanduser().resolve()
+        if canonical in active:
+            cycle_start = active.index(canonical)
+            cycle = active[cycle_start:] + [canonical]
+            raise SGSLValidationError(
+                "Import cycle detected:\n" + " -> ".join(item.name for item in cycle)
+            )
+        if canonical in loaded:
+            return None, []
+        if not canonical.is_file():
+            if importer is None:
+                raise SGSLValidationError(f"SGSL file not found: {canonical}")
+            raise SGSLValidationError(
+                f"Could not import {import_text!r}\nfrom {str(importer)!r}."
+            )
+
+        active.append(canonical)
+        raw = _parse_source_blocks(
+            canonical.read_text(encoding="utf-8"),
+            require_scene=canonical == entry,
+        )
+        statements: list[dict] = []
+        for statement in raw["statements"]:
+            if statement["type"] != "import":
+                continue
+            imported_path = canonical.parent / statement["path"]
+            _, imported_statements = load(imported_path, canonical, statement["path"])
+            statements.extend(imported_statements)
+        for statement in raw["statements"]:
+            if statement["type"] == "import":
+                continue
+            statement["_source_path"] = str(canonical)
+            statements.append(statement)
+        active.pop()
+        loaded.add(canonical)
+        return raw["scene"], statements
+
+    scene_name, statements = load(entry)
+    return {"scene": scene_name, "statements": statements}
 
 
 def _split_top_level_blocks(lines: list[str]) -> list[str]:
@@ -89,11 +148,21 @@ def _expand_scene(raw_scene: dict) -> dict:
     seen_instance_names: set[str] = set()
 
     for statement in raw_scene.get("statements", []):
+        if statement["type"] != "component_definition":
+            continue
+        previous = components.get(statement["name"])
+        if previous is not None:
+            previous_path = previous.get("_source_path", "<input>")
+            current_path = statement.get("_source_path", "<input>")
+            raise SGSLValidationError(
+                f"Component {statement['name']!r} is defined in both:\n"
+                f"{previous_path}\n{current_path}"
+            )
+        components[statement["name"]] = statement
+
+    for statement in raw_scene.get("statements", []):
         statement_type = statement["type"]
         if statement_type == "component_definition":
-            if statement["name"] in components:
-                raise SGSLValidationError(f"Duplicate component definition {statement['name']!r}.")
-            components[statement["name"]] = statement
             continue
 
         if statement_type == "component_instance":

@@ -5,6 +5,9 @@ scene: "scene" NAME statement*
 statement: object
          | component
          | instance
+         | import_stmt
+
+import_stmt: "import" ESCAPED_STRING
 
 object: block
       | cylinder
@@ -112,5 +115,6 @@ NUMBER: /-?\d+(\.\d+)?/
 COMMENT: /#(?![0-9a-fA-F]{6}\b)[^\n]*/
 
 %import common.WS
+%import common.ESCAPED_STRING
 %ignore WS
 %ignore COMMENT

@@ -116,6 +116,7 @@ Language docs:
 - [Components](docs/COMPONENTS.md)
 - [Nested components](docs/NESTED_COMPONENTS.md)
 - [Pipe arcs](docs/PIPE_ARC.md)
+- [Imports](docs/IMPORT.md)
 
 Components may contain instances of other components. For example:
 
@@ -132,6 +133,22 @@ component Window
 
 Nested position and rotation are composed through the complete component tree.
 Expanded objects use full names such as `Factory01.Hall01.Window01.Glass`.
+
+SGSL files can import reusable component libraries. Paths are relative to the
+file containing the import:
+
+```sgsl
+scene Factory
+
+import "components/pipe_elbow.sgsl"
+
+instance Outlet PipeElbow
+    at 4 2 0
+```
+
+Imported files do not need a `scene` declaration. Imports are transitive,
+deduplicated by canonical path, and checked for cycles and duplicate component
+names.
 
 Built-in color names:
 - `white`

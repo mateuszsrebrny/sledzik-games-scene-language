@@ -1,3 +1,5 @@
+import json
+
 from lark import Transformer
 
 
@@ -13,6 +15,9 @@ class SGSLTransformer(Transformer):
 
     def COLOR(self, value):
         return str(value)
+
+    def ESCAPED_STRING(self, value):
+        return json.loads(str(value))
 
     def number(self, items):
         return ("number", items[0])
@@ -88,6 +93,9 @@ class SGSLTransformer(Transformer):
 
     def set_param(self, items):
         return ("parameter_overrides", (items[0], items[1]))
+
+    def import_stmt(self, items):
+        return {"type": "import", "path": items[0]}
 
     def property(self, items):
         return items[0]

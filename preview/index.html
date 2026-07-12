@@ -110,6 +110,8 @@
         });
         const mesh = new THREE.Mesh(geometry, material);
         mesh.position.set(...obj.position);
+        const [rx, ry, rz] = obj.rotation.map(THREE.MathUtils.degToRad);
+        mesh.rotation.set(rx, ry, rz);
         mesh.name = obj.name;
         scene.add(mesh);
       }

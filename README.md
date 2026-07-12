@@ -72,6 +72,7 @@ Supported object types:
 Common properties:
 - `at x y z`
 - `anchor x y z`
+- `rotate x y z`
 - `color name-or-hex`
 - `transparency value`
 
@@ -95,6 +96,7 @@ Ring properties:
 - `segments integer`
 
 Notes:
+- `rotate` uses Euler angles in degrees in `X Y Z` order.
 - `cylinder` is vertical along the Y axis.
 - `frustum` is currently approximated by a stack of thin cylinders in both preview and Roblox output.
 - `ring` is currently approximated by a ring of small block segments in both preview and Roblox output.

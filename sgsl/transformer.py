@@ -44,6 +44,9 @@ class SGSLTransformer(Transformer):
     def anchor(self, items):
         return ("anchor", list(items))
 
+    def rotate(self, items):
+        return ("rotation", list(items))
+
     def color(self, items):
         return ("color", items[0])
 

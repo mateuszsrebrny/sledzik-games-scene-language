@@ -19,6 +19,7 @@ def _render_object(obj: dict) -> dict:
         "type": obj["type"],
         "name": obj["name"],
         "position": obj["position"],
+        "rotation": obj["rotation"],
         "color": resolve_color(obj["color"]),
         "transparency": obj["transparency"],
     }

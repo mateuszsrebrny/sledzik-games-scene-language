@@ -67,6 +67,7 @@ def _validate_object(obj: dict) -> None:
         raise SGSLValidationError(f"Unsupported object type: {object_type}")
 
     _validate_anchor(obj)
+    _validate_rotation(obj)
     _validate_transparency(obj)
 
 
@@ -129,6 +130,14 @@ def _validate_anchor(obj: dict) -> None:
     if anchor[2] not in allowed_z:
         raise SGSLValidationError(
             f"Block {obj['name']} has invalid Z anchor {anchor[2]!r}; expected front, center, or back"
+        )
+
+
+def _validate_rotation(obj: dict) -> None:
+    rotation = obj.setdefault("rotation", [0.0, 0.0, 0.0])
+    if len(rotation) != 3:
+        raise SGSLValidationError(
+            f"{obj['type'].capitalize()} {obj['name']} must have exactly 3 rotation values"
         )
 
 

@@ -25,6 +25,7 @@ property: at
         | height
         | segments
         | anchor
+        | rotate
         | color
         | transparency
 
@@ -47,6 +48,8 @@ height: "height" NUMBER
 segments: "segments" NUMBER
 
 anchor: "anchor" NAME NAME NAME
+
+rotate: "rotate" NUMBER NUMBER NUMBER
 
 color: "color" COLOR
 

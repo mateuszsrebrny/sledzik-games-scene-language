@@ -134,21 +134,23 @@ def _render_object(obj: dict, red: int, green: int, blue: int) -> list[str]:
 
 def _render_part(obj: dict, red: int, green: int, blue: int) -> list[str]:
     x, y, z = obj["position"]
+    rx, ry, rz = obj["rotation"]
     transparency = obj["transparency"]
     material = "Glass" if transparency > 0 else "SmoothPlastic"
     color_expr = f"Color3.fromRGB({red}, {green}, {blue})"
     material_expr = f"Enum.Material.{material}"
+    rotation_expr = f"Vector3.new({rx}, {ry}, {rz})"
 
     if obj["type"] == "block":
         sx, sy, sz = obj["size"]
         creator = (
             f"Builder.makeBlock(sceneFolder, {obj['name']!r}, "
-            f"Vector3.new({sx}, {sy}, {sz}), Vector3.new({x}, {y}, {z}), {color_expr}, {material_expr})"
+            f"Vector3.new({sx}, {sy}, {sz}), Vector3.new({x}, {y}, {z}), {color_expr}, {material_expr}, {rotation_expr})"
         )
     elif obj["type"] == "cylinder":
         creator = (
             f"Builder.makeCylinder(sceneFolder, {obj['name']!r}, "
-            f"{obj['radius']}, {obj['height']}, Vector3.new({x}, {y}, {z}), {color_expr}, {material_expr})"
+            f"{obj['radius']}, {obj['height']}, Vector3.new({x}, {y}, {z}), {color_expr}, {material_expr}, {rotation_expr})"
         )
     else:
         raise ValueError(f"Unsupported render object type: {obj['type']}")
@@ -164,6 +166,7 @@ def _render_part(obj: dict, red: int, green: int, blue: int) -> list[str]:
 
 def _render_frustum(obj: dict, red: int, green: int, blue: int) -> list[str]:
     x, y, z = obj["position"]
+    rx, ry, rz = obj["rotation"]
     transparency = obj["transparency"]
     material = "Glass" if transparency > 0 else "SmoothPlastic"
     return [
@@ -177,7 +180,8 @@ def _render_frustum(obj: dict, red: int, green: int, blue: int) -> list[str]:
         f"        Vector3.new({x}, {y}, {z}),",
         f"        Color3.fromRGB({red}, {green}, {blue}),",
         f"        {obj['segments']},",
-        f"        Enum.Material.{material}",
+        f"        Enum.Material.{material},",
+        f"        Vector3.new({rx}, {ry}, {rz})",
         "    )",
         f"    setTransparency(model, {transparency})",
         "end",

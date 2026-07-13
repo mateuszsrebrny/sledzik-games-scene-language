@@ -79,6 +79,12 @@ Common properties:
 - `color name-or-hex`
 - `transparency value`
 
+Instance properties:
+- `at x y z`
+- `rotate x y z`
+- `scale value`
+- `set parameter expression`
+
 Block properties:
 - `size x y z`
 
@@ -117,6 +123,7 @@ Language docs:
 - [Nested components](docs/NESTED_COMPONENTS.md)
 - [Pipe arcs](docs/PIPE_ARC.md)
 - [Imports](docs/IMPORT.md)
+- [Instance scale](docs/SCALE.md)
 
 Components may contain instances of other components. For example:
 

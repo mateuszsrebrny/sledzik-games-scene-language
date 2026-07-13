@@ -37,6 +37,7 @@ instance: "instance" NAME NAME instance_property*
 
 instance_property: at
                  | rotate
+                 | scale
                  | set_param
 
 set_param: "set" NAME expression
@@ -85,6 +86,8 @@ segments: "segments" expression
 anchor: "anchor" NAME NAME NAME
 
 rotate: "rotate" expression expression expression
+
+scale: "scale" expression
 
 color: "color" COLOR
 

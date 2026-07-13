@@ -82,6 +82,9 @@ class SGSLTransformer(Transformer):
     def rotate(self, items):
         return ("rotation", list(items))
 
+    def scale(self, items):
+        return ("scale", items[0])
+
     def color(self, items):
         return ("color", items[0])
 

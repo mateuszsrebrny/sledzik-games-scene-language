@@ -10,3 +10,7 @@ instance NegativeElbow PipeElbow
     rotate 25 20 0
     set elbowAngle -120
     set elbowBendRadius 2.00
+
+instance HalfSizeElbow PipeElbow
+    at 0 1 4
+    scale 0.5

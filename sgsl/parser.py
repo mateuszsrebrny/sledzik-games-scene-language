@@ -191,6 +191,7 @@ def _expand_instance(
     components: dict[str, dict],
     parent_transform: list[list[float]] | None = None,
     parent_parameters: dict[str, float] | None = None,
+    parent_scale: float = 1.0,
     path: str | None = None,
     depth: int = 0,
 ) -> list[dict]:
@@ -220,9 +221,15 @@ def _expand_instance(
         instance.get("rotation", [_number_node(0), _number_node(0), _number_node(0)]),
         expression_environment,
     )
+    instance_scale = _evaluate_expression(instance.get("scale", _number_node(1)), expression_environment)
+    if instance_scale <= 0:
+        raise SGSLValidationError(
+            f"Instance {instance['name']!r} has invalid scale {instance_scale!r}; expected a positive number"
+        )
+    world_scale = parent_scale * instance_scale
     world_transform = _multiply_transforms(
         parent_transform,
-        _make_transform(instance_at, instance_rotation),
+        _make_transform(instance_at, instance_rotation, instance_scale),
     )
     instance_path = f"{path}.{instance['name']}" if path else instance["name"]
 
@@ -235,6 +242,7 @@ def _expand_instance(
                     components,
                     world_transform,
                     parameter_values,
+                    world_scale,
                     instance_path,
                     depth + 1,
                 )
@@ -252,6 +260,7 @@ def _expand_instance(
         obj["at"] = obj["position"]
         obj["anchor"] = ["center", "center", "center"]
         obj["rotation"] = _transform_rotation(object_transform)
+        _scale_object_dimensions(obj, world_scale)
         obj["name"] = f"{instance_path}.{obj['name']}"
         expanded.append(obj)
 
@@ -359,16 +368,20 @@ def _identity_transform() -> list[list[float]]:
     ]
 
 
-def _make_transform(position: list[float], rotation: list[float]) -> list[list[float]]:
+def _make_transform(
+    position: list[float],
+    rotation: list[float],
+    scale: float = 1.0,
+) -> list[list[float]]:
     rx, ry, rz = (math.radians(value) for value in rotation)
     cos_x, sin_x = math.cos(rx), math.sin(rx)
     cos_y, sin_y = math.cos(ry), math.sin(ry)
     cos_z, sin_z = math.cos(rz), math.sin(rz)
 
     return [
-        [cos_z * cos_y, cos_z * sin_y * sin_x - sin_z * cos_x, cos_z * sin_y * cos_x + sin_z * sin_x, position[0]],
-        [sin_z * cos_y, sin_z * sin_y * sin_x + cos_z * cos_x, sin_z * sin_y * cos_x - cos_z * sin_x, position[1]],
-        [-sin_y, cos_y * sin_x, cos_y * cos_x, position[2]],
+        [scale * cos_z * cos_y, scale * (cos_z * sin_y * sin_x - sin_z * cos_x), scale * (cos_z * sin_y * cos_x + sin_z * sin_x), position[0]],
+        [scale * sin_z * cos_y, scale * (sin_z * sin_y * sin_x + cos_z * cos_x), scale * (sin_z * sin_y * cos_x - cos_z * sin_x), position[1]],
+        [-scale * sin_y, scale * cos_y * sin_x, scale * cos_y * cos_x, position[2]],
         [0.0, 0.0, 0.0, 1.0],
     ]
 
@@ -386,15 +399,34 @@ def _transform_position(transform: list[list[float]]) -> list[float]:
 
 def _transform_rotation(transform: list[list[float]]) -> list[float]:
     # Extract XYZ Euler angles from the Rz * Ry * Rx rotation matrix.
-    sin_y = max(-1.0, min(1.0, -transform[2][0]))
+    scale = math.sqrt(sum(transform[row][0] ** 2 for row in range(3)))
+    rotation = [[transform[row][column] / scale for column in range(3)] for row in range(3)]
+    sin_y = max(-1.0, min(1.0, -rotation[2][0]))
     y = math.asin(sin_y)
     if abs(math.cos(y)) > 1e-9:
-        x = math.atan2(transform[2][1], transform[2][2])
-        z = math.atan2(transform[1][0], transform[0][0])
+        x = math.atan2(rotation[2][1], rotation[2][2])
+        z = math.atan2(rotation[1][0], rotation[0][0])
     else:
-        x = math.atan2(-transform[1][2], transform[1][1])
+        x = math.atan2(-rotation[1][2], rotation[1][1])
         z = 0.0
     return [math.degrees(x), math.degrees(y), math.degrees(z)]
+
+
+def _scale_object_dimensions(obj: dict, scale: float) -> None:
+    if "size" in obj:
+        obj["size"] = [value * scale for value in obj["size"]]
+    for field in (
+        "radius",
+        "radius_inner",
+        "radius_outer",
+        "radius_top",
+        "radius_bottom",
+        "pipe_radius",
+        "bend_radius",
+        "height",
+    ):
+        if field in obj:
+            obj[field] *= scale
 
 
 def _validate_scene(scene: dict) -> None:

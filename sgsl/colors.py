@@ -1,19 +1,39 @@
 COLORS = {
-    "red": "#d83a34",
+    "black": "#000000",
     "white": "#ffffff",
-    "darkgray": "#5a5a5a",
-    "gray": "#969696",
-    "steelgray": "#8a949e",
+    "gray": "#808080",
     "lightgray": "#d2d2d2",
+    "darkgray": "#5a5a5a",
+    "steelgray": "#8a949e",
+    "silver": "#c0c0c0",
+    "red": "#d83a34",
+    "darkred": "#8b0000",
+    "pink": "#ff69b4",
+    "purple": "#800080",
+    "magenta": "#ff00ff",
+    "fuchsia": "#ff00ff",
+    "brown": "#8b4513",
+    "orange": "#ff9800",
+    "gold": "#ffd700",
+    "yellow": "#ffeb3b",
+    "olive": "#808000",
+    "green": "#4caf50",
+    "lime": "#00ff00",
+    "teal": "#008080",
+    "cyan": "#00ffff",
+    "aqua": "#00ffff",
     "blue": "#3278ff",
+    "navy": "#000080",
+    "lightblue": "#b7ddff",
 }
 
 
 def resolve_color(color: str) -> str:
-    if color.startswith("#"):
-        return color.lower()
+    normalized = color.lower()
+    if normalized.startswith("#"):
+        return normalized
     try:
-        return COLORS[color].lower()
+        return COLORS[normalized].lower()
     except KeyError as exc:
         raise ValueError(f"Unknown color: {color}") from exc
 

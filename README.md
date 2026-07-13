@@ -158,12 +158,20 @@ deduplicated by canonical path, and checked for cycles and duplicate component
 names.
 
 Built-in color names:
+- `black`
 - `white`
 - `gray`
 - `lightgray`
 - `blue`
 - `darkgray`
 - `steelgray`
+- `lightblue`
+- `green`
+- `red`
+- `orange`
+- `yellow`
+- `brown`
+- `silver`
 
 ## Build Preview
 

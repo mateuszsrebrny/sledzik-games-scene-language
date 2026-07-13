@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from sgsl.colors import color_to_rgb
-from sgsl.primitives import iter_render_objects
+from sgsl.primitives import _expand_spherical_cap, iter_render_objects
 
 
 def _load_builder_source() -> str:
@@ -127,6 +127,8 @@ def _indent_lines(lines: list[str], spaces: int = 4) -> list[str]:
 def _render_object(obj: dict, red: int, green: int, blue: int) -> list[str]:
     if obj["type"] == "frustum":
         return _render_frustum(obj, red, green, blue)
+    if obj["type"] == "spherical_cap":
+        return _render_spherical_cap(obj, red, green, blue)
     if obj["type"] == "ring":
         return _render_ring(obj, red, green, blue)
     if obj["type"] == "pipe_arc":
@@ -193,6 +195,13 @@ def _render_frustum(obj: dict, red: int, green: int, blue: int) -> list[str]:
 
 def _render_ring(obj: dict, red: int, green: int, blue: int) -> list[str]:
     return _render_expanded(obj, red, green, blue)
+
+
+def _render_spherical_cap(obj: dict, red: int, green: int, blue: int) -> list[str]:
+    lines: list[str] = []
+    for segment in _expand_spherical_cap(obj):
+        lines.extend(_render_frustum(segment, red, green, blue))
+    return lines
 
 
 def _render_expanded(obj: dict, red: int, green: int, blue: int) -> list[str]:

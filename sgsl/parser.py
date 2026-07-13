@@ -310,6 +310,8 @@ def _evaluate_object_expressions(obj: dict, environment: dict[str, float]) -> No
         obj["radius_top"] = _evaluate_expression(obj["radius_top"], environment)
     if "radius_bottom" in obj:
         obj["radius_bottom"] = _evaluate_expression(obj["radius_bottom"], environment)
+    if "base_radius" in obj:
+        obj["base_radius"] = _evaluate_expression(obj["base_radius"], environment)
     if "pipe_radius" in obj:
         obj["pipe_radius"] = _evaluate_expression(obj["pipe_radius"], environment)
     if "bend_radius" in obj:
@@ -421,6 +423,7 @@ def _scale_object_dimensions(obj: dict, scale: float) -> None:
         "radius_outer",
         "radius_top",
         "radius_bottom",
+        "base_radius",
         "pipe_radius",
         "bend_radius",
         "height",
@@ -461,6 +464,11 @@ def _validate_object(obj: dict) -> None:
             raise SGSLValidationError(
                 f"Ring {obj['name']} has invalid radii; radius_inner must be smaller than radius_outer"
             )
+    elif object_type == "spherical_cap":
+        _validate_required_fields(obj, ("at", "base_radius", "height", "segments", "color"))
+        _validate_positive_number(obj, "base_radius")
+        _validate_positive_number(obj, "height")
+        _validate_positive_integer(obj, "segments")
     elif object_type == "pipe_arc":
         _validate_required_fields(obj, ("at", "pipe_radius", "bend_radius", "angle", "segments", "color"))
         _validate_positive_number(obj, "pipe_radius")
@@ -602,6 +610,10 @@ def _get_object_bounds(obj: dict) -> tuple[float, float, float]:
 
     if obj["type"] == "ring":
         diameter = obj["radius_outer"] * 2
+        return diameter, obj["height"], diameter
+
+    if obj["type"] == "spherical_cap":
+        diameter = obj["base_radius"] * 2
         return diameter, obj["height"], diameter
 
     if obj["type"] == "pipe_arc":

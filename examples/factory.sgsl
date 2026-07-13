@@ -6,9 +6,8 @@ component StorageTank
     param bodyHeight 7.00
     param bottomHeight 1.00
     param topHeight 1.00
-    param roofHeight 0.50
-    param roofTopRadius 0.15
-    param roofSegments 8
+    param roofHeight 0.65
+    param roofSegments 6
 
     cylinder Bottom
         at 0 (bottomHeight / 2) 0
@@ -28,10 +27,9 @@ component StorageTank
         height topHeight
         color gray
 
-    frustum Cap
+    sphericalCap Cap
         at 0 (bottomHeight + bodyHeight + topHeight + roofHeight / 2) 0
-        radius_bottom 0.35
-        radius_top roofTopRadius
+        baseRadius 0.35
         height roofHeight
         segments roofSegments
         color gray

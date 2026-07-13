@@ -61,6 +61,9 @@ class SGSLTransformer(Transformer):
     def radius_bottom(self, items):
         return ("radius_bottom", items[0])
 
+    def base_radius(self, items):
+        return ("base_radius", items[0])
+
     def pipe_radius(self, items):
         return ("pipe_radius", items[0])
 
@@ -126,6 +129,9 @@ class SGSLTransformer(Transformer):
 
     def ring(self, items):
         return self._build_object("ring", items)
+
+    def spherical_cap(self, items):
+        return self._build_object("spherical_cap", items)
 
     def pipe_arc(self, items):
         return self._build_object("pipe_arc", items)

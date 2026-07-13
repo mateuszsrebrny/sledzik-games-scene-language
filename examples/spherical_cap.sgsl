@@ -1,0 +1,33 @@
+scene SphericalCapShowcase
+
+block Floor
+    at 0 -0.15 0
+    size 18 0.30 12
+    color lightgray
+
+cylinder TankBody
+    at -4 3 0
+    radius 1.8
+    height 6
+    color gray
+
+sphericalCap TankTop
+    at -4 6.325 0
+    baseRadius 1.8
+    height 0.65
+    segments 8
+    color lightgray
+
+cylinder DomePillar
+    at 4 2.75 0
+    radius 1.2
+    height 5.5
+    color white
+
+sphericalCap DomeTop
+    at 4 5.325 0
+    baseRadius 1.2
+    height 0.65
+    segments 8
+    rotate 180 0 0
+    color darkgray

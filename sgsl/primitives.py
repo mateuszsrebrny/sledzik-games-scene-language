@@ -1,17 +1,23 @@
 from __future__ import annotations
 
 import math
+from collections import deque
 
 
 def iter_render_objects(scene: dict) -> list[dict]:
     objects: list[dict] = []
-    for obj in scene["objects"]:
-        if obj["type"] == "frustum":
-            objects.extend(_expand_frustum(obj))
+    queue = deque(scene["objects"])
+
+    while queue:
+        obj = queue.popleft()
+        if obj["type"] == "spherical_cap":
+            queue.extend(_expand_spherical_cap(obj))
+        elif obj["type"] == "frustum":
+            queue.extend(_expand_frustum(obj))
         elif obj["type"] == "ring":
-            objects.extend(_expand_ring(obj))
+            queue.extend(_expand_ring(obj))
         elif obj["type"] == "pipe_arc":
-            objects.extend(_expand_pipe_arc(obj))
+            queue.extend(_expand_pipe_arc(obj))
         else:
             objects.append(obj)
     return objects
@@ -43,6 +49,47 @@ def _expand_frustum(obj: dict) -> list[dict]:
         )
 
     return expanded
+
+
+def _expand_spherical_cap(obj: dict) -> list[dict]:
+    segments = obj["segments"]
+    segment_height = obj["height"] / segments
+    center_x, center_y, center_z = obj["position"]
+    bottom_y = center_y - obj["height"] / 2
+    sphere_radius = (obj["base_radius"] ** 2 + obj["height"] ** 2) / (2 * obj["height"])
+    sphere_center_y = bottom_y + obj["height"] - sphere_radius
+
+    expanded: list[dict] = []
+    for index in range(segments):
+        t0 = index / segments
+        t1 = (index + 1) / segments
+        y0 = bottom_y + obj["height"] * t0
+        y1 = bottom_y + obj["height"] * t1
+        radius_bottom = _spherical_cap_radius(y0, sphere_center_y, sphere_radius)
+        radius_top = _spherical_cap_radius(y1, sphere_center_y, sphere_radius)
+        segment_center_y = bottom_y + segment_height * (index + 0.5)
+        offset = _rotate_vector([0.0, segment_center_y - center_y, 0.0], obj["rotation"])
+        expanded.append(
+            {
+                "type": "frustum",
+                "name": f"{obj['name']}_segment_{index + 1:02d}",
+                "position": [center_x + offset[0], center_y + offset[1], center_z + offset[2]],
+                "radius_bottom": radius_bottom,
+                "radius_top": radius_top,
+                "height": segment_height,
+                "segments": 1,
+                "rotation": obj["rotation"],
+                "color": obj["color"],
+                "transparency": obj["transparency"],
+            }
+        )
+
+    return expanded
+
+
+def _spherical_cap_radius(y: float, sphere_center_y: float, sphere_radius: float) -> float:
+    offset = sphere_radius**2 - (y - sphere_center_y) ** 2
+    return math.sqrt(max(0.0, offset))
 
 
 def _lerp(start: float, end: float, t: float) -> float:

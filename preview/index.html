@@ -94,6 +94,10 @@
       stats.textContent = `${payload.objects.length} object(s)`;
 
       for (const obj of payload.objects) {
+        if (obj.transparency >= 1) {
+          continue;
+        }
+
         let geometry;
         if (obj.type === "block") {
           geometry = new THREE.BoxGeometry(...obj.size);
@@ -107,6 +111,7 @@
           color: obj.color,
           transparent: obj.transparency > 0,
           opacity: 1 - obj.transparency,
+          depthWrite: obj.transparency <= 0,
         });
         const mesh = new THREE.Mesh(geometry, material);
         mesh.position.set(...obj.position);

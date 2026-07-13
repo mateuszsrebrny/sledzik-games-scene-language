@@ -241,3 +241,6 @@ http://localhost:8000/
 - `build/*.lua` is generated from SGSL sources.
 - JavaScript does not parse SGSL directly.
 - The browser loads local Three.js files from `preview/vendor/`.
+- Fully transparent objects are skipped by the viewer. Partially transparent
+  objects do not write to the depth buffer, preventing them from masking other
+  transparent geometry as the camera moves.

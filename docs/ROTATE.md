@@ -87,6 +87,9 @@ Order:
 rotate X Y Z
 ```
 
+The rotations use the same intrinsic XYZ convention as Three.js Euler XYZ
+and Roblox `CFrame.Angles`: the resulting transform is `Rx * Ry * Rz`.
+
 Examples:
 
 ```sgsl

@@ -133,7 +133,7 @@ def _expand_pipe_arc(obj: dict) -> list[dict]:
     direction = 1.0 if total_angle > 0 else -1.0
     segment_angle = abs(total_angle) / segments
     segment_length = obj["bend_radius"] * abs(total_angle) / segments
-    origin_x, origin_y, origin_z = obj["position"]
+    parent_transform = _make_transform(obj["position"], obj["rotation"])
 
     expanded: list[dict] = []
     for index in range(segments):
@@ -143,17 +143,17 @@ def _expand_pipe_arc(obj: dict) -> list[dict]:
             direction * obj["bend_radius"] * (1.0 - math.cos(midpoint_angle)),
             0.0,
         ]
-        offset = _rotate_vector(local_position, obj["rotation"])
         tangent_rotation = [0.0, 0.0, direction * midpoint_angle * 180.0 / math.pi - 90.0]
-        rotation = _compose_rotations(obj["rotation"], tangent_rotation)
+        local_transform = _make_transform(local_position, tangent_rotation)
+        world_transform = _multiply_transforms(parent_transform, local_transform)
         expanded.append(
             {
                 "type": "cylinder",
                 "name": f"{obj['name']}_segment_{index + 1:02d}",
-                "position": [origin_x + offset[0], origin_y + offset[1], origin_z + offset[2]],
+                "position": _transform_position(world_transform),
                 "radius": obj["pipe_radius"],
                 "height": segment_length,
-                "rotation": rotation,
+                "rotation": _transform_rotation(world_transform),
                 "color": obj["color"],
                 "transparency": obj["transparency"],
             }
@@ -162,49 +162,52 @@ def _expand_pipe_arc(obj: dict) -> list[dict]:
     return expanded
 
 
-def _compose_rotations(parent: list[float], local: list[float]) -> list[float]:
-    matrix = _multiply_rotation_matrices(_rotation_matrix(parent), _rotation_matrix(local))
-    sin_y = max(-1.0, min(1.0, -matrix[2][0]))
-    y = math.asin(sin_y)
-    if abs(math.cos(y)) > 1e-9:
-        x = math.atan2(matrix[2][1], matrix[2][2])
-        z = math.atan2(matrix[1][0], matrix[0][0])
-    else:
-        x = math.atan2(-matrix[1][2], matrix[1][1])
-        z = 0.0
-    return [math.degrees(x), math.degrees(y), math.degrees(z)]
-
-
 def _rotation_matrix(rotation: list[float]) -> list[list[float]]:
     rx, ry, rz = (math.radians(value) for value in rotation)
     cos_x, sin_x = math.cos(rx), math.sin(rx)
     cos_y, sin_y = math.cos(ry), math.sin(ry)
     cos_z, sin_z = math.cos(rz), math.sin(rz)
     return [
-        [cos_z * cos_y, cos_z * sin_y * sin_x - sin_z * cos_x, cos_z * sin_y * cos_x + sin_z * sin_x],
-        [sin_z * cos_y, sin_z * sin_y * sin_x + cos_z * cos_x, sin_z * sin_y * cos_x - cos_z * sin_x],
-        [-sin_y, cos_y * sin_x, cos_y * cos_x],
+        [cos_y * cos_z, -cos_y * sin_z, sin_y],
+        [sin_x * sin_y * cos_z + cos_x * sin_z, -sin_x * sin_y * sin_z + cos_x * cos_z, -sin_x * cos_y],
+        [-cos_x * sin_y * cos_z + sin_x * sin_z, cos_x * sin_y * sin_z + sin_x * cos_z, cos_x * cos_y],
     ]
 
 
-def _multiply_rotation_matrices(left: list[list[float]], right: list[list[float]]) -> list[list[float]]:
+def _make_transform(position: list[float], rotation: list[float]) -> list[list[float]]:
+    rotation_matrix = _rotation_matrix(rotation)
     return [
-        [sum(left[row][index] * right[index][column] for index in range(3)) for column in range(3)]
-        for row in range(3)
+        [rotation_matrix[0][0], rotation_matrix[0][1], rotation_matrix[0][2], position[0]],
+        [rotation_matrix[1][0], rotation_matrix[1][1], rotation_matrix[1][2], position[1]],
+        [rotation_matrix[2][0], rotation_matrix[2][1], rotation_matrix[2][2], position[2]],
+        [0.0, 0.0, 0.0, 1.0],
     ]
+
+
+def _multiply_transforms(left: list[list[float]], right: list[list[float]]) -> list[list[float]]:
+    return [
+        [sum(left[row][index] * right[index][column] for index in range(4)) for column in range(4)]
+        for row in range(4)
+    ]
+
+
+def _transform_position(transform: list[list[float]]) -> list[float]:
+    return [transform[0][3], transform[1][3], transform[2][3]]
+
+
+def _transform_rotation(transform: list[list[float]]) -> list[float]:
+    rotation = [[transform[row][column] for column in range(3)] for row in range(3)]
+    sin_y = max(-1.0, min(1.0, rotation[0][2]))
+    y = math.asin(sin_y)
+    if abs(math.cos(y)) > 1e-9:
+        x = math.atan2(-rotation[1][2], rotation[2][2])
+        z = math.atan2(-rotation[0][1], rotation[0][0])
+    else:
+        x = math.atan2(rotation[2][1], rotation[1][1])
+        z = 0.0
+    return [math.degrees(x), math.degrees(y), math.degrees(z)]
 
 
 def _rotate_vector(vector: list[float], rotation: list[float]) -> list[float]:
-    x, y, z = vector
-    rx, ry, rz = (math.radians(value) for value in rotation)
-
-    cos_x, sin_x = math.cos(rx), math.sin(rx)
-    y, z = y * cos_x - z * sin_x, y * sin_x + z * cos_x
-
-    cos_y, sin_y = math.cos(ry), math.sin(ry)
-    x, z = x * cos_y + z * sin_y, -x * sin_y + z * cos_y
-
-    cos_z, sin_z = math.cos(rz), math.sin(rz)
-    x, y = x * cos_z - y * sin_z, x * sin_z + y * cos_z
-
-    return [x, y, z]
+    matrix = _rotation_matrix(rotation)
+    return [sum(matrix[row][column] * vector[column] for column in range(3)) for row in range(3)]

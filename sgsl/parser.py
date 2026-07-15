@@ -381,9 +381,9 @@ def _make_transform(
     cos_z, sin_z = math.cos(rz), math.sin(rz)
 
     return [
-        [scale * cos_z * cos_y, scale * (cos_z * sin_y * sin_x - sin_z * cos_x), scale * (cos_z * sin_y * cos_x + sin_z * sin_x), position[0]],
-        [scale * sin_z * cos_y, scale * (sin_z * sin_y * sin_x + cos_z * cos_x), scale * (sin_z * sin_y * cos_x - cos_z * sin_x), position[1]],
-        [-scale * sin_y, scale * cos_y * sin_x, scale * cos_y * cos_x, position[2]],
+        [scale * cos_y * cos_z, -scale * cos_y * sin_z, scale * sin_y, position[0]],
+        [scale * (sin_x * sin_y * cos_z + cos_x * sin_z), scale * (-sin_x * sin_y * sin_z + cos_x * cos_z), -scale * sin_x * cos_y, position[1]],
+        [scale * (-cos_x * sin_y * cos_z + sin_x * sin_z), scale * (cos_x * sin_y * sin_z + sin_x * cos_z), scale * cos_x * cos_y, position[2]],
         [0.0, 0.0, 0.0, 1.0],
     ]
 
@@ -400,16 +400,16 @@ def _transform_position(transform: list[list[float]]) -> list[float]:
 
 
 def _transform_rotation(transform: list[list[float]]) -> list[float]:
-    # Extract XYZ Euler angles from the Rz * Ry * Rx rotation matrix.
+    # Match Three.js Euler XYZ and Roblox CFrame.Angles (Rx * Ry * Rz).
     scale = math.sqrt(sum(transform[row][0] ** 2 for row in range(3)))
     rotation = [[transform[row][column] / scale for column in range(3)] for row in range(3)]
-    sin_y = max(-1.0, min(1.0, -rotation[2][0]))
+    sin_y = max(-1.0, min(1.0, rotation[0][2]))
     y = math.asin(sin_y)
     if abs(math.cos(y)) > 1e-9:
-        x = math.atan2(rotation[2][1], rotation[2][2])
-        z = math.atan2(rotation[1][0], rotation[0][0])
+        x = math.atan2(-rotation[1][2], rotation[2][2])
+        z = math.atan2(-rotation[0][1], rotation[0][0])
     else:
-        x = math.atan2(-rotation[1][2], rotation[1][1])
+        x = math.atan2(rotation[2][1], rotation[1][1])
         z = 0.0
     return [math.degrees(x), math.degrees(y), math.degrees(z)]
 

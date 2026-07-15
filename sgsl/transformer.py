@@ -94,6 +94,9 @@ class SGSLTransformer(Transformer):
     def transparency(self, items):
         return ("transparency", items[0])
 
+    def emissive(self, items):
+        return ("emissive", items[0])
+
     def param(self, items):
         return {"type": "param", "name": items[0], "value": items[1]}
 

@@ -45,6 +45,7 @@ def _expand_frustum(obj: dict) -> list[dict]:
                 "rotation": obj["rotation"],
                 "color": obj["color"],
                 "transparency": obj["transparency"],
+                "emissive": obj["emissive"],
             }
         )
 
@@ -81,6 +82,7 @@ def _expand_spherical_cap(obj: dict) -> list[dict]:
                 "rotation": obj["rotation"],
                 "color": obj["color"],
                 "transparency": obj["transparency"],
+                "emissive": obj["emissive"],
             }
         )
 
@@ -121,6 +123,7 @@ def _expand_ring(obj: dict) -> list[dict]:
                 "rotation": obj["rotation"],
                 "color": obj["color"],
                 "transparency": obj["transparency"],
+                "emissive": obj["emissive"],
             }
         )
 
@@ -156,6 +159,7 @@ def _expand_pipe_arc(obj: dict) -> list[dict]:
                 "rotation": _transform_rotation(world_transform),
                 "color": obj["color"],
                 "transparency": obj["transparency"],
+                "emissive": obj["emissive"],
             }
         )
 

@@ -41,6 +41,7 @@ instance: "instance" NAME NAME instance_property*
 instance_property: at
                  | rotate
                  | scale
+                 | emissive
                  | set_param
 
 set_param: "set" NAME expression
@@ -62,6 +63,7 @@ property: at
         | rotate
         | color
         | transparency
+        | emissive
 
 at: "at" expression expression expression
 
@@ -98,6 +100,8 @@ scale: "scale" expression
 color: "color" COLOR
 
 transparency: "transparency" expression
+
+emissive: "emissive" expression
 
 ?expression: sum
 

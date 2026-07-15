@@ -140,7 +140,7 @@ def _render_part(obj: dict, red: int, green: int, blue: int) -> list[str]:
     x, y, z = obj["position"]
     rx, ry, rz = obj["rotation"]
     transparency = obj["transparency"]
-    material = "Glass" if transparency > 0 else "SmoothPlastic"
+    material = _material_name(obj)
     color_expr = f"Color3.fromRGB({red}, {green}, {blue})"
     material_expr = f"Enum.Material.{material}"
     rotation_expr = f"Vector3.new({rx}, {ry}, {rz})"
@@ -172,7 +172,7 @@ def _render_frustum(obj: dict, red: int, green: int, blue: int) -> list[str]:
     x, y, z = obj["position"]
     rx, ry, rz = obj["rotation"]
     transparency = obj["transparency"]
-    material = "Glass" if transparency > 0 else "SmoothPlastic"
+    material = _material_name(obj)
     return [
         "do",
         "    local model = Builder.makeSteppedFrustum(",
@@ -209,6 +209,14 @@ def _render_expanded(obj: dict, red: int, green: int, blue: int) -> list[str]:
     for expanded in iter_render_objects({"scene": "", "objects": [obj]}):
         lines.extend(_render_part(expanded, red, green, blue))
     return lines
+
+
+def _material_name(obj: dict) -> str:
+    if obj["emissive"] > 0:
+        return "Neon"
+    if obj["transparency"] > 0:
+        return "Glass"
+    return "SmoothPlastic"
 
 
 def write(

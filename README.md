@@ -78,11 +78,13 @@ Common properties:
 - `rotate x y z`
 - `color name-or-hex`
 - `transparency value`
+- `emissive value`
 
 Instance properties:
 - `at x y z`
 - `rotate x y z`
 - `scale value`
+- `emissive value`
 - `set parameter expression`
 
 Block properties:
@@ -124,6 +126,7 @@ Language docs:
 - [Pipe arcs](docs/PIPE_ARC.md)
 - [Imports](docs/IMPORT.md)
 - [Instance scale](docs/SCALE.md)
+- [Emissive materials](docs/EMISSIVE.md)
 
 Components may contain instances of other components. For example:
 

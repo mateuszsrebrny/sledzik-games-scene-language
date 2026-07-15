@@ -296,12 +296,19 @@
           continue;
         }
 
-        const material = new THREE.MeshBasicMaterial({
+        const materialOptions = {
           color: obj.color,
           transparent: obj.transparency > 0,
           opacity: 1 - obj.transparency,
           depthWrite: obj.transparency <= 0,
-        });
+        };
+        const material = obj.emissive > 0
+          ? new THREE.MeshStandardMaterial({
+              ...materialOptions,
+              emissive: obj.color,
+              emissiveIntensity: obj.emissive,
+            })
+          : new THREE.MeshBasicMaterial(materialOptions);
         const mesh = new THREE.Mesh(geometry, material);
         mesh.position.set(...obj.position);
         const [rx, ry, rz] = obj.rotation.map(THREE.MathUtils.degToRad);

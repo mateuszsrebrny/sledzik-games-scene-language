@@ -22,6 +22,7 @@ def _render_object(obj: dict) -> dict:
         "rotation": obj["rotation"],
         "color": resolve_color(obj["color"]),
         "transparency": obj["transparency"],
+        "emissive": obj["emissive"],
     }
     if obj["type"] == "block":
         payload["size"] = obj["size"]

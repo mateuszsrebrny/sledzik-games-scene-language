@@ -192,6 +192,7 @@ def _expand_instance(
     parent_transform: list[list[float]] | None = None,
     parent_parameters: dict[str, float] | None = None,
     parent_scale: float = 1.0,
+    parent_emissive: float | None = None,
     path: str | None = None,
     depth: int = 0,
 ) -> list[dict]:
@@ -227,6 +228,14 @@ def _expand_instance(
             f"Instance {instance['name']!r} has invalid scale {instance_scale!r}; expected a positive number"
         )
     world_scale = parent_scale * instance_scale
+    instance_emissive = parent_emissive
+    if "emissive" in instance:
+        instance_emissive = _evaluate_expression(instance["emissive"], expression_environment)
+        if instance_emissive < 0:
+            raise SGSLValidationError(
+                f"Instance {instance['name']!r} has invalid emissive {instance_emissive!r}; "
+                "expected a non-negative number"
+            )
     world_transform = _multiply_transforms(
         parent_transform,
         _make_transform(instance_at, instance_rotation, instance_scale),
@@ -243,6 +252,7 @@ def _expand_instance(
                     world_transform,
                     parameter_values,
                     world_scale,
+                    instance_emissive,
                     instance_path,
                     depth + 1,
                 )
@@ -251,6 +261,8 @@ def _expand_instance(
 
         obj = copy.deepcopy(template)
         _evaluate_object_expressions(obj, parameter_values)
+        if instance_emissive is not None:
+            obj["emissive"] = instance_emissive
         _resolve_scene({"objects": [obj]})
         object_transform = _multiply_transforms(
             world_transform,
@@ -326,6 +338,10 @@ def _evaluate_object_expressions(obj: dict, environment: dict[str, float]) -> No
         obj["transparency"] = _evaluate_expression(obj["transparency"], environment)
     else:
         obj["transparency"] = 0.0
+    if "emissive" in obj:
+        obj["emissive"] = _evaluate_expression(obj["emissive"], environment)
+    else:
+        obj["emissive"] = 0.0
 
 
 def _evaluate_vector(values: list, environment: dict[str, float]) -> list[float]:
@@ -482,6 +498,7 @@ def _validate_object(obj: dict) -> None:
     _validate_anchor(obj)
     _validate_rotation(obj)
     _validate_transparency(obj)
+    _validate_emissive(obj)
 
 
 def _validate_required_fields(obj: dict, fields: tuple[str, ...]) -> None:
@@ -559,6 +576,15 @@ def _validate_transparency(obj: dict) -> None:
     if not 0.0 <= transparency <= 1.0:
         raise SGSLValidationError(
             f"Block {obj['name']} has invalid transparency {transparency!r}; expected a value from 0.0 to 1.0"
+        )
+
+
+def _validate_emissive(obj: dict) -> None:
+    emissive = obj.setdefault("emissive", 0.0)
+    if emissive < 0:
+        raise SGSLValidationError(
+            f"{obj['type'].capitalize()} {obj['name']} has invalid emissive {emissive!r}; "
+            "expected a non-negative number"
         )
 
 

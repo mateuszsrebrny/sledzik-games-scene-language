@@ -7,70 +7,235 @@
   <style>
     :root {
       color-scheme: light;
+      --bg: #f4f1ea;
+      --panel: #171a21;
+      --panel-2: #202634;
+      --panel-border: #30384a;
+      --text: #e8edf2;
+      --muted: #a9b4c0;
+      --accent: #7db3ff;
+      --surface: #ffffff;
+      --surface-border: #d7dde6;
+      --shadow: 0 16px 40px rgba(17, 24, 39, 0.18);
       font-family: "Segoe UI", sans-serif;
     }
 
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
     body {
       margin: 0;
-      background: #ffffff;
+      height: 100%;
+      background: var(--bg);
       color: #1f2933;
+    }
+
+    body {
       overflow: hidden;
     }
 
     #app {
+      display: grid;
+      grid-template-columns: minmax(320px, 420px) 1fr;
       width: 100vw;
       height: 100vh;
-      position: relative;
     }
 
-    #meta {
-      position: absolute;
-      top: 12px;
-      left: 12px;
-      padding: 10px 12px;
-      background: rgba(255, 255, 255, 0.92);
-      border: 1px solid #d9e2ec;
+    #editorPanel {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 16px;
+      background: linear-gradient(180deg, var(--panel), var(--panel-2));
+      color: var(--text);
+      border-right: 1px solid var(--panel-border);
+      min-width: 0;
+    }
+
+    #toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    #titleBlock h1 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.2;
+    }
+
+    #titleBlock p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    #actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      appearance: none;
+      border: 1px solid #41506a;
+      background: #243043;
+      color: var(--text);
       border-radius: 8px;
-      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
-      z-index: 1;
+      padding: 9px 12px;
+      font: inherit;
+      cursor: pointer;
     }
 
-    #title {
+    button:hover {
+      border-color: var(--accent);
+    }
+
+    button.primary {
+      background: var(--accent);
+      color: #0f172a;
+      border-color: transparent;
+      font-weight: 600;
+    }
+
+    #source {
+      flex: 1;
+      width: 100%;
+      min-height: 0;
+      resize: none;
+      border: 1px solid #39475f;
+      border-radius: 12px;
+      padding: 14px;
+      background: #0f131a;
+      color: #f1f5f9;
+      font: 13px/1.5 "Consolas", "Liberation Mono", monospace;
+      outline: none;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+      tab-size: 4;
+      white-space: pre;
+    }
+
+    #source:focus {
+      border-color: var(--accent);
+    }
+
+    #status {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      min-height: 1.2em;
+    }
+
+    #viewerPanel {
+      position: relative;
+      background: radial-gradient(circle at top, #ffffff 0%, #f8fafc 48%, #eef2f7 100%);
+      overflow: hidden;
+    }
+
+    #viewer {
+      width: 100%;
+      height: 100%;
+    }
+
+    #overlay {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      padding: 10px 12px;
+      background: rgba(255, 255, 255, 0.88);
+      border: 1px solid rgba(199, 210, 226, 0.95);
+      border-radius: 10px;
+      box-shadow: var(--shadow);
+      z-index: 2;
+      pointer-events: none;
+      max-width: min(520px, calc(100% - 32px));
+    }
+
+    #sceneName {
       margin: 0 0 4px;
       font-size: 16px;
+      color: #0f172a;
     }
 
-    #stats {
+    #sceneStats {
       margin: 0;
       font-size: 13px;
       color: #52606d;
+    }
+
+    @media (max-width: 900px) {
+      body {
+        overflow: auto;
+      }
+
+      #app {
+        grid-template-columns: 1fr;
+        grid-template-rows: minmax(280px, 42vh) minmax(320px, 58vh);
+        height: auto;
+        min-height: 100vh;
+      }
+
+      #editorPanel {
+        border-right: 0;
+        border-bottom: 1px solid var(--panel-border);
+      }
+
+      #viewerPanel {
+        min-height: 320px;
+      }
     }
   </style>
 </head>
 <body>
   <div id="app">
-    <div id="meta">
-      <h1 id="title">Loading scene...</h1>
-      <p id="stats">Fetching preview/scene.json</p>
-    </div>
+    <section id="editorPanel">
+      <div id="toolbar">
+        <div id="titleBlock">
+          <h1>SGSL Live Preview</h1>
+          <p>Edit code on the left. The preview updates from Python.</p>
+        </div>
+        <div id="actions">
+          <button id="loadExample">Load example</button>
+          <button id="renderNow" class="primary">Render</button>
+        </div>
+      </div>
+      <textarea id="source" spellcheck="false"></textarea>
+      <p id="status">Loading example...</p>
+    </section>
+
+    <section id="viewerPanel">
+      <div id="overlay">
+        <h1 id="sceneName">Loading scene...</h1>
+        <p id="sceneStats">Waiting for Python preview response</p>
+      </div>
+      <div id="viewer"></div>
+    </section>
   </div>
 
   <script type="module">
     import * as THREE from "./vendor/three.module.js";
     import { OrbitControls } from "./vendor/OrbitControls.js";
 
-    const container = document.getElementById("app");
-    const title = document.getElementById("title");
-    const stats = document.getElementById("stats");
+    const source = document.getElementById("source");
+    const status = document.getElementById("status");
+    const sceneName = document.getElementById("sceneName");
+    const sceneStats = document.getElementById("sceneStats");
+    const loadExample = document.getElementById("loadExample");
+    const renderNow = document.getElementById("renderNow");
+    const viewer = document.getElementById("viewer");
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setSize(viewer.clientWidth, viewer.clientHeight);
     renderer.setClearColor(0xffffff, 1);
-    container.appendChild(renderer.domElement);
+    viewer.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const camera = new THREE.PerspectiveCamera(60, viewer.clientWidth / viewer.clientHeight, 0.1, 1000);
     camera.position.set(18, 12, 18);
     camera.lookAt(0, 3, 0);
 
@@ -80,18 +245,42 @@
     controls.mouseButtons.LEFT = THREE.MOUSE.ROTATE;
     controls.mouseButtons.RIGHT = THREE.MOUSE.PAN;
 
+    const previewGroup = new THREE.Group();
+    scene.add(previewGroup);
     scene.add(new THREE.GridHelper(50, 50, 0x94a3b8, 0xd9e2ec));
     scene.add(new THREE.AxesHelper(4));
+    scene.add(new THREE.AmbientLight(0xffffff, 0.9));
 
-    async function loadScene() {
-      const response = await fetch("./scene.json", { cache: "no-store" });
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
+    const sun = new THREE.DirectionalLight(0xffffff, 1.1);
+    sun.position.set(12, 18, 10);
+    scene.add(sun);
+
+    let renderTimer = null;
+
+    function clearPreview() {
+      while (previewGroup.children.length > 0) {
+        const child = previewGroup.children[0];
+        previewGroup.remove(child);
+        child.geometry?.dispose?.();
+        if (Array.isArray(child.material)) {
+          for (const material of child.material) {
+            material.dispose?.();
+          }
+        } else {
+          child.material?.dispose?.();
+        }
       }
+    }
 
-      const payload = await response.json();
-      title.textContent = payload.scene;
-      stats.textContent = `${payload.objects.length} object(s)`;
+    function setStatus(message, isError = false) {
+      status.textContent = message;
+      status.style.color = isError ? "#fca5a5" : "";
+    }
+
+    function applyScene(payload) {
+      clearPreview();
+      sceneName.textContent = payload.scene;
+      sceneStats.textContent = `${payload.objects.length} object(s)`;
 
       for (const obj of payload.objects) {
         if (obj.transparency >= 1) {
@@ -118,23 +307,84 @@
         const [rx, ry, rz] = obj.rotation.map(THREE.MathUtils.degToRad);
         mesh.rotation.set(rx, ry, rz);
         mesh.name = obj.name;
-        scene.add(mesh);
+        previewGroup.add(mesh);
+      }
+
+      setStatus("Preview updated.");
+    }
+
+    async function renderSource() {
+      const text = source.value.trim();
+      if (!text) {
+        setStatus("Paste SGSL to render the preview.", true);
+        return;
+      }
+
+      setStatus("Rendering...");
+      try {
+        const response = await fetch("/api/preview", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ source: text }),
+        });
+
+        const payload = await response.json();
+        if (!response.ok) {
+          throw new Error(payload.error || `HTTP ${response.status}`);
+        }
+
+        applyScene(payload);
+      } catch (error) {
+        try {
+          const fallback = await fetch("./scene.json", { cache: "no-store" });
+          if (!fallback.ok) {
+            throw new Error(`HTTP ${fallback.status}`);
+          }
+          applyScene(await fallback.json());
+          setStatus("Python preview unavailable; showing preview/scene.json.", true);
+        } catch (fallbackError) {
+          setStatus(String(error), true);
+          console.error(error);
+          console.error(fallbackError);
+        }
+      }
+    }
+
+    function scheduleRender() {
+      window.clearTimeout(renderTimer);
+      renderTimer = window.setTimeout(renderSource, 250);
+    }
+
+    async function loadExampleSource() {
+      try {
+        const response = await fetch("../examples/primitives.sgsl", { cache: "no-store" });
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        source.value = await response.text();
+        await renderSource();
+        setStatus("Loaded example from /examples/primitives.sgsl.");
+      } catch (error) {
+        source.value = `scene Demo\n\nblock Box\n    at 0 1 0\n    size 4 2 4\n    color lightgray\n`;
+        setStatus("Example load failed, using fallback scene.", true);
+        await renderSource();
+        console.error(error);
       }
     }
 
     function onResize() {
-      camera.aspect = window.innerWidth / window.innerHeight;
+      const { clientWidth, clientHeight } = viewer;
+      camera.aspect = clientWidth / clientHeight;
       camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setSize(clientWidth, clientHeight);
     }
 
+    source.addEventListener("input", scheduleRender);
+    loadExample.addEventListener("click", loadExampleSource);
+    renderNow.addEventListener("click", renderSource);
     window.addEventListener("resize", onResize);
 
-    loadScene().catch((error) => {
-      title.textContent = "Failed to load scene";
-      stats.textContent = String(error);
-      console.error(error);
-    });
+    await loadExampleSource();
 
     function animate() {
       controls.update();

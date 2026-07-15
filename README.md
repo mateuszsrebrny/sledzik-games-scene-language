@@ -226,28 +226,30 @@ python build_preview.py examples/primitives.sgsl
 python build_roblox.py examples/primitives.sgsl
 ```
 
-Start a local server:
+Start the live preview server:
 
 ```bash
-python -m http.server
+python preview_server.py
+```
+
+Use a different port if needed:
+
+```bash
+python preview_server.py --port 8123
 ```
 
 Open:
 
 ```text
-If you run the server from the repository root:
 http://localhost:8000/preview/
-
-If you run the server from inside the preview directory:
-http://localhost:8000/
 ```
 
 ## Notes
 
-- `preview/index.html` is static.
+- `preview/index.html` contains the live SGSL textarea and viewer.
 - `preview/scene.json` should be regenerated locally from SGSL sources.
 - `build/*.lua` is generated from SGSL sources.
-- JavaScript does not parse SGSL directly.
+- JavaScript sends SGSL text to the Python preview server.
 - The browser loads local Three.js files from `preview/vendor/`.
 - Fully transparent objects are skipped by the viewer. Partially transparent
   objects do not write to the depth buffer, preventing them from masking other

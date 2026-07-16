@@ -105,6 +105,13 @@ instance Marker01 Marker
         with self.assertRaisesRegex(SGSLValidationError, "Imports require a source file"):
             parse_text('scene Demo\nimport "component.sgsl"')
 
+    def test_rejects_an_indented_first_top_level_statement(self):
+        with self.assertRaisesRegex(
+            SGSLValidationError,
+            "Top-level statement 'import' must start in the first column",
+        ):
+            parse_text('scene Demo\n    import "component.sgsl"')
+
 
 if __name__ == "__main__":
     unittest.main()

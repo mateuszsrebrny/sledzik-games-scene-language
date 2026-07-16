@@ -183,6 +183,10 @@ def _split_top_level_blocks(lines: list[str]) -> list[str]:
                 blocks.append(current)
             current = [line]
             continue
+        if stripped and not stripped.startswith("#") and not current:
+            raise SGSLValidationError(
+                f"Top-level statement {stripped.split(maxsplit=1)[0]!r} must start in the first column."
+            )
         if current:
             current.append(line)
 

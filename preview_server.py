@@ -77,6 +77,10 @@ class PreviewRequestHandler(SimpleHTTPRequestHandler):
 
         self._write_json(payload)
 
+    def end_headers(self) -> None:
+        self.send_header("Cache-Control", "no-store")
+        super().end_headers()
+
     def _extract_source(self, raw_body: str, content_type: str) -> str:
         if "application/json" in content_type:
             data = json.loads(raw_body or "{}")

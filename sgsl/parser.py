@@ -42,6 +42,22 @@ def parse_file(path: str | Path) -> dict:
     return scene
 
 
+def parse_text_with_library(
+    source: str,
+    library_paths: list[str | Path] | tuple[str | Path, ...],
+    *,
+    base_dir: str | Path | None = None,
+) -> dict:
+    base = Path(base_dir or Path.cwd()).expanduser().resolve()
+    entry = base / "__preview__.sgsl"
+    allowed_paths = {Path(path).expanduser().resolve() for path in library_paths}
+    raw_scene = _load_import_graph(entry, entry_source=source, allowed_paths=allowed_paths)
+    scene = _expand_scene(raw_scene)
+    _validate_scene(scene)
+    _resolve_scene(scene)
+    return scene
+
+
 def _parse_source_blocks(source: str, *, require_scene: bool) -> dict:
     lines = source.splitlines()
     scene_name, statement_lines = _extract_scene(lines)
@@ -74,10 +90,42 @@ def _extract_scene(lines: list[str]) -> tuple[str | None, list[str]]:
     return scene_name, statement_lines
 
 
-def _load_import_graph(entry_path: Path) -> dict:
+def _load_import_graph(
+    entry_path: Path,
+    *,
+    entry_source: str | None = None,
+    allowed_paths: set[Path] | None = None,
+) -> dict:
     entry = entry_path.expanduser().resolve()
     loaded: set[Path] = set()
     active: list[Path] = []
+    aliases: dict[str, Path | None] = {}
+    if allowed_paths is not None:
+        for allowed_path in allowed_paths:
+            if allowed_path.name not in aliases:
+                aliases[allowed_path.name] = allowed_path
+            else:
+                aliases[allowed_path.name] = None
+
+    def resolve_import(importer: Path, import_text: str) -> Path:
+        candidate = (importer.parent / import_text).expanduser().resolve()
+        if allowed_paths is None or candidate in allowed_paths:
+            return candidate
+
+        import_path = Path(import_text)
+        if import_path.parent == Path(".") and import_path.name in aliases:
+            alias = aliases[import_path.name]
+            if alias is not None:
+                return alias
+            raise SGSLValidationError(
+                f"Import {import_text!r} matches multiple preview library files. "
+                "Use a path relative to the directory where the server was started."
+            )
+
+        raise SGSLValidationError(
+            f"Import {import_text!r} is not available in the preview library. "
+            "Add the file with --library."
+        )
 
     def load(path: Path, importer: Path | None = None, import_text: str | None = None) -> tuple[str | None, list[dict]]:
         canonical = path.expanduser().resolve()
@@ -89,7 +137,8 @@ def _load_import_graph(entry_path: Path) -> dict:
             )
         if canonical in loaded:
             return None, []
-        if not canonical.is_file():
+        is_virtual_entry = canonical == entry and entry_source is not None
+        if not is_virtual_entry and not canonical.is_file():
             if importer is None:
                 raise SGSLValidationError(f"SGSL file not found: {canonical}")
             raise SGSLValidationError(
@@ -97,15 +146,16 @@ def _load_import_graph(entry_path: Path) -> dict:
             )
 
         active.append(canonical)
+        source = entry_source if is_virtual_entry else canonical.read_text(encoding="utf-8")
         raw = _parse_source_blocks(
-            canonical.read_text(encoding="utf-8"),
+            source,
             require_scene=canonical == entry,
         )
         statements: list[dict] = []
         for statement in raw["statements"]:
             if statement["type"] != "import":
                 continue
-            imported_path = canonical.parent / statement["path"]
+            imported_path = resolve_import(canonical, statement["path"])
             _, imported_statements = load(imported_path, canonical, statement["path"])
             statements.extend(imported_statements)
         for statement in raw["statements"]:

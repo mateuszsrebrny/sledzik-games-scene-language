@@ -128,6 +128,7 @@
       color: var(--muted);
       font-size: 13px;
       min-height: 1.2em;
+      white-space: pre-wrap;
     }
 
     #viewerPanel {
@@ -328,19 +329,13 @@
       }
 
       setStatus("Rendering...");
+      let response;
       try {
-        const response = await fetch("/api/preview", {
+        response = await fetch("/api/preview", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ source: text }),
         });
-
-        const payload = await response.json();
-        if (!response.ok) {
-          throw new Error(payload.error || `HTTP ${response.status}`);
-        }
-
-        applyScene(payload);
       } catch (error) {
         try {
           const fallback = await fetch("./scene.json", { cache: "no-store" });
@@ -354,7 +349,27 @@
           console.error(error);
           console.error(fallbackError);
         }
+        return;
       }
+
+      let payload;
+      try {
+        payload = await response.json();
+      } catch (error) {
+        const message = `Invalid response from preview server (HTTP ${response.status}).`;
+        setStatus(message, true);
+        console.error(message, error);
+        return;
+      }
+
+      if (!response.ok) {
+        const message = payload.error || `HTTP ${response.status}`;
+        setStatus(message, true);
+        console.error(message);
+        return;
+      }
+
+      applyScene(payload);
     }
 
     function scheduleRender() {

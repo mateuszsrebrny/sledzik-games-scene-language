@@ -241,6 +241,26 @@ Use a different port if needed:
 python preview_server.py --port 8123
 ```
 
+Allow imports from selected SGSL library files:
+
+```bash
+python preview_server.py --library components/*.sgsl
+```
+
+Multiple `--library` options and quoted glob patterns are supported:
+
+```bash
+python preview_server.py \
+    --library "components/**/*.sgsl" \
+    --library examples/shared.sgsl
+```
+
+Only files listed by `--library` may be imported by code entered in the live
+editor. Imports may use a path relative to the directory where the server was
+started. A bare filename such as `import "window.sgsl"` also works when that
+filename uniquely identifies one library file. Transitive imports must also be
+included in the library list.
+
 Open:
 
 ```text

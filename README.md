@@ -83,6 +83,7 @@ Common properties:
 Instance properties:
 - `at x y z`
 - `rotate x y z`
+- `mirror axes`
 - `scale value`
 - `emissive value`
 - `set parameter expression`
@@ -126,6 +127,7 @@ Language docs:
 - [Pipe arcs](docs/PIPE_ARC.md)
 - [Imports](docs/IMPORT.md)
 - [Instance scale](docs/SCALE.md)
+- [Instance mirroring](docs/MIRROR.md)
 - [Emissive materials](docs/EMISSIVE.md)
 
 Components may contain instances of other components. For example:

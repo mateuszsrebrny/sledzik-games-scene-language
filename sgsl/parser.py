@@ -281,6 +281,7 @@ def _expand_instance(
         raise SGSLValidationError(
             f"Instance {instance['name']!r} has invalid scale {instance_scale!r}; expected a positive number"
         )
+    instance_mirror = _normalize_mirror(instance.get("mirror"), instance["name"])
     world_scale = parent_scale * instance_scale
     instance_emissive = parent_emissive
     if "emissive" in instance:
@@ -292,7 +293,7 @@ def _expand_instance(
             )
     world_transform = _multiply_transforms(
         parent_transform,
-        _make_transform(instance_at, instance_rotation, instance_scale),
+        _make_transform(instance_at, instance_rotation, instance_scale, instance_mirror),
     )
     instance_path = f"{path}.{instance['name']}" if path else instance["name"]
 
@@ -325,7 +326,8 @@ def _expand_instance(
         obj["position"] = _transform_position(object_transform)
         obj["at"] = obj["position"]
         obj["anchor"] = ["center", "center", "center"]
-        obj["rotation"] = _transform_rotation(object_transform)
+        correction_axis = 2 if obj["type"] == "pipe_arc" else 0
+        obj["rotation"] = _transform_rotation(object_transform, correction_axis=correction_axis)
         _scale_object_dimensions(obj, world_scale)
         obj["name"] = f"{instance_path}.{obj['name']}"
         expanded.append(obj)
@@ -431,6 +433,18 @@ def _number_node(value: float):
     return ("number", float(value))
 
 
+def _normalize_mirror(value: str | None, instance_name: str) -> str:
+    if value is None:
+        return ""
+    axes = str(value).lower()
+    if not axes or any(axis not in "xyz" for axis in axes) or len(set(axes)) != len(axes):
+        raise SGSLValidationError(
+            f"Instance {instance_name!r} has invalid mirror {value!r}; "
+            "expected x, y, z, xy, xz, yz, or xyz"
+        )
+    return "".join(axis for axis in "xyz" if axis in axes)
+
+
 def _identity_transform() -> list[list[float]]:
     return [
         [1.0, 0.0, 0.0, 0.0],
@@ -444,16 +458,21 @@ def _make_transform(
     position: list[float],
     rotation: list[float],
     scale: float = 1.0,
+    mirror: str = "",
 ) -> list[list[float]]:
     rx, ry, rz = (math.radians(value) for value in rotation)
     cos_x, sin_x = math.cos(rx), math.sin(rx)
     cos_y, sin_y = math.cos(ry), math.sin(ry)
     cos_z, sin_z = math.cos(rz), math.sin(rz)
 
+    mirror_x = -1.0 if "x" in mirror else 1.0
+    mirror_y = -1.0 if "y" in mirror else 1.0
+    mirror_z = -1.0 if "z" in mirror else 1.0
+
     return [
-        [scale * cos_y * cos_z, -scale * cos_y * sin_z, scale * sin_y, position[0]],
-        [scale * (sin_x * sin_y * cos_z + cos_x * sin_z), scale * (-sin_x * sin_y * sin_z + cos_x * cos_z), -scale * sin_x * cos_y, position[1]],
-        [scale * (-cos_x * sin_y * cos_z + sin_x * sin_z), scale * (cos_x * sin_y * sin_z + sin_x * cos_z), scale * cos_x * cos_y, position[2]],
+        [scale * mirror_x * cos_y * cos_z, -scale * mirror_y * cos_y * sin_z, scale * mirror_z * sin_y, position[0]],
+        [scale * mirror_x * (sin_x * sin_y * cos_z + cos_x * sin_z), scale * mirror_y * (-sin_x * sin_y * sin_z + cos_x * cos_z), -scale * mirror_z * sin_x * cos_y, position[1]],
+        [scale * mirror_x * (-cos_x * sin_y * cos_z + sin_x * sin_z), scale * mirror_y * (cos_x * sin_y * sin_z + sin_x * cos_z), scale * mirror_z * cos_x * cos_y, position[2]],
         [0.0, 0.0, 0.0, 1.0],
     ]
 
@@ -469,10 +488,13 @@ def _transform_position(transform: list[list[float]]) -> list[float]:
     return [transform[0][3], transform[1][3], transform[2][3]]
 
 
-def _transform_rotation(transform: list[list[float]]) -> list[float]:
+def _transform_rotation(transform: list[list[float]], *, correction_axis: int = 0) -> list[float]:
     # Match Three.js Euler XYZ and Roblox CFrame.Angles (Rx * Ry * Rz).
     scale = math.sqrt(sum(transform[row][0] ** 2 for row in range(3)))
     rotation = [[transform[row][column] / scale for column in range(3)] for row in range(3)]
+    if _determinant3(rotation) < 0:
+        for row in range(3):
+            rotation[row][correction_axis] *= -1
     sin_y = max(-1.0, min(1.0, rotation[0][2]))
     y = math.asin(sin_y)
     if abs(math.cos(y)) > 1e-9:
@@ -482,6 +504,14 @@ def _transform_rotation(transform: list[list[float]]) -> list[float]:
         x = math.atan2(rotation[2][1], rotation[1][1])
         z = 0.0
     return [math.degrees(x), math.degrees(y), math.degrees(z)]
+
+
+def _determinant3(matrix: list[list[float]]) -> float:
+    return (
+        matrix[0][0] * (matrix[1][1] * matrix[2][2] - matrix[1][2] * matrix[2][1])
+        - matrix[0][1] * (matrix[1][0] * matrix[2][2] - matrix[1][2] * matrix[2][0])
+        + matrix[0][2] * (matrix[1][0] * matrix[2][1] - matrix[1][1] * matrix[2][0])
+    )
 
 
 def _scale_object_dimensions(obj: dict, scale: float) -> None:

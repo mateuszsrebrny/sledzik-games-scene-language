@@ -88,6 +88,9 @@ class SGSLTransformer(Transformer):
     def scale(self, items):
         return ("scale", items[0])
 
+    def mirror(self, items):
+        return ("mirror", items[0])
+
     def color(self, items):
         return ("color", items[0])
 

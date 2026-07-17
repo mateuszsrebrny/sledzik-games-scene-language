@@ -41,6 +41,7 @@ instance: "instance" NAME NAME instance_property*
 instance_property: at
                  | rotate
                  | scale
+                 | mirror
                  | emissive
                  | set_param
 
@@ -96,6 +97,8 @@ anchor: "anchor" NAME NAME NAME
 rotate: "rotate" expression expression expression
 
 scale: "scale" expression
+
+mirror: "mirror" NAME
 
 color: "color" COLOR
 

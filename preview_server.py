@@ -37,11 +37,22 @@ class PreviewRequestHandler(SimpleHTTPRequestHandler):
         *args: Any,
         library_paths: tuple[Path, ...] = (),
         library_base_dir: Path | None = None,
+        default_source: str | None = None,
         **kwargs: Any,
     ) -> None:
         self.library_paths = library_paths
         self.library_base_dir = library_base_dir
+        self.default_source = default_source
         super().__init__(*args, directory=str(ROOT), **kwargs)
+
+    def do_GET(self) -> None:
+        if urlparse(self.path).path != "/api/default-source":
+            super().do_GET()
+            return
+        if self.default_source is None:
+            self.send_error(HTTPStatus.NOT_FOUND)
+            return
+        self._write_text(self.default_source)
 
     def do_POST(self) -> None:
         if urlparse(self.path).path != "/api/preview":
@@ -98,6 +109,14 @@ class PreviewRequestHandler(SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def _write_text(self, content: str) -> None:
+        body = content.encode("utf-8")
+        self.send_response(HTTPStatus.OK)
+        self.send_header("Content-Type", "text/plain; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
     def log_message(self, format: str, *args: Any) -> None:  # noqa: A003
         return
 
@@ -113,6 +132,11 @@ def parse_args() -> argparse.Namespace:
         default=[],
         metavar="FILE",
         help="SGSL files allowed as imports in live editor source; shell and quoted glob patterns are supported",
+    )
+    parser.add_argument(
+        "--default-source",
+        metavar="FILE",
+        help="SGSL file loaded into the live editor on startup and by the Load example button",
     )
     return parser.parse_args()
 
@@ -134,10 +158,20 @@ def resolve_library_paths(patterns: list[str]) -> tuple[Path, ...]:
     return tuple(resolved)
 
 
+def load_default_source(path: str | None) -> str | None:
+    if path is None:
+        return None
+    source_path = Path(path).expanduser().resolve()
+    if not source_path.is_file():
+        raise ValueError(f"Default preview source is not a file: {path}")
+    return source_path.read_text(encoding="utf-8")
+
+
 def main() -> int:
     args = parse_args()
     try:
         library_paths = resolve_library_paths(args.library)
+        default_source = load_default_source(args.default_source)
     except ValueError as exc:
         print(f"error: {exc}")
         return 2
@@ -147,6 +181,7 @@ def main() -> int:
         PreviewRequestHandler,
         library_paths=library_paths,
         library_base_dir=library_base_dir,
+        default_source=default_source,
     )
     server = ThreadingHTTPServer((args.host, args.port), handler)
     print(f"Serving SGSL preview on http://{args.host}:{args.port}/preview/")

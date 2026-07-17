@@ -3,7 +3,7 @@ import tempfile
 from pathlib import Path
 from textwrap import dedent
 
-from preview_server import build_preview_payload, resolve_library_paths
+from preview_server import build_preview_payload, load_default_source, resolve_library_paths
 from sgsl.parser import SGSLValidationError
 
 
@@ -121,6 +121,19 @@ class PreviewServerTests(unittest.TestCase):
             paths = resolve_library_paths([str(root / "*.sgsl")])
 
         self.assertEqual(set(paths), {one.resolve(), two.resolve()})
+
+    def test_loads_configured_default_source(self):
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            source = Path(temporary_directory) / "preview.sgsl"
+            source.write_text("scene Default\n", encoding="utf-8")
+
+            loaded = load_default_source(str(source))
+
+        self.assertEqual(loaded, "scene Default\n")
+
+    def test_rejects_missing_default_source(self):
+        with self.assertRaisesRegex(ValueError, "Default preview source is not a file"):
+            load_default_source("missing-preview.sgsl")
 
 
 if __name__ == "__main__":

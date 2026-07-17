@@ -194,6 +194,16 @@ preview/scene.json
 
 `preview/scene.json` is a generated build artifact and is not tracked in git.
 
+The live preview server can load a project-specific entry scene into the editor:
+
+```bash
+python preview_server.py \
+  --default-source path/to/preview.sgsl \
+  --library "path/to/**/*.sgsl"
+```
+
+Without `--default-source`, the editor loads `examples/primitives.sgsl`.
+
 Generate Roblox Lua:
 
 ```bash

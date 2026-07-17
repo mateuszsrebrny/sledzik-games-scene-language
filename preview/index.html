@@ -379,13 +379,18 @@
 
     async function loadExampleSource() {
       try {
-        const response = await fetch("../examples/primitives.sgsl", { cache: "no-store" });
+        let response = await fetch("/api/default-source", { cache: "no-store" });
+        let sourceName = "configured default source";
+        if (response.status === 404) {
+          response = await fetch("../examples/primitives.sgsl", { cache: "no-store" });
+          sourceName = "/examples/primitives.sgsl";
+        }
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}`);
         }
         source.value = await response.text();
         await renderSource();
-        setStatus("Loaded example from /examples/primitives.sgsl.");
+        setStatus(`Loaded example from ${sourceName}.`);
       } catch (error) {
         source.value = `scene Demo\n\nblock Box\n    at 0 1 0\n    size 4 2 4\n    color lightgray\n`;
         setStatus("Example load failed, using fallback scene.", true);

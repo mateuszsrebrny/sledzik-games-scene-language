@@ -10,8 +10,7 @@ Current scope:
 - Support `rotate` transforms on scene objects and instances.
 
 Not in scope right now:
-- GLB export
-- Groups
+- Automatic publishing of generated assets to Roblox
 
 ## Requirements
 
@@ -71,6 +70,7 @@ Supported object types:
 - `frustum`
 - `ring`
 - `pipeArc`
+- `mesh` groups inside components
 
 Common properties:
 - `at x y z`
@@ -129,6 +129,7 @@ Language docs:
 - [Instance scale](docs/SCALE.md)
 - [Instance mirroring](docs/MIRROR.md)
 - [Emissive materials](docs/EMISSIVE.md)
+- [Mesh groups and GLB export](docs/MESH_GROUPS.md)
 
 Components may contain instances of other components. For example:
 
@@ -214,6 +215,13 @@ This writes:
 
 ```text
 build/factory.lua
+```
+
+Export one component as GLB. Geometry inside each `mesh` group is combined
+into one GLB object; other primitives remain separate objects:
+
+```bash
+python build_glb.py components/bottle.sgsl --component Bottle --output build/Bottle.glb
 ```
 
 Generate a Rojo-friendly ModuleScript:

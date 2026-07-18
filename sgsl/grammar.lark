@@ -33,6 +33,14 @@ component: "component" NAME component_statement*
 component_statement: param
                    | object
                    | instance
+                   | mesh
+
+mesh: "mesh" NAME mesh_statement* "endmesh"
+
+mesh_statement: object
+              | instance
+              | at
+              | rotate
 
 param: "param" NAME expression
 

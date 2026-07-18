@@ -118,6 +118,9 @@ class SGSLTransformer(Transformer):
     def component_statement(self, items):
         return items[0]
 
+    def mesh_statement(self, items):
+        return items[0]
+
     def statement(self, items):
         return items[0]
 
@@ -163,6 +166,23 @@ class SGSLTransformer(Transformer):
             "parameters": parameters,
             "objects": objects,
         }
+
+    def mesh(self, items):
+        name = items[0]
+        data = {"type": "mesh_group", "name": name, "objects": []}
+        seen_names: set[str] = set()
+        for item in items[1:]:
+            if isinstance(item, tuple):
+                key, value = item
+                if key in data:
+                    raise ValueError(f"Duplicate property {key!r} in mesh {name!r}")
+                data[key] = value
+                continue
+            if item["name"] in seen_names:
+                raise ValueError(f"Duplicate object name {item['name']!r} in mesh {name!r}")
+            seen_names.add(item["name"])
+            data["objects"].append(item)
+        return data
 
     def instance(self, items):
         name = items[0]

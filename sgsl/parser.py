@@ -42,6 +42,23 @@ def parse_file(path: str | Path) -> dict:
     return scene
 
 
+def parse_component_file(path: str | Path, component_name: str) -> dict:
+    raw_scene = _load_import_graph(Path(path), require_entry_scene=False)
+    raw_scene["scene"] = component_name
+    raw_scene["statements"].append(
+        {
+            "type": "component_instance",
+            "name": component_name,
+            "component": component_name,
+            "parameter_overrides": {},
+        }
+    )
+    scene = _expand_scene(raw_scene)
+    _validate_scene(scene)
+    _resolve_scene(scene)
+    return scene
+
+
 def parse_text_with_library(
     source: str,
     library_paths: list[str | Path] | tuple[str | Path, ...],
@@ -65,12 +82,32 @@ def _parse_source_blocks(source: str, *, require_scene: bool) -> dict:
         raise SGSLValidationError("Scene name is missing.")
     statements = []
     for block in _split_top_level_blocks(statement_lines):
-        tree = _STATEMENT_PARSER.parse(block)
+        tree = _STATEMENT_PARSER.parse(_insert_mesh_terminators(block))
         statements.append(SGSLTransformer().transform(tree))
     return {
         "scene": scene_name,
         "statements": statements,
     }
+
+
+def _insert_mesh_terminators(block: str) -> str:
+    lines = block.splitlines()
+    output: list[str] = []
+    mesh_indent: int | None = None
+    for line in lines:
+        stripped = line.strip()
+        indent = len(line) - len(line.lstrip())
+        if mesh_indent is not None and stripped and indent <= mesh_indent:
+            output.append(" " * mesh_indent + "endmesh")
+            mesh_indent = None
+        output.append(line)
+        if stripped.startswith("mesh "):
+            if mesh_indent is not None:
+                raise SGSLValidationError("Nested mesh groups are not supported.")
+            mesh_indent = indent
+    if mesh_indent is not None:
+        output.append(" " * mesh_indent + "endmesh")
+    return "\n".join(output)
 
 
 def _extract_scene(lines: list[str]) -> tuple[str | None, list[str]]:
@@ -95,6 +132,7 @@ def _load_import_graph(
     *,
     entry_source: str | None = None,
     allowed_paths: set[Path] | None = None,
+    require_entry_scene: bool = True,
 ) -> dict:
     entry = entry_path.expanduser().resolve()
     loaded: set[Path] = set()
@@ -149,7 +187,7 @@ def _load_import_graph(
         source = entry_source if is_virtual_entry else canonical.read_text(encoding="utf-8")
         raw = _parse_source_blocks(
             source,
-            require_scene=canonical == entry,
+            require_scene=canonical == entry and require_entry_scene,
         )
         statements: list[dict] = []
         for statement in raw["statements"]:
@@ -249,6 +287,7 @@ def _expand_instance(
     parent_emissive: float | None = None,
     path: str | None = None,
     depth: int = 0,
+    mesh_group: str | None = None,
 ) -> list[dict]:
     if depth >= _MAX_COMPONENT_DEPTH:
         raise SGSLValidationError(
@@ -299,6 +338,20 @@ def _expand_instance(
 
     expanded: list[dict] = []
     for template in component["objects"]:
+        if template["type"] == "mesh_group":
+            expanded.extend(
+                _expand_mesh_group(
+                    template,
+                    components,
+                    world_transform,
+                    parameter_values,
+                    world_scale,
+                    instance_emissive,
+                    instance_path,
+                    depth + 1,
+                )
+            )
+            continue
         if template["type"] == "component_instance":
             expanded.extend(
                 _expand_instance(
@@ -310,6 +363,7 @@ def _expand_instance(
                     instance_emissive,
                     instance_path,
                     depth + 1,
+                    mesh_group,
                 )
             )
             continue
@@ -330,6 +384,69 @@ def _expand_instance(
         obj["rotation"] = _transform_rotation(object_transform, correction_axis=correction_axis)
         _scale_object_dimensions(obj, world_scale)
         obj["name"] = f"{instance_path}.{obj['name']}"
+        if mesh_group is not None:
+            obj["mesh_group"] = mesh_group
+        expanded.append(obj)
+
+    return expanded
+
+
+def _expand_mesh_group(
+    group: dict,
+    components: dict[str, dict],
+    parent_transform: list[list[float]],
+    parameters: dict[str, float],
+    parent_scale: float,
+    parent_emissive: float | None,
+    path: str,
+    depth: int,
+) -> list[dict]:
+    group_at = _evaluate_vector(
+        group.get("at", [_number_node(0), _number_node(0), _number_node(0)]),
+        parameters,
+    )
+    group_rotation = _evaluate_vector(
+        group.get("rotation", [_number_node(0), _number_node(0), _number_node(0)]),
+        parameters,
+    )
+    group_transform = _multiply_transforms(parent_transform, _make_transform(group_at, group_rotation))
+    group_path = f"{path}.{group['name']}"
+    expanded: list[dict] = []
+
+    for template in group["objects"]:
+        if template["type"] == "component_instance":
+            expanded.extend(
+                _expand_instance(
+                    template,
+                    components,
+                    group_transform,
+                    parameters,
+                    parent_scale,
+                    parent_emissive,
+                    path,
+                    depth,
+                    group_path,
+                )
+            )
+            continue
+
+        obj = copy.deepcopy(template)
+        _evaluate_object_expressions(obj, parameters)
+        if parent_emissive is not None:
+            obj["emissive"] = parent_emissive
+        _resolve_scene({"objects": [obj]})
+        object_transform = _multiply_transforms(
+            group_transform,
+            _make_transform(obj["position"], obj["rotation"]),
+        )
+        obj["position"] = _transform_position(object_transform)
+        obj["at"] = obj["position"]
+        obj["anchor"] = ["center", "center", "center"]
+        correction_axis = 2 if obj["type"] == "pipe_arc" else 0
+        obj["rotation"] = _transform_rotation(object_transform, correction_axis=correction_axis)
+        _scale_object_dimensions(obj, parent_scale)
+        obj["name"] = f"{path}.{obj['name']}"
+        obj["mesh_group"] = group_path
         expanded.append(obj)
 
     return expanded

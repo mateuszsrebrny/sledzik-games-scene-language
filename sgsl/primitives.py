@@ -23,6 +23,10 @@ def iter_render_objects(scene: dict) -> list[dict]:
     return objects
 
 
+def _render_metadata(obj: dict) -> dict:
+    return {"mesh_group": obj["mesh_group"]} if "mesh_group" in obj else {}
+
+
 def _expand_frustum(obj: dict) -> list[dict]:
     segments = obj["segments"]
     segment_height = obj["height"] / segments
@@ -46,6 +50,7 @@ def _expand_frustum(obj: dict) -> list[dict]:
                 "color": obj["color"],
                 "transparency": obj["transparency"],
                 "emissive": obj["emissive"],
+                **_render_metadata(obj),
             }
         )
 
@@ -83,6 +88,7 @@ def _expand_spherical_cap(obj: dict) -> list[dict]:
                 "color": obj["color"],
                 "transparency": obj["transparency"],
                 "emissive": obj["emissive"],
+                **_render_metadata(obj),
             }
         )
 
@@ -124,6 +130,7 @@ def _expand_ring(obj: dict) -> list[dict]:
                 "color": obj["color"],
                 "transparency": obj["transparency"],
                 "emissive": obj["emissive"],
+                **_render_metadata(obj),
             }
         )
 
@@ -160,6 +167,7 @@ def _expand_pipe_arc(obj: dict) -> list[dict]:
                 "color": obj["color"],
                 "transparency": obj["transparency"],
                 "emissive": obj["emissive"],
+                **_render_metadata(obj),
             }
         )
 

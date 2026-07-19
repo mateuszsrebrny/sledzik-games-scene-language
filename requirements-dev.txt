@@ -1,0 +1,2 @@
+-r sgsl/requirements.txt
+pytest

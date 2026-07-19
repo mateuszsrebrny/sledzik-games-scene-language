@@ -17,6 +17,12 @@ block ThinBlock
     rotate 0 0 35
     color darkgray
 
+wedge Ramp
+    at 7 1.5 4
+    size 3.0 3.0 3.5
+    rotate 0 -20 0
+    color yellow
+
 cylinder Tank
     at -4 2 0
     radius 1.5

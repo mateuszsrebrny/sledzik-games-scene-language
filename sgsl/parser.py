@@ -658,7 +658,7 @@ def _validate_scene(scene: dict) -> None:
 
 def _validate_object(obj: dict) -> None:
     object_type = obj.get("type")
-    if object_type == "block":
+    if object_type in ("block", "wedge"):
         _validate_required_fields(obj, ("at", "size", "color"))
         _validate_size_triplet(obj, "size")
     elif object_type == "cylinder":
@@ -827,7 +827,7 @@ def _resolve_position(obj: dict) -> list[float]:
 
 
 def _get_object_bounds(obj: dict) -> tuple[float, float, float]:
-    if obj["type"] == "block":
+    if obj["type"] in ("block", "wedge"):
         size_x, size_y, size_z = obj["size"]
         return size_x, size_y, size_z
 

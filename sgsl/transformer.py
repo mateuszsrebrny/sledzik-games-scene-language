@@ -130,6 +130,9 @@ class SGSLTransformer(Transformer):
     def block(self, items):
         return self._build_object("block", items)
 
+    def wedge(self, items):
+        return self._build_object("wedge", items)
+
     def cylinder(self, items):
         return self._build_object("cylinder", items)
 

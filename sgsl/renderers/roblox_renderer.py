@@ -151,6 +151,12 @@ def _render_part(obj: dict, red: int, green: int, blue: int) -> list[str]:
             f"Builder.makeBlock(sceneFolder, {obj['name']!r}, "
             f"Vector3.new({sx}, {sy}, {sz}), Vector3.new({x}, {y}, {z}), {color_expr}, {material_expr}, {rotation_expr})"
         )
+    elif obj["type"] == "wedge":
+        sx, sy, sz = obj["size"]
+        creator = (
+            f"Builder.makeWedge(sceneFolder, {obj['name']!r}, "
+            f"Vector3.new({sx}, {sy}, {sz}), Vector3.new({x}, {y}, {z}), {color_expr}, {material_expr}, {rotation_expr})"
+        )
     elif obj["type"] == "cylinder":
         creator = (
             f"Builder.makeCylinder(sceneFolder, {obj['name']!r}, "

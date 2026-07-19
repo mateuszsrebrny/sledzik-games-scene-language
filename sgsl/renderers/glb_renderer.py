@@ -127,6 +127,8 @@ def _append_buffer(binary: bytearray, data: bytes, views: list[dict], *, target:
 def _geometry(obj: dict) -> tuple[list[tuple[float, float, float]], list[int]]:
     if obj["type"] == "block":
         return _block_geometry(obj["size"])
+    if obj["type"] == "wedge":
+        return _wedge_geometry(obj["size"])
     if obj["type"] == "cylinder":
         return _cylinder_geometry(obj["radius"], obj["height"])
     raise SGSLValidationError(f"GLB renderer does not support {obj['type']!r}")
@@ -140,6 +142,22 @@ def _block_geometry(size: list[float]) -> tuple[list[tuple[float, float, float]]
     ]
     indices = [0, 2, 1, 0, 3, 2, 4, 5, 6, 4, 6, 7, 0, 1, 5, 0, 5, 4,
                3, 7, 6, 3, 6, 2, 0, 4, 7, 0, 7, 3, 1, 2, 6, 1, 6, 5]
+    return vertices, indices
+
+
+def _wedge_geometry(size: list[float]) -> tuple[list[tuple[float, float, float]], list[int]]:
+    x, y, z = (value / 2 for value in size)
+    vertices = [
+        (-x, -y, -z), (-x, -y, z), (-x, y, z),
+        (x, -y, -z), (x, -y, z), (x, y, z),
+    ]
+    indices = [
+        0, 1, 2,
+        3, 5, 4,
+        0, 3, 4, 0, 4, 1,
+        1, 4, 5, 1, 5, 2,
+        0, 2, 5, 0, 5, 3,
+    ]
     return vertices, indices
 
 

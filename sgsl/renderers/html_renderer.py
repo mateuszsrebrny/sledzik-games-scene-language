@@ -24,7 +24,7 @@ def _render_object(obj: dict) -> dict:
         "transparency": obj["transparency"],
         "emissive": obj["emissive"],
     }
-    if obj["type"] == "block":
+    if obj["type"] in ("block", "wedge"):
         payload["size"] = obj["size"]
     elif obj["type"] == "cylinder":
         payload["radius"] = obj["radius"]

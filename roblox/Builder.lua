@@ -33,6 +33,14 @@ function Builder.makeBlock(parent, name, size, position, color, material, rotati
 	return applyCommon(part, parent, name, color, material)
 end
 
+function Builder.makeWedge(parent, name, size, position, color, material, rotation)
+	local part = Instance.new("WedgePart")
+	part.Size = size
+	part.CFrame = CFrame.new(position) * rotationCFrame(rotation)
+
+	return applyCommon(part, parent, name, color, material)
+end
+
 function Builder.makeSteppedFrustum(parent, name, bottomRadius, topRadius, height, position, color, sliceCount, material, rotation)
 	sliceCount = math.max(tonumber(sliceCount) or 4, 1)
 	material = material or Enum.Material.SmoothPlastic

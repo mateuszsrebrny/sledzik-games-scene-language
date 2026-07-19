@@ -291,6 +291,20 @@
         let geometry;
         if (obj.type === "block") {
           geometry = new THREE.BoxGeometry(...obj.size);
+        } else if (obj.type === "wedge") {
+          const [sx, sy, sz] = obj.size.map((value) => value / 2);
+          geometry = new THREE.BufferGeometry();
+          geometry.setAttribute("position", new THREE.Float32BufferAttribute([
+            -sx, -sy, -sz, -sx, -sy, sz, -sx, sy, sz,
+            sx, -sy, -sz, sx, -sy, sz, sx, sy, sz,
+          ], 3));
+          geometry.setIndex([
+            0, 1, 2, 3, 5, 4,
+            0, 3, 4, 0, 4, 1,
+            1, 4, 5, 1, 5, 2,
+            0, 2, 5, 0, 5, 3,
+          ]);
+          geometry.computeVertexNormals();
         } else if (obj.type === "cylinder") {
           geometry = new THREE.CylinderGeometry(obj.radius, obj.radius, obj.height, 32);
         } else {

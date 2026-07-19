@@ -10,6 +10,7 @@ statement: object
 import_stmt: "import" ESCAPED_STRING
 
 object: block
+      | wedge
       | cylinder
       | frustum
       | ring
@@ -17,6 +18,8 @@ object: block
       | pipe_arc
 
 block: "block" NAME property*
+
+wedge: "wedge" NAME property*
 
 cylinder: "cylinder" NAME property*
 

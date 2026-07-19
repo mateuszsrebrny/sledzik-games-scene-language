@@ -23,6 +23,13 @@ Install:
 pip install -r sgsl/requirements.txt
 ```
 
+For development and tests:
+
+```bash
+pip install -r requirements-dev.txt
+pytest -q
+```
+
 ## Project Layout
 
 ```text
@@ -66,6 +73,7 @@ frustum Stack
 
 Supported object types:
 - `block`
+- `wedge`
 - `cylinder`
 - `frustum`
 - `ring`
@@ -89,6 +97,9 @@ Instance properties:
 - `set parameter expression`
 
 Block properties:
+- `size x y z`
+
+Wedge properties:
 - `size x y z`
 
 Cylinder properties:
@@ -122,6 +133,7 @@ Notes:
 
 Language docs:
 - [Rotation](docs/ROTATE.md)
+- [Wedges](docs/WEDGE.md)
 - [Components](docs/COMPONENTS.md)
 - [Nested components](docs/NESTED_COMPONENTS.md)
 - [Pipe arcs](docs/PIPE_ARC.md)

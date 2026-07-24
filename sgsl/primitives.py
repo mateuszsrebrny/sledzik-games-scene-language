@@ -108,42 +108,96 @@ def _expand_ring(obj: dict) -> list[dict]:
     segments = obj["segments"]
     outer_radius = obj["radius_outer"]
     inner_radius = obj["radius_inner"]
-    mid_radius = (outer_radius + inner_radius) / 2
-    thickness = outer_radius - inner_radius
     total_angle = math.radians(obj.get("angle", 360.0))
     start_angle = math.radians(obj.get("start_angle", 0.0))
     segment_angle = total_angle / segments
-    tangent_size = 2 * outer_radius * math.sin(abs(segment_angle) / 2)
+    half_angle = abs(segment_angle) / 2
+    inner_width = 2 * inner_radius * math.sin(half_angle)
+    outer_width = 2 * outer_radius * math.sin(half_angle)
+    radial_depth = (outer_radius - inner_radius) * math.cos(half_angle)
+    radial_center = (outer_radius + inner_radius) * math.cos(half_angle) / 2
+    wing_width = (outer_width - inner_width) / 2
     parent_transform = _make_transform(obj["position"], obj["rotation"])
 
     expanded: list[dict] = []
     for index in range(segments):
         midpoint_angle = start_angle + segment_angle * (index + 0.5)
-        local_position = [
-            math.cos(midpoint_angle) * mid_radius,
-            0.0,
-            math.sin(midpoint_angle) * mid_radius,
-        ]
-        local_rotation = [0.0, math.degrees(midpoint_angle) - 90.0, 0.0]
-        world_transform = _multiply_transforms(
-            parent_transform,
-            _make_transform(local_position, local_rotation),
-        )
-        expanded.append(
-            {
-                "type": "block",
-                "name": f"{obj['name']}_segment_{index + 1:02d}",
-                "position": _transform_position(world_transform),
-                "size": [tangent_size * 1.01, obj["height"], thickness],
-                "rotation": _transform_rotation(world_transform),
-                "color": obj["color"],
-                "transparency": obj["transparency"],
-                "emissive": obj["emissive"],
-                **_render_metadata(obj),
-            }
-        )
+        radial = [math.cos(midpoint_angle), 0.0, math.sin(midpoint_angle)]
+        tangent = [-math.sin(midpoint_angle), 0.0, math.cos(midpoint_angle)]
+        center = [component * radial_center for component in radial]
+        segment_name = f"{obj['name']}_segment_{index + 1:02d}"
+
+        if inner_width > 1e-9:
+            center_transform = _multiply_transforms(
+                parent_transform,
+                _basis_transform(
+                    center,
+                    tangent,
+                    [0.0, -1.0, 0.0],
+                    radial,
+                ),
+            )
+            expanded.append(
+                _ring_part(
+                    obj,
+                    "block",
+                    f"{segment_name}_center",
+                    [inner_width, obj["height"], radial_depth],
+                    center_transform,
+                )
+            )
+
+        wing_center_offset = (inner_width + outer_width) / 4
+        for side, side_sign in (("left", -1.0), ("right", 1.0)):
+            wing_center = [
+                center[axis] + tangent[axis] * wing_center_offset * side_sign
+                for axis in range(3)
+            ]
+            vertical = [0.0, side_sign, 0.0]
+            wing_tangent = [component * side_sign for component in tangent]
+            wing_transform = _multiply_transforms(
+                parent_transform,
+                _basis_transform(wing_center, vertical, wing_tangent, radial),
+            )
+            expanded.append(
+                _ring_part(
+                    obj,
+                    "wedge",
+                    f"{segment_name}_{side}",
+                    [obj["height"], wing_width, radial_depth],
+                    wing_transform,
+                )
+            )
 
     return expanded
+
+
+def _ring_part(obj: dict, part_type: str, name: str, size: list[float], transform: list[list[float]]) -> dict:
+    return {
+        "type": part_type,
+        "name": name,
+        "position": _transform_position(transform),
+        "size": size,
+        "rotation": _transform_rotation(transform),
+        "color": obj["color"],
+        "transparency": obj["transparency"],
+        "emissive": obj["emissive"],
+        **_render_metadata(obj),
+    }
+
+
+def _basis_transform(
+    position: list[float],
+    x_axis: list[float],
+    y_axis: list[float],
+    z_axis: list[float],
+) -> list[list[float]]:
+    return [
+        [x_axis[0], y_axis[0], z_axis[0], position[0]],
+        [x_axis[1], y_axis[1], z_axis[1], position[1]],
+        [x_axis[2], y_axis[2], z_axis[2], position[2]],
+        [0.0, 0.0, 0.0, 1.0],
+    ]
 
 
 def _expand_pipe_arc(obj: dict) -> list[dict]:

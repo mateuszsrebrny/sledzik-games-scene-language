@@ -1,7 +1,8 @@
 # Ring
 
-`ring` creates a horizontal circular ring or an angular slice of one. Preview,
-GLB, and Roblox output approximate it with tangent block segments.
+`ring` creates a horizontal circular ring or an angular slice of one. Each
+angular segment is a complete trapezoidal prism between its inner and outer
+radii. Preview, GLB, and Roblox output use the same block-and-wedge expansion.
 
 ```sgsl
 ring OuterSidewalkCurve
@@ -23,7 +24,7 @@ ring OuterSidewalkCurve
 | `radius_inner` | Inner radius. May be `0` for a filled sector. |
 | `radius_outer` | Outer radius; must exceed `radius_inner`. |
 | `height` | Vertical thickness. |
-| `segments` | Number of blocks across the complete selected angle. |
+| `segments` | Number of trapezoidal segments across the complete selected angle. |
 | `start_angle` | Optional start angle in degrees; defaults to `0`. |
 | `angle` | Optional signed sweep in degrees; defaults to `360`. |
 

@@ -495,6 +495,8 @@ def _evaluate_object_expressions(obj: dict, environment: dict[str, float]) -> No
         obj["radius_top"] = _evaluate_expression(obj["radius_top"], environment)
     if "radius_bottom" in obj:
         obj["radius_bottom"] = _evaluate_expression(obj["radius_bottom"], environment)
+    if "start_angle" in obj:
+        obj["start_angle"] = _evaluate_expression(obj["start_angle"], environment)
     if "base_radius" in obj:
         obj["base_radius"] = _evaluate_expression(obj["base_radius"], environment)
     if "pipe_radius" in obj:
@@ -672,11 +674,17 @@ def _validate_object(obj: dict) -> None:
         _validate_positive_number(obj, "height")
         _validate_positive_integer(obj, "segments")
     elif object_type == "ring":
+        obj.setdefault("start_angle", 0.0)
+        obj.setdefault("angle", 360.0)
         _validate_required_fields(obj, ("at", "radius_inner", "radius_outer", "height", "segments", "color"))
-        _validate_positive_number(obj, "radius_inner")
+        _validate_non_negative_number(obj, "radius_inner")
         _validate_positive_number(obj, "radius_outer")
         _validate_positive_number(obj, "height")
         _validate_positive_integer(obj, "segments")
+        if obj["angle"] == 0 or abs(obj["angle"]) > 360:
+            raise SGSLValidationError(
+                f"Ring {obj['name']} has invalid angle {obj['angle']}; expected -360..360 excluding 0"
+            )
         if obj["radius_inner"] >= obj["radius_outer"]:
             raise SGSLValidationError(
                 f"Ring {obj['name']} has invalid radii; radius_inner must be smaller than radius_outer"
@@ -729,6 +737,15 @@ def _validate_positive_number(obj: dict, field: str) -> None:
     if value <= 0:
         raise SGSLValidationError(
             f"{obj['type'].capitalize()} {obj['name']} has invalid {field} {value!r}; expected a positive number"
+        )
+
+
+def _validate_non_negative_number(obj: dict, field: str) -> None:
+    value = obj[field]
+    if value < 0:
+        raise SGSLValidationError(
+            f"{obj['type'].capitalize()} {obj['name']} has invalid {field} {value!r}; "
+            "expected a non-negative number"
         )
 
 

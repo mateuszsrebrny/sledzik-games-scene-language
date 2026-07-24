@@ -65,6 +65,7 @@ property: at
         | radius_outer
         | radius_top
         | radius_bottom
+        | start_angle
         | base_radius
         | pipe_radius
         | bend_radius
@@ -90,6 +91,8 @@ radius_outer: "radius_outer" expression
 radius_top: "radius_top" expression
 
 radius_bottom: "radius_bottom" expression
+
+start_angle: "start_angle" expression
 
 base_radius: "baseRadius" expression
 

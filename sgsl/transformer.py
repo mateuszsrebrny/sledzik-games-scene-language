@@ -61,6 +61,9 @@ class SGSLTransformer(Transformer):
     def radius_bottom(self, items):
         return ("radius_bottom", items[0])
 
+    def start_angle(self, items):
+        return ("start_angle", items[0])
+
     def base_radius(self, items):
         return ("base_radius", items[0])
 

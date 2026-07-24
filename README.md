@@ -117,6 +117,8 @@ Ring properties:
 - `radius_outer value`
 - `height value`
 - `segments integer`
+- `start_angle degrees` (optional, defaults to `0`)
+- `angle degrees` (optional, defaults to `360`)
 
 Pipe arc properties:
 - `pipeRadius value`
@@ -128,7 +130,7 @@ Notes:
 - `rotate` uses Euler angles in degrees in `X Y Z` order.
 - `cylinder` is vertical along the Y axis.
 - `frustum` is currently approximated by a stack of thin cylinders in both preview and Roblox output.
-- `ring` is currently approximated by a ring of small block segments in both preview and Roblox output.
+- `ring` is currently approximated by tangent block segments in both preview and Roblox output. `start_angle` and `angle` can select an angular slice.
 - `pipeArc` starts at `at`, initially follows `+X`, lies in the XY plane, and is approximated by short cylinders.
 
 Language docs:
@@ -137,6 +139,7 @@ Language docs:
 - [Components](docs/COMPONENTS.md)
 - [Nested components](docs/NESTED_COMPONENTS.md)
 - [Pipe arcs](docs/PIPE_ARC.md)
+- [Rings and ring slices](docs/RING.md)
 - [Imports](docs/IMPORT.md)
 - [Instance scale](docs/SCALE.md)
 - [Instance mirroring](docs/MIRROR.md)

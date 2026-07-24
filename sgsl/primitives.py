@@ -110,23 +110,32 @@ def _expand_ring(obj: dict) -> list[dict]:
     inner_radius = obj["radius_inner"]
     mid_radius = (outer_radius + inner_radius) / 2
     thickness = outer_radius - inner_radius
-    segment_span = (2 * math.pi * mid_radius) / segments
-    segment_size = max(thickness, segment_span * 0.9)
-    center_x, center_y, center_z = obj["position"]
+    total_angle = math.radians(obj.get("angle", 360.0))
+    start_angle = math.radians(obj.get("start_angle", 0.0))
+    segment_angle = total_angle / segments
+    tangent_size = 2 * outer_radius * math.sin(abs(segment_angle) / 2)
+    parent_transform = _make_transform(obj["position"], obj["rotation"])
 
     expanded: list[dict] = []
     for index in range(segments):
-        angle = (2 * math.pi * index) / segments
-        offset_x = math.cos(angle) * mid_radius
-        offset_z = math.sin(angle) * mid_radius
-        offset = _rotate_vector([offset_x, 0.0, offset_z], obj["rotation"])
+        midpoint_angle = start_angle + segment_angle * (index + 0.5)
+        local_position = [
+            math.cos(midpoint_angle) * mid_radius,
+            0.0,
+            math.sin(midpoint_angle) * mid_radius,
+        ]
+        local_rotation = [0.0, math.degrees(midpoint_angle) - 90.0, 0.0]
+        world_transform = _multiply_transforms(
+            parent_transform,
+            _make_transform(local_position, local_rotation),
+        )
         expanded.append(
             {
                 "type": "block",
                 "name": f"{obj['name']}_segment_{index + 1:02d}",
-                "position": [center_x + offset[0], center_y + offset[1], center_z + offset[2]],
-                "size": [segment_size, obj["height"], segment_size],
-                "rotation": obj["rotation"],
+                "position": _transform_position(world_transform),
+                "size": [tangent_size * 1.01, obj["height"], thickness],
+                "rotation": _transform_rotation(world_transform),
                 "color": obj["color"],
                 "transparency": obj["transparency"],
                 "emissive": obj["emissive"],

@@ -91,6 +91,12 @@ class SGSLTransformer(Transformer):
     def scale(self, items):
         return ("scale", items[0])
 
+    def count(self, items):
+        return ("count", items[0])
+
+    def step(self, items):
+        return ("step", list(items))
+
     def mirror(self, items):
         return ("mirror", items[0])
 
@@ -116,6 +122,9 @@ class SGSLTransformer(Transformer):
         return items[0]
 
     def instance_property(self, items):
+        return items[0]
+
+    def repeat_property(self, items):
         return items[0]
 
     def component_statement(self, items):
@@ -208,6 +217,27 @@ class SGSLTransformer(Transformer):
                 continue
             if key in data:
                 raise ValueError(f"Duplicate property {key!r} in component instance {name!r}")
+            data[key] = value
+        return data
+
+    def repeat(self, items):
+        name = items[0]
+        component_name = items[1]
+        data = {
+            "type": "component_repeat",
+            "name": name,
+            "component": component_name,
+            "parameter_overrides": {},
+        }
+        for key, value in items[2:]:
+            if key == "parameter_overrides":
+                param_name, param_value = value
+                if param_name in data["parameter_overrides"]:
+                    raise ValueError(f"Duplicate parameter override {param_name!r} in repeat {name!r}")
+                data["parameter_overrides"][param_name] = param_value
+                continue
+            if key in data:
+                raise ValueError(f"Duplicate property {key!r} in repeat {name!r}")
             data[key] = value
         return data
 

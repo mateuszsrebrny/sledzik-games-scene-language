@@ -257,6 +257,14 @@ def _expand_scene(raw_scene: dict) -> dict:
         if statement_type == "component_definition":
             continue
 
+        if statement_type == "component_repeat":
+            for repeated_instance in _materialize_repeat(statement, {}):
+                if repeated_instance["name"] in seen_instance_names:
+                    raise SGSLValidationError(f"Duplicate instance name {repeated_instance['name']!r}.")
+                seen_instance_names.add(repeated_instance["name"])
+                objects.extend(_expand_instance(repeated_instance, components))
+            continue
+
         if statement_type == "component_instance":
             if statement["name"] in seen_instance_names:
                 raise SGSLValidationError(f"Duplicate instance name {statement['name']!r}.")
@@ -338,6 +346,22 @@ def _expand_instance(
 
     expanded: list[dict] = []
     for template in component["objects"]:
+        if template["type"] == "component_repeat":
+            for repeated_instance in _materialize_repeat(template, parameter_values):
+                expanded.extend(
+                    _expand_instance(
+                        repeated_instance,
+                        components,
+                        world_transform,
+                        parameter_values,
+                        world_scale,
+                        instance_emissive,
+                        instance_path,
+                        depth + 1,
+                        mesh_group,
+                    )
+                )
+            continue
         if template["type"] == "mesh_group":
             expanded.extend(
                 _expand_mesh_group(
@@ -389,6 +413,44 @@ def _expand_instance(
         expanded.append(obj)
 
     return expanded
+
+
+def _materialize_repeat(template: dict, parameters: dict[str, float]) -> list[dict]:
+    count_value = _evaluate_expression(template.get("count", _number_node(0)), parameters)
+    if not math.isfinite(count_value) or count_value < 0 or not count_value.is_integer():
+        raise SGSLValidationError(
+            f"Repeat {template['name']!r} has invalid count {count_value!r}; "
+            "expected a non-negative integer"
+        )
+    count = int(count_value)
+    if count > 10_000:
+        raise SGSLValidationError(
+            f"Repeat {template['name']!r} has count {count}; maximum supported count is 10000"
+        )
+
+    start = _evaluate_vector(
+        template.get("at", [_number_node(0), _number_node(0), _number_node(0)]),
+        parameters,
+    )
+    step = _evaluate_vector(
+        template.get("step", [_number_node(0), _number_node(0), _number_node(0)]),
+        parameters,
+    )
+
+    instances: list[dict] = []
+    digits = max(2, len(str(count)))
+    for index in range(count):
+        instance = copy.deepcopy(template)
+        instance["type"] = "component_instance"
+        instance["name"] = f"{template['name']}{index + 1:0{digits}d}"
+        instance["at"] = [
+            _number_node(start[axis] + step[axis] * index)
+            for axis in range(3)
+        ]
+        instance.pop("count", None)
+        instance.pop("step", None)
+        instances.append(instance)
+    return instances
 
 
 def _expand_mesh_group(

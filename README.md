@@ -7,6 +7,7 @@ Current scope:
 - Build `preview/scene.json`.
 - View the result in a static Three.js previewer.
 - Support reusable `component` / `instance` scene fragments.
+- Repeat component instances with a configurable count and step vector.
 - Support `rotate` transforms on scene objects and instances.
 
 Not in scope right now:
@@ -138,6 +139,7 @@ Language docs:
 - [Wedges](docs/WEDGE.md)
 - [Components](docs/COMPONENTS.md)
 - [Nested components](docs/NESTED_COMPONENTS.md)
+- [Repeated instances](docs/REPEAT.md)
 - [Pipe arcs](docs/PIPE_ARC.md)
 - [Rings and ring slices](docs/RING.md)
 - [Imports](docs/IMPORT.md)
@@ -161,6 +163,18 @@ component Window
 
 Nested position and rotation are composed through the complete component tree.
 Expanded objects use full names such as `Factory01.Hall01.Window01.Glass`.
+
+Repeated instances are expanded before component transforms are composed:
+
+```sgsl
+repeat Dash RoadDash
+    count 4
+    at -6.2 0.06 0
+    step 4.1 0 0
+```
+
+The generated instances are named `Dash01` through `Dash04`. `count`, `at`,
+and `step` may use parameters of the containing component.
 
 SGSL files can import reusable component libraries. Paths are relative to the
 file containing the import:

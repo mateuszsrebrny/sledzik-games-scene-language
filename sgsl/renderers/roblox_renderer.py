@@ -218,6 +218,13 @@ def _render_expanded(obj: dict, red: int, green: int, blue: int) -> list[str]:
 
 
 def _material_name(obj: dict) -> str:
+    explicit_materials = {
+        "smoothPlastic": "SmoothPlastic",
+        "glass": "Glass",
+        "neon": "Neon",
+    }
+    if obj["material"] != "auto":
+        return explicit_materials[obj["material"]]
     if obj["emissive"] > 0:
         return "Neon"
     if obj["transparency"] > 0:

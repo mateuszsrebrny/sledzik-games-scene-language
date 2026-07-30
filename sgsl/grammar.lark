@@ -87,6 +87,7 @@ property: at
         | anchor
         | rotate
         | color
+        | material
         | transparency
         | emissive
 
@@ -127,6 +128,8 @@ scale: "scale" expression
 mirror: "mirror" NAME
 
 color: "color" COLOR
+
+material: "material" NAME
 
 transparency: "transparency" expression
 

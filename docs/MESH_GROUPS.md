@@ -25,7 +25,7 @@ its children.
 The preview and Roblox Part renderer expand the children normally. The GLB
 renderer combines all children into one GLB object named after the group.
 
-The first implementation requires one color, transparency and emissive value
+The first implementation requires one color, material, transparency and emissive value
 per mesh group. Split geometry into multiple groups when materials differ.
 
 Export a component without adding a scene wrapper:

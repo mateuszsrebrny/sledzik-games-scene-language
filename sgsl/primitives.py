@@ -50,6 +50,7 @@ def _expand_frustum(obj: dict) -> list[dict]:
                 "color": obj["color"],
                 "transparency": obj["transparency"],
                 "emissive": obj["emissive"],
+                "material": obj["material"],
                 **_render_metadata(obj),
             }
         )
@@ -88,6 +89,7 @@ def _expand_spherical_cap(obj: dict) -> list[dict]:
                 "color": obj["color"],
                 "transparency": obj["transparency"],
                 "emissive": obj["emissive"],
+                "material": obj["material"],
                 **_render_metadata(obj),
             }
         )
@@ -182,6 +184,7 @@ def _ring_part(obj: dict, part_type: str, name: str, size: list[float], transfor
         "color": obj["color"],
         "transparency": obj["transparency"],
         "emissive": obj["emissive"],
+        "material": obj["material"],
         **_render_metadata(obj),
     }
 
@@ -230,6 +233,7 @@ def _expand_pipe_arc(obj: dict) -> list[dict]:
                 "color": obj["color"],
                 "transparency": obj["transparency"],
                 "emissive": obj["emissive"],
+                "material": obj["material"],
                 **_render_metadata(obj),
             }
         )

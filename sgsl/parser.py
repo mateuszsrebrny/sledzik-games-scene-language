@@ -579,6 +579,7 @@ def _evaluate_object_expressions(obj: dict, environment: dict[str, float]) -> No
         obj["emissive"] = _evaluate_expression(obj["emissive"], environment)
     else:
         obj["emissive"] = 0.0
+    obj.setdefault("material", "auto")
 
 
 def _evaluate_vector(values: list, environment: dict[str, float]) -> list[float]:
@@ -770,6 +771,7 @@ def _validate_object(obj: dict) -> None:
     _validate_rotation(obj)
     _validate_transparency(obj)
     _validate_emissive(obj)
+    _validate_material(obj)
 
 
 def _validate_required_fields(obj: dict, fields: tuple[str, ...]) -> None:
@@ -865,6 +867,17 @@ def _validate_emissive(obj: dict) -> None:
         raise SGSLValidationError(
             f"{obj['type'].capitalize()} {obj['name']} has invalid emissive {emissive!r}; "
             "expected a non-negative number"
+        )
+
+
+def _validate_material(obj: dict) -> None:
+    material = obj.setdefault("material", "auto")
+    supported = {"auto", "smoothPlastic", "glass", "neon"}
+    if material not in supported:
+        choices = ", ".join(sorted(supported))
+        raise SGSLValidationError(
+            f"{obj['type'].capitalize()} {obj['name']} has unsupported material {material!r}; "
+            f"expected one of: {choices}"
         )
 
 

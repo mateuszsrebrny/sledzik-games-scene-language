@@ -197,7 +197,7 @@ def _rotation_matrix(rotation):
 
 
 def _material_key(obj: dict):
-    return resolve_color(obj["color"]), obj["transparency"], obj["emissive"]
+    return resolve_color(obj["color"]), obj["material"], obj["transparency"], obj["emissive"]
 
 
 def _material(obj: dict, name: str) -> dict:
@@ -208,7 +208,7 @@ def _material(obj: dict, name: str) -> dict:
         "pbrMetallicRoughness": {
             "baseColorFactor": [red / 255, green / 255, blue / 255, alpha],
             "metallicFactor": 0,
-            "roughnessFactor": 0.65,
+            "roughnessFactor": 0.2 if obj["material"] == "glass" else 0.65,
         },
         "doubleSided": True,
     }

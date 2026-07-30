@@ -86,6 +86,7 @@ Common properties:
 - `anchor x y z`
 - `rotate x y z`
 - `color name-or-hex`
+- `material auto|smoothPlastic|glass|neon`
 - `transparency value`
 - `emissive value`
 

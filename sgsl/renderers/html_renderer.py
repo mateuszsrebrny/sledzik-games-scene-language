@@ -23,6 +23,7 @@ def _render_object(obj: dict) -> dict:
         "color": resolve_color(obj["color"]),
         "transparency": obj["transparency"],
         "emissive": obj["emissive"],
+        "material": obj["material"],
     }
     if obj["type"] in ("block", "wedge"):
         payload["size"] = obj["size"]

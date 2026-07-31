@@ -324,10 +324,17 @@
             roughness: 0.2,
             metalness: 0,
           });
-        } else if (obj.material === "smoothPlastic") {
+        } else if (["asphalt", "cobblestone", "concrete", "pavement", "smoothPlastic"].includes(obj.material)) {
+          const roughnessByMaterial = {
+            asphalt: 0.95,
+            cobblestone: 0.9,
+            concrete: 0.8,
+            pavement: 0.85,
+            smoothPlastic: 0.65,
+          };
           material = new THREE.MeshStandardMaterial({
             ...materialOptions,
-            roughness: 0.65,
+            roughness: roughnessByMaterial[obj.material],
             metalness: 0,
             emissive: obj.emissive > 0 ? obj.color : 0x000000,
             emissiveIntensity: obj.emissive,

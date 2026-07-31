@@ -203,12 +203,20 @@ def _material_key(obj: dict):
 def _material(obj: dict, name: str) -> dict:
     red, green, blue = color_to_rgb(obj["color"])
     alpha = 1.0 - obj["transparency"]
+    roughness_by_material = {
+        "asphalt": 0.95,
+        "cobblestone": 0.9,
+        "concrete": 0.8,
+        "glass": 0.2,
+        "pavement": 0.85,
+        "smoothPlastic": 0.65,
+    }
     material = {
         "name": f"{name}Material",
         "pbrMetallicRoughness": {
             "baseColorFactor": [red / 255, green / 255, blue / 255, alpha],
             "metallicFactor": 0,
-            "roughnessFactor": 0.2 if obj["material"] == "glass" else 0.65,
+            "roughnessFactor": roughness_by_material.get(obj["material"], 0.65),
         },
         "doubleSided": True,
     }

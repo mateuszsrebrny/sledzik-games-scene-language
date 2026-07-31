@@ -86,7 +86,7 @@ Common properties:
 - `anchor x y z`
 - `rotate x y z`
 - `color name-or-hex`
-- `material auto|smoothPlastic|glass|neon`
+- `material auto|smoothPlastic|glass|neon|asphalt|pavement|concrete|cobblestone`
 - `transparency value`
 - `emissive value`
 

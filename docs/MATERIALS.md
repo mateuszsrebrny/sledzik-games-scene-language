@@ -8,6 +8,10 @@ material auto
 material smoothPlastic
 material glass
 material neon
+material asphalt
+material pavement
+material concrete
+material cobblestone
 ```
 
 `auto` is the default and preserves the original renderer inference:

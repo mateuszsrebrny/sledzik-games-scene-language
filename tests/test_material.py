@@ -78,6 +78,27 @@ class MaterialTests(unittest.TestCase):
                 ).strip()
             )
 
+    def test_maps_city_materials_to_native_roblox_materials(self):
+        for material, roblox_name in (
+            ("asphalt", "Asphalt"),
+            ("pavement", "Pavement"),
+            ("concrete", "Concrete"),
+            ("cobblestone", "Cobblestone"),
+        ):
+            scene = parse_text(
+                dedent(
+                    f"""
+                    scene Demo
+                    block Surface
+                        at 0 0 0
+                        size 1 1 1
+                        color gray
+                        material {material}
+                    """
+                ).strip()
+            )
+            self.assertIn(f"Enum.Material.{roblox_name}", render_roblox(scene))
+
 
 if __name__ == "__main__":
     unittest.main()

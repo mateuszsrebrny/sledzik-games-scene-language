@@ -872,7 +872,16 @@ def _validate_emissive(obj: dict) -> None:
 
 def _validate_material(obj: dict) -> None:
     material = obj.setdefault("material", "auto")
-    supported = {"auto", "smoothPlastic", "glass", "neon"}
+    supported = {
+        "asphalt",
+        "auto",
+        "cobblestone",
+        "concrete",
+        "glass",
+        "neon",
+        "pavement",
+        "smoothPlastic",
+    }
     if material not in supported:
         choices = ", ".join(sorted(supported))
         raise SGSLValidationError(

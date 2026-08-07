@@ -131,7 +131,7 @@ def _geometry(obj: dict) -> tuple[list[tuple[float, float, float]], list[int]]:
     if obj["type"] == "wedge":
         return _wedge_geometry(obj["size"])
     if obj["type"] == "cylinder":
-        return _cylinder_geometry(obj["radius"], obj["height"])
+        return _cylinder_geometry(obj["radius"], obj["height"], obj.get("segments", 24))
     if obj["type"] == "hollow_frustum":
         return hollow_frustum_geometry(
             obj["outer_bottom_radius"], obj["outer_top_radius"],

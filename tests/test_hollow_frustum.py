@@ -3,9 +3,9 @@ from textwrap import dedent
 
 from sgsl.hollow_frustum_geometry import hollow_frustum_geometry
 from sgsl.parser import SGSLValidationError, parse_text
-from sgsl.renderers.glb_renderer import _geometry
 from sgsl.renderers.html_renderer import render as render_html
 from sgsl.renderers.roblox_renderer import render as render_roblox
+from sgsl.renderers.glb_renderer import _geometry
 
 
 class HollowFrustumTests(unittest.TestCase):
@@ -71,6 +71,23 @@ class HollowFrustumTests(unittest.TestCase):
         source = self.SOURCE.replace("segments 8", "segments 2")
         with self.assertRaises(SGSLValidationError):
             parse_text(source)
+
+    def test_cylinder_segments_are_used_by_glb(self):
+        scene = parse_text(
+            dedent(
+                """
+                scene Demo
+                cylinder Ring
+                    at 0 0 0
+                    radius 1
+                    height 1
+                    segments 7
+                    color gray
+                """
+            ).strip()
+        )
+        vertices, _ = _geometry(scene["objects"][0])
+        self.assertEqual(len(vertices), 16)
 
 
 if __name__ == "__main__":

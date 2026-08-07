@@ -306,7 +306,7 @@
           ]);
           geometry.computeVertexNormals();
         } else if (obj.type === "cylinder") {
-          geometry = new THREE.CylinderGeometry(obj.radius, obj.radius, obj.height, 32);
+          geometry = new THREE.CylinderGeometry(obj.radius, obj.radius, obj.height, obj.segments || 32);
         } else if (obj.type === "hollow_frustum") {
           geometry = new THREE.BufferGeometry();
           geometry.setAttribute("position", new THREE.Float32BufferAttribute(obj.vertices.flat(), 3));

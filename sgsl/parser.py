@@ -738,6 +738,12 @@ def _validate_object(obj: dict) -> None:
         _validate_required_fields(obj, ("at", "radius", "height", "color"))
         _validate_positive_number(obj, "radius")
         _validate_positive_number(obj, "height")
+        if "segments" in obj:
+            _validate_positive_integer(obj, "segments")
+            if obj["segments"] < 3:
+                raise SGSLValidationError(
+                    f"Cylinder {obj['name']} has invalid segments {obj['segments']}; expected at least 3"
+                )
     elif object_type == "frustum":
         _validate_required_fields(obj, ("at", "radius_bottom", "radius_top", "height", "segments", "color"))
         _validate_positive_number(obj, "radius_bottom")

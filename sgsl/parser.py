@@ -557,6 +557,14 @@ def _evaluate_object_expressions(obj: dict, environment: dict[str, float]) -> No
         obj["radius_top"] = _evaluate_expression(obj["radius_top"], environment)
     if "radius_bottom" in obj:
         obj["radius_bottom"] = _evaluate_expression(obj["radius_bottom"], environment)
+    if "outer_bottom_radius" in obj:
+        obj["outer_bottom_radius"] = _evaluate_expression(obj["outer_bottom_radius"], environment)
+    if "outer_top_radius" in obj:
+        obj["outer_top_radius"] = _evaluate_expression(obj["outer_top_radius"], environment)
+    if "inner_bottom_radius" in obj:
+        obj["inner_bottom_radius"] = _evaluate_expression(obj["inner_bottom_radius"], environment)
+    if "inner_top_radius" in obj:
+        obj["inner_top_radius"] = _evaluate_expression(obj["inner_top_radius"], environment)
     if "start_angle" in obj:
         obj["start_angle"] = _evaluate_expression(obj["start_angle"], environment)
     if "base_radius" in obj:
@@ -736,6 +744,25 @@ def _validate_object(obj: dict) -> None:
         _validate_positive_number(obj, "radius_top")
         _validate_positive_number(obj, "height")
         _validate_positive_integer(obj, "segments")
+    elif object_type == "hollow_frustum":
+        obj.setdefault("segments", 24)
+        _validate_required_fields(
+            obj,
+            ("at", "outer_bottom_radius", "outer_top_radius", "inner_bottom_radius", "inner_top_radius", "height", "segments", "color"),
+        )
+        for field in ("outer_bottom_radius", "outer_top_radius", "height"):
+            _validate_positive_number(obj, field)
+        for field in ("inner_bottom_radius", "inner_top_radius"):
+            _validate_non_negative_number(obj, field)
+        _validate_positive_integer(obj, "segments")
+        if obj["segments"] < 3:
+            raise SGSLValidationError(
+                f"Hollow frustum {obj['name']} has invalid segments {obj['segments']}; expected at least 3"
+            )
+        if obj["outer_bottom_radius"] <= obj["inner_bottom_radius"] or obj["outer_top_radius"] <= obj["inner_top_radius"]:
+            raise SGSLValidationError(
+                f"Hollow frustum {obj['name']} has invalid radii; outer radius must be larger than inner radius"
+            )
     elif object_type == "ring":
         obj.setdefault("start_angle", 0.0)
         obj.setdefault("angle", 360.0)
@@ -947,6 +974,10 @@ def _get_object_bounds(obj: dict) -> tuple[float, float, float]:
     if obj["type"] == "pipe_arc":
         diameter = 2 * (obj["bend_radius"] + obj["pipe_radius"])
         return diameter, diameter, obj["pipe_radius"] * 2
+
+    if obj["type"] == "hollow_frustum":
+        max_radius = max(obj["outer_bottom_radius"], obj["outer_top_radius"])
+        return max_radius * 2, obj["height"], max_radius * 2
 
     max_radius = max(obj["radius_bottom"], obj["radius_top"])
     diameter = max_radius * 2

@@ -14,6 +14,7 @@ object: block
       | wedge
       | cylinder
       | frustum
+      | hollow_frustum
       | ring
       | spherical_cap
       | pipe_arc
@@ -25,6 +26,8 @@ wedge: "wedge" NAME property*
 cylinder: "cylinder" NAME property*
 
 frustum: "frustum" NAME property*
+
+hollow_frustum: "hollowFrustum" NAME property*
 
 ring: "ring" NAME property*
 
@@ -77,6 +80,10 @@ property: at
         | radius_outer
         | radius_top
         | radius_bottom
+        | outer_bottom_radius
+        | outer_top_radius
+        | inner_bottom_radius
+        | inner_top_radius
         | start_angle
         | base_radius
         | pipe_radius
@@ -104,6 +111,14 @@ radius_outer: "radius_outer" expression
 radius_top: "radius_top" expression
 
 radius_bottom: "radius_bottom" expression
+
+outer_bottom_radius: "outerBottomRadius" expression
+
+outer_top_radius: "outerTopRadius" expression
+
+inner_bottom_radius: "innerBottomRadius" expression
+
+inner_top_radius: "innerTopRadius" expression
 
 start_angle: "start_angle" expression
 

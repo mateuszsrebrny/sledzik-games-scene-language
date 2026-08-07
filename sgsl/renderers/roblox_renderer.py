@@ -127,6 +127,12 @@ def _indent_lines(lines: list[str], spaces: int = 4) -> list[str]:
 def _render_object(obj: dict, red: int, green: int, blue: int) -> list[str]:
     if obj["type"] == "frustum":
         return _render_frustum(obj, red, green, blue)
+    if obj["type"] == "hollow_frustum":
+        fallback = dict(obj)
+        fallback["type"] = "frustum"
+        fallback["radius_bottom"] = obj["outer_bottom_radius"]
+        fallback["radius_top"] = obj["outer_top_radius"]
+        return _render_frustum(fallback, red, green, blue)
     if obj["type"] == "spherical_cap":
         return _render_spherical_cap(obj, red, green, blue)
     if obj["type"] == "ring":

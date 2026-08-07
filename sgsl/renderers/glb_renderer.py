@@ -9,6 +9,7 @@ from pathlib import Path
 from sgsl.colors import color_to_rgb, resolve_color
 from sgsl.parser import SGSLValidationError
 from sgsl.primitives import iter_render_objects
+from sgsl.hollow_frustum_geometry import hollow_frustum_geometry
 
 
 def write(scene: dict, output_path: str | Path) -> Path:
@@ -131,6 +132,12 @@ def _geometry(obj: dict) -> tuple[list[tuple[float, float, float]], list[int]]:
         return _wedge_geometry(obj["size"])
     if obj["type"] == "cylinder":
         return _cylinder_geometry(obj["radius"], obj["height"])
+    if obj["type"] == "hollow_frustum":
+        return hollow_frustum_geometry(
+            obj["outer_bottom_radius"], obj["outer_top_radius"],
+            obj["inner_bottom_radius"], obj["inner_top_radius"],
+            obj["height"], obj["segments"],
+        )
     raise SGSLValidationError(f"GLB renderer does not support {obj['type']!r}")
 
 

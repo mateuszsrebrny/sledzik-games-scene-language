@@ -5,6 +5,7 @@ from pathlib import Path
 
 from sgsl.colors import resolve_color
 from sgsl.primitives import iter_render_objects
+from sgsl.hollow_frustum_geometry import hollow_frustum_geometry
 
 
 def render(scene: dict) -> dict:
@@ -30,6 +31,12 @@ def _render_object(obj: dict) -> dict:
     elif obj["type"] == "cylinder":
         payload["radius"] = obj["radius"]
         payload["height"] = obj["height"]
+    elif obj["type"] == "hollow_frustum":
+        payload["vertices"], payload["indices"] = hollow_frustum_geometry(
+            obj["outer_bottom_radius"], obj["outer_top_radius"],
+            obj["inner_bottom_radius"], obj["inner_top_radius"],
+            obj["height"], obj["segments"],
+        )
     else:
         raise ValueError(f"Unsupported render object type: {obj['type']}")
     return payload

@@ -61,6 +61,18 @@ class SGSLTransformer(Transformer):
     def radius_bottom(self, items):
         return ("radius_bottom", items[0])
 
+    def outer_bottom_radius(self, items):
+        return ("outer_bottom_radius", items[0])
+
+    def outer_top_radius(self, items):
+        return ("outer_top_radius", items[0])
+
+    def inner_bottom_radius(self, items):
+        return ("inner_bottom_radius", items[0])
+
+    def inner_top_radius(self, items):
+        return ("inner_top_radius", items[0])
+
     def start_angle(self, items):
         return ("start_angle", items[0])
 
@@ -153,6 +165,9 @@ class SGSLTransformer(Transformer):
 
     def frustum(self, items):
         return self._build_object("frustum", items)
+
+    def hollow_frustum(self, items):
+        return self._build_object("hollow_frustum", items)
 
     def ring(self, items):
         return self._build_object("ring", items)

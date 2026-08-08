@@ -15,6 +15,7 @@ object: block
       | cylinder
       | frustum
       | hollow_frustum
+      | hollow_pipe_arc
       | ring
       | spherical_cap
       | pipe_arc
@@ -28,6 +29,8 @@ cylinder: "cylinder" NAME property*
 frustum: "frustum" NAME property*
 
 hollow_frustum: "hollowFrustum" NAME property*
+
+hollow_pipe_arc: "hollowPipeArc" NAME property*
 
 ring: "ring" NAME property*
 
@@ -84,7 +87,11 @@ property: at
         | outer_top_radius
         | inner_bottom_radius
         | inner_top_radius
+        | outer_radius
+        | inner_radius
         | start_angle
+        | cross_start_angle
+        | cross_angle
         | base_radius
         | pipe_radius
         | bend_radius
@@ -120,7 +127,16 @@ inner_bottom_radius: "innerBottomRadius" expression
 
 inner_top_radius: "innerTopRadius" expression
 
+outer_radius: "outerRadius" expression
+
+inner_radius: "innerRadius" expression
+
 start_angle: "start_angle" expression
+           | "startAngle" expression
+
+cross_start_angle: "crossStartAngle" expression
+
+cross_angle: "crossAngle" expression
 
 base_radius: "baseRadius" expression
 

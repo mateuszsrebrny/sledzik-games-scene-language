@@ -52,11 +52,34 @@ class HollowFrustumTests(unittest.TestCase):
         self.assertEqual(len(expected[0]), 32)
         self.assertEqual(len(expected[1]), 192)
 
+    def test_partial_sweep_creates_an_open_trough(self):
+        source = self.SOURCE.replace("segments 8", "segments 8\n            startAngle 180\n            angle 180")
+        obj = parse_text(source)["objects"][0]
+        expected = hollow_frustum_geometry(2, 1.5, 1.5, 1, 4, 8, 180, 180)
+        html_obj = render_html(parse_text(source))["objects"][0]
+        self.assertEqual(html_obj["vertices"], expected[0])
+        self.assertEqual(html_obj["indices"], expected[1])
+        self.assertEqual(_geometry(obj), expected)
+        self.assertEqual(len(expected[0]), 36)
+        self.assertEqual(len(expected[1]), 204)
+
+    def test_partial_sweep_rejects_zero_or_oversized_angles(self):
+        for angle in ("0", "361"):
+            source = self.SOURCE.replace("segments 8", f"segments 8\n            angle {angle}")
+            with self.assertRaises(SGSLValidationError):
+                parse_text(source)
+
     def test_roblox_uses_outer_frustum_fallback(self):
         source = render_roblox(parse_text(self.SOURCE))
         self.assertIn("makeSteppedFrustum", source)
         self.assertIn("2,", source)
         self.assertNotIn("innerBottomRadius", source)
+
+    def test_roblox_approximates_partial_sweep_with_open_segments(self):
+        source = self.SOURCE.replace("segments 8", "segments 8\n            startAngle 180\n            angle 180")
+        rendered = render_roblox(parse_text(source))
+        self.assertIn("makeBlock", rendered)
+        self.assertEqual(rendered.count("Builder.makeSteppedFrustum("), 1)
 
     def test_rejects_invalid_radii_and_segments(self):
         for replacements in (

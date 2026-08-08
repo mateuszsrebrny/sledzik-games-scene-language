@@ -1,9 +1,18 @@
 from __future__ import annotations
 
+import math
 from pathlib import Path
 
 from sgsl.colors import color_to_rgb
-from sgsl.primitives import _expand_spherical_cap, iter_render_objects
+from sgsl.primitives import (
+    _basis_transform,
+    _expand_spherical_cap,
+    _make_transform,
+    _multiply_transforms,
+    _transform_position,
+    _transform_rotation,
+    iter_render_objects,
+)
 
 
 def _load_builder_source() -> str:
@@ -128,11 +137,15 @@ def _render_object(obj: dict, red: int, green: int, blue: int) -> list[str]:
     if obj["type"] == "frustum":
         return _render_frustum(obj, red, green, blue)
     if obj["type"] == "hollow_frustum":
+        if abs(obj["angle"]) < 360:
+            return _render_partial_hollow_frustum(obj, red, green, blue)
         fallback = dict(obj)
         fallback["type"] = "frustum"
         fallback["radius_bottom"] = obj["outer_bottom_radius"]
         fallback["radius_top"] = obj["outer_top_radius"]
         return _render_frustum(fallback, red, green, blue)
+    if obj["type"] == "hollow_pipe_arc":
+        return _render_hollow_pipe_arc(obj, red, green, blue)
     if obj["type"] == "spherical_cap":
         return _render_spherical_cap(obj, red, green, blue)
     if obj["type"] == "ring":
@@ -140,6 +153,73 @@ def _render_object(obj: dict, red: int, green: int, blue: int) -> list[str]:
     if obj["type"] == "pipe_arc":
         return _render_expanded(obj, red, green, blue)
     return _render_part(obj, red, green, blue)
+
+
+def _render_hollow_pipe_arc(obj: dict, red: int, green: int, blue: int) -> list[str]:
+    """Use short cylinders as the lightweight Roblox fallback for a curved trough."""
+    segments = obj["segments"]
+    path_start = math.radians(obj["start_angle"])
+    segment_angle = math.radians(obj["angle"]) / segments
+    parent_transform = _make_transform(obj["position"], obj["rotation"])
+    segment_length = obj["bend_radius"] * abs(segment_angle) * 1.02
+    lines: list[str] = []
+
+    for index in range(segments):
+        midpoint_angle = path_start + segment_angle * (index + 0.5)
+        local_position = [
+            obj["bend_radius"] * math.cos(midpoint_angle),
+            obj["bend_radius"] * math.sin(midpoint_angle),
+            0.0,
+        ]
+        local_transform = _make_transform(local_position, [0.0, 0.0, math.degrees(midpoint_angle)])
+        world_transform = _multiply_transforms(parent_transform, local_transform)
+        segment = dict(obj)
+        segment["type"] = "cylinder"
+        segment["name"] = f"{obj['name']}_segment_{index + 1:02d}"
+        segment["radius"] = obj["outer_radius"]
+        segment["height"] = segment_length
+        segment["position"] = _transform_position(world_transform)
+        segment["rotation"] = _transform_rotation(world_transform)
+        lines.extend(_render_part(segment, red, green, blue))
+
+    return lines
+
+
+def _render_partial_hollow_frustum(obj: dict, red: int, green: int, blue: int) -> list[str]:
+    """Approximate an open trough with Roblox Parts along its lower arc."""
+    segments = obj["segments"]
+    start_angle = math.radians(obj["start_angle"])
+    segment_angle = math.radians(obj["angle"]) / segments
+    outer_radius = (obj["outer_bottom_radius"] + obj["outer_top_radius"]) / 2
+    inner_radius = (obj["inner_bottom_radius"] + obj["inner_top_radius"]) / 2
+    radial_center = (outer_radius + inner_radius) / 2
+    radial_depth = outer_radius - inner_radius
+    parent_transform = _make_transform(obj["position"], obj["rotation"])
+    lines: list[str] = []
+
+    for index in range(segments):
+        midpoint_angle = start_angle + segment_angle * (index + 0.5)
+        radial = [math.cos(midpoint_angle), 0.0, math.sin(midpoint_angle)]
+        direction = 1.0 if segment_angle >= 0 else -1.0
+        tangent = [-math.sin(midpoint_angle) * direction, 0.0, math.cos(midpoint_angle) * direction]
+        center = [component * radial_center for component in radial]
+        transform = _multiply_transforms(
+            parent_transform,
+            _basis_transform(center, tangent, [0.0, 1.0, 0.0], radial),
+        )
+        segment = dict(obj)
+        segment["type"] = "block"
+        segment["name"] = f"{obj['name']}_segment_{index + 1:02d}"
+        segment["size"] = [
+            radial_center * abs(segment_angle) * 1.04,
+            obj["height"],
+            radial_depth,
+        ]
+        segment["position"] = _transform_position(transform)
+        segment["rotation"] = _transform_rotation(transform)
+        lines.extend(_render_part(segment, red, green, blue))
+
+    return lines
 
 
 def _render_part(obj: dict, red: int, green: int, blue: int) -> list[str]:

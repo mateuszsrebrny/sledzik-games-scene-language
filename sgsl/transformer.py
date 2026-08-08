@@ -73,6 +73,12 @@ class SGSLTransformer(Transformer):
     def inner_top_radius(self, items):
         return ("inner_top_radius", items[0])
 
+    def outer_radius(self, items):
+        return ("outer_radius", items[0])
+
+    def inner_radius(self, items):
+        return ("inner_radius", items[0])
+
     def start_angle(self, items):
         return ("start_angle", items[0])
 
@@ -87,6 +93,12 @@ class SGSLTransformer(Transformer):
 
     def angle(self, items):
         return ("angle", items[0])
+
+    def cross_start_angle(self, items):
+        return ("cross_start_angle", items[0])
+
+    def cross_angle(self, items):
+        return ("cross_angle", items[0])
 
     def height(self, items):
         return ("height", items[0])
@@ -168,6 +180,9 @@ class SGSLTransformer(Transformer):
 
     def hollow_frustum(self, items):
         return self._build_object("hollow_frustum", items)
+
+    def hollow_pipe_arc(self, items):
+        return self._build_object("hollow_pipe_arc", items)
 
     def ring(self, items):
         return self._build_object("ring", items)

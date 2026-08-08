@@ -565,6 +565,10 @@ def _evaluate_object_expressions(obj: dict, environment: dict[str, float]) -> No
         obj["inner_bottom_radius"] = _evaluate_expression(obj["inner_bottom_radius"], environment)
     if "inner_top_radius" in obj:
         obj["inner_top_radius"] = _evaluate_expression(obj["inner_top_radius"], environment)
+    if "outer_radius" in obj:
+        obj["outer_radius"] = _evaluate_expression(obj["outer_radius"], environment)
+    if "inner_radius" in obj:
+        obj["inner_radius"] = _evaluate_expression(obj["inner_radius"], environment)
     if "start_angle" in obj:
         obj["start_angle"] = _evaluate_expression(obj["start_angle"], environment)
     if "base_radius" in obj:
@@ -575,6 +579,10 @@ def _evaluate_object_expressions(obj: dict, environment: dict[str, float]) -> No
         obj["bend_radius"] = _evaluate_expression(obj["bend_radius"], environment)
     if "angle" in obj:
         obj["angle"] = _evaluate_expression(obj["angle"], environment)
+    if "cross_start_angle" in obj:
+        obj["cross_start_angle"] = _evaluate_expression(obj["cross_start_angle"], environment)
+    if "cross_angle" in obj:
+        obj["cross_angle"] = _evaluate_expression(obj["cross_angle"], environment)
     if "height" in obj:
         obj["height"] = _evaluate_expression(obj["height"], environment)
     if "segments" in obj:
@@ -714,6 +722,8 @@ def _scale_object_dimensions(obj: dict, scale: float) -> None:
         "radius_top",
         "radius_bottom",
         "base_radius",
+        "outer_radius",
+        "inner_radius",
         "pipe_radius",
         "bend_radius",
         "height",
@@ -752,6 +762,8 @@ def _validate_object(obj: dict) -> None:
         _validate_positive_integer(obj, "segments")
     elif object_type == "hollow_frustum":
         obj.setdefault("segments", 24)
+        obj.setdefault("start_angle", 0.0)
+        obj.setdefault("angle", 360.0)
         _validate_required_fields(
             obj,
             ("at", "outer_bottom_radius", "outer_top_radius", "inner_bottom_radius", "inner_top_radius", "height", "segments", "color"),
@@ -768,6 +780,39 @@ def _validate_object(obj: dict) -> None:
         if obj["outer_bottom_radius"] <= obj["inner_bottom_radius"] or obj["outer_top_radius"] <= obj["inner_top_radius"]:
             raise SGSLValidationError(
                 f"Hollow frustum {obj['name']} has invalid radii; outer radius must be larger than inner radius"
+            )
+        if obj["angle"] == 0 or abs(obj["angle"]) > 360:
+            raise SGSLValidationError(
+                f"Hollow frustum {obj['name']} has invalid angle {obj['angle']}; expected -360..360 excluding 0"
+            )
+    elif object_type == "hollow_pipe_arc":
+        obj.setdefault("segments", 16)
+        obj.setdefault("start_angle", 0.0)
+        obj.setdefault("cross_start_angle", 0.0)
+        obj.setdefault("cross_angle", 180.0)
+        _validate_required_fields(
+            obj,
+            ("at", "outer_radius", "inner_radius", "bend_radius", "angle", "segments", "color"),
+        )
+        for field in ("outer_radius", "bend_radius"):
+            _validate_positive_number(obj, field)
+        _validate_non_negative_number(obj, "inner_radius")
+        _validate_positive_integer(obj, "segments")
+        if obj["segments"] < 3:
+            raise SGSLValidationError(
+                f"Hollow pipe arc {obj['name']} has invalid segments {obj['segments']}; expected at least 3"
+            )
+        if obj["inner_radius"] >= obj["outer_radius"]:
+            raise SGSLValidationError(
+                f"Hollow pipe arc {obj['name']} has invalid radii; outer radius must be larger than inner radius"
+            )
+        if obj["angle"] == 0 or abs(obj["angle"]) > 360:
+            raise SGSLValidationError(
+                f"Hollow pipe arc {obj['name']} has invalid angle {obj['angle']}; expected -360..360 excluding 0"
+            )
+        if obj["cross_angle"] == 0 or abs(obj["cross_angle"]) > 360:
+            raise SGSLValidationError(
+                f"Hollow pipe arc {obj['name']} has invalid cross angle {obj['cross_angle']}; expected -360..360 excluding 0"
             )
     elif object_type == "ring":
         obj.setdefault("start_angle", 0.0)
@@ -980,6 +1025,10 @@ def _get_object_bounds(obj: dict) -> tuple[float, float, float]:
     if obj["type"] == "pipe_arc":
         diameter = 2 * (obj["bend_radius"] + obj["pipe_radius"])
         return diameter, diameter, obj["pipe_radius"] * 2
+
+    if obj["type"] == "hollow_pipe_arc":
+        diameter = 2 * (obj["bend_radius"] + obj["outer_radius"])
+        return diameter, diameter, obj["outer_radius"] * 2
 
     if obj["type"] == "hollow_frustum":
         max_radius = max(obj["outer_bottom_radius"], obj["outer_top_radius"])

@@ -6,6 +6,7 @@ from pathlib import Path
 from sgsl.colors import resolve_color
 from sgsl.primitives import iter_render_objects
 from sgsl.hollow_frustum_geometry import hollow_frustum_geometry
+from sgsl.hollow_pipe_arc_geometry import hollow_pipe_arc_geometry
 
 
 def render(scene: dict) -> dict:
@@ -36,6 +37,13 @@ def _render_object(obj: dict) -> dict:
             obj["outer_bottom_radius"], obj["outer_top_radius"],
             obj["inner_bottom_radius"], obj["inner_top_radius"],
             obj["height"], obj["segments"],
+            obj["start_angle"], obj["angle"],
+        )
+    elif obj["type"] == "hollow_pipe_arc":
+        payload["vertices"], payload["indices"] = hollow_pipe_arc_geometry(
+            obj["outer_radius"], obj["inner_radius"], obj["bend_radius"],
+            obj["angle"], obj["segments"], obj["start_angle"],
+            obj["cross_start_angle"], obj["cross_angle"],
         )
     else:
         raise ValueError(f"Unsupported render object type: {obj['type']}")

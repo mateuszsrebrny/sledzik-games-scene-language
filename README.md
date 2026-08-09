@@ -133,7 +133,7 @@ Notes:
 - `cylinder` is vertical along the Y axis.
 - `frustum` is currently approximated by a stack of thin cylinders in both preview and Roblox output.
 - `ring` is approximated by gap-free trapezoidal segments made from blocks and wedges in both preview and Roblox output. `start_angle` and `angle` can select an angular slice.
-- `pipeArc` starts at `at`, initially follows `+X`, lies in the XY plane, and is approximated by short cylinders.
+- `pipeArc` starts at `at`, initially follows `+X`, lies in the XY plane, and is exported as a capped solid mesh by HTML/GLB. Roblox output keeps the short-cylinder fallback.
 
 Language docs:
 - [Rotation](docs/ROTATE.md)

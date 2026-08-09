@@ -4,7 +4,9 @@
 
 Introduce a primitive for curved pipes.
 
-`pipeArc` generates a pipe following a circular arc. Internally it is expanded into multiple short cylinders.
+`pipeArc` generates a solid pipe following a circular arc. HTML and GLB renderers
+use a shared capped mesh, while the Roblox renderer keeps a lightweight fallback
+made from short cylinders.
 
 No new rendering logic is required in Roblox or HTML beyond ordinary cylinders.
 
@@ -58,9 +60,23 @@ Default orientation:
 
 ---
 
-## Expansion
+## Mesh generation
 
-The renderer expands `pipeArc` into `segments` short cylinders.
+The HTML and GLB backends use the same swept-tube mesh generator. It creates:
+
+- a circular cross-section at each path segment,
+- the outer tube surface,
+- a closed cap at both ends.
+
+The `segments` parameter controls both the path resolution and circular
+cross-section resolution for the exported mesh.
+
+## Roblox fallback
+
+Roblox output expands `pipeArc` into `segments` short cylinders. This keeps the
+generated Lua compatible with the existing Part-based runtime without requiring
+an uploaded mesh asset. The fallback can look slightly faceted; the imported
+GLB is the smooth representation for Roblox scenes that use mesh assets.
 
 Each cylinder:
 

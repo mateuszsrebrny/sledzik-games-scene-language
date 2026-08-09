@@ -11,11 +11,12 @@ from sgsl.parser import SGSLValidationError
 from sgsl.primitives import iter_render_objects
 from sgsl.hollow_frustum_geometry import hollow_frustum_geometry
 from sgsl.hollow_pipe_arc_geometry import hollow_pipe_arc_geometry
+from sgsl.pipe_arc_geometry import pipe_arc_geometry
 
 
 def write(scene: dict, output_path: str | Path) -> Path:
     groups: OrderedDict[str, list[dict]] = OrderedDict()
-    for obj in iter_render_objects(scene):
+    for obj in iter_render_objects(scene, expand_pipe_arcs=False):
         key = obj.get("mesh_group", obj["name"])
         groups.setdefault(key, []).append(obj)
 
@@ -144,6 +145,10 @@ def _geometry(obj: dict) -> tuple[list[tuple[float, float, float]], list[int]]:
             obj["outer_radius"], obj["inner_radius"], obj["bend_radius"],
             obj["angle"], obj["segments"], obj["start_angle"],
             obj["cross_start_angle"], obj["cross_angle"],
+        )
+    if obj["type"] == "pipe_arc":
+        return pipe_arc_geometry(
+            obj["pipe_radius"], obj["bend_radius"], obj["angle"], obj["segments"]
         )
     raise SGSLValidationError(f"GLB renderer does not support {obj['type']!r}")
 

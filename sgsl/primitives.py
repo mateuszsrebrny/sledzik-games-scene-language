@@ -4,7 +4,7 @@ import math
 from collections import deque
 
 
-def iter_render_objects(scene: dict) -> list[dict]:
+def iter_render_objects(scene: dict, *, expand_pipe_arcs: bool = True) -> list[dict]:
     objects: list[dict] = []
     queue = deque(scene["objects"])
 
@@ -16,7 +16,7 @@ def iter_render_objects(scene: dict) -> list[dict]:
             queue.extend(_expand_frustum(obj))
         elif obj["type"] == "ring":
             queue.extend(_expand_ring(obj))
-        elif obj["type"] == "pipe_arc":
+        elif obj["type"] == "pipe_arc" and expand_pipe_arcs:
             queue.extend(_expand_pipe_arc(obj))
         else:
             objects.append(obj)

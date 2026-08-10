@@ -69,7 +69,7 @@ function Builder.makeSteppedFrustum(parent, name, bottomRadius, topRadius, heigh
 
 	for i = 1, sliceCount do
 		local t = (sliceCount == 1) and 1 or ((i - 1) / (sliceCount - 1))
-		local radius = bottomRadius + ((topRadius - bottomRadius) * t)
+		local radius = math.max(bottomRadius + ((topRadius - bottomRadius) * t), 0.02)
 		local centerY = currentY + (sliceHeight / 2)
 		local sliceOffset = rotationOnly:VectorToWorldSpace(Vector3.new(0, centerY, 0))
 

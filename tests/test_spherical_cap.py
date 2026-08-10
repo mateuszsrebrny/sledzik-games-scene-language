@@ -3,6 +3,7 @@ from textwrap import dedent
 
 from sgsl.parser import SGSLValidationError, parse_text
 from sgsl.primitives import iter_render_objects
+from sgsl.renderers.html_renderer import render as render_html
 from sgsl.renderers.roblox_renderer import render as render_roblox
 
 
@@ -40,6 +41,13 @@ class SphericalCapTests(unittest.TestCase):
         source = render_roblox(self._scene())
         self.assertIn("makeSteppedFrustum", source)
         self.assertNotIn("Unsupported render object type", source)
+
+    def test_html_keeps_the_cap_as_one_mesh(self):
+        objects = render_html(self._scene())["objects"]
+        self.assertEqual(len(objects), 1)
+        self.assertEqual(objects[0]["type"], "spherical_cap")
+        self.assertGreater(len(objects[0]["vertices"]), 0)
+        self.assertGreater(len(objects[0]["indices"]), 0)
 
     def test_rejects_missing_or_invalid_properties(self):
         for source in (

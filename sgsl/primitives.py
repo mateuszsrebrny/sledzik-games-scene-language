@@ -4,15 +4,21 @@ import math
 from collections import deque
 
 
-def iter_render_objects(scene: dict, *, expand_pipe_arcs: bool = True) -> list[dict]:
+def iter_render_objects(
+    scene: dict,
+    *,
+    expand_pipe_arcs: bool = True,
+    expand_frustums: bool = True,
+    expand_spherical_caps: bool = True,
+) -> list[dict]:
     objects: list[dict] = []
     queue = deque(scene["objects"])
 
     while queue:
         obj = queue.popleft()
-        if obj["type"] == "spherical_cap":
+        if obj["type"] == "spherical_cap" and expand_spherical_caps:
             queue.extend(_expand_spherical_cap(obj))
-        elif obj["type"] == "frustum":
+        elif obj["type"] == "frustum" and expand_frustums:
             queue.extend(_expand_frustum(obj))
         elif obj["type"] == "ring":
             queue.extend(_expand_ring(obj))

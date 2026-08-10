@@ -757,7 +757,7 @@ def _validate_object(obj: dict) -> None:
     elif object_type == "frustum":
         _validate_required_fields(obj, ("at", "radius_bottom", "radius_top", "height", "segments", "color"))
         _validate_positive_number(obj, "radius_bottom")
-        _validate_positive_number(obj, "radius_top")
+        _validate_non_negative_number(obj, "radius_top")
         _validate_positive_number(obj, "height")
         _validate_positive_integer(obj, "segments")
     elif object_type == "hollow_frustum":

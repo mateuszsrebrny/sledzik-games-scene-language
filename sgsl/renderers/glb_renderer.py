@@ -7,16 +7,23 @@ from collections import OrderedDict
 from pathlib import Path
 
 from sgsl.colors import color_to_rgb, resolve_color
+from sgsl.frustum_geometry import frustum_geometry
 from sgsl.parser import SGSLValidationError
 from sgsl.primitives import iter_render_objects
 from sgsl.hollow_frustum_geometry import hollow_frustum_geometry
 from sgsl.hollow_pipe_arc_geometry import hollow_pipe_arc_geometry
 from sgsl.pipe_arc_geometry import pipe_arc_geometry
+from sgsl.spherical_cap_geometry import spherical_cap_geometry
 
 
 def write(scene: dict, output_path: str | Path) -> Path:
     groups: OrderedDict[str, list[dict]] = OrderedDict()
-    for obj in iter_render_objects(scene, expand_pipe_arcs=False):
+    for obj in iter_render_objects(
+        scene,
+        expand_pipe_arcs=False,
+        expand_frustums=False,
+        expand_spherical_caps=False,
+    ):
         key = obj.get("mesh_group", obj["name"])
         groups.setdefault(key, []).append(obj)
 
@@ -134,6 +141,10 @@ def _geometry(obj: dict) -> tuple[list[tuple[float, float, float]], list[int]]:
         return _wedge_geometry(obj["size"])
     if obj["type"] == "cylinder":
         return _cylinder_geometry(obj["radius"], obj["height"], obj.get("segments", 24))
+    if obj["type"] == "frustum":
+        return frustum_geometry(obj["radius_bottom"], obj["radius_top"], obj["height"], obj["segments"])
+    if obj["type"] == "spherical_cap":
+        return spherical_cap_geometry(obj["base_radius"], obj["height"], obj["segments"])
     if obj["type"] == "hollow_frustum":
         return hollow_frustum_geometry(
             obj["outer_bottom_radius"], obj["outer_top_radius"],

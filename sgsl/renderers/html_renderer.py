@@ -5,15 +5,25 @@ from pathlib import Path
 
 from sgsl.colors import resolve_color
 from sgsl.primitives import iter_render_objects
+from sgsl.frustum_geometry import frustum_geometry
 from sgsl.hollow_frustum_geometry import hollow_frustum_geometry
 from sgsl.hollow_pipe_arc_geometry import hollow_pipe_arc_geometry
 from sgsl.pipe_arc_geometry import pipe_arc_geometry
+from sgsl.spherical_cap_geometry import spherical_cap_geometry
 
 
 def render(scene: dict) -> dict:
     return {
         "scene": scene["scene"],
-        "objects": [_render_object(obj) for obj in iter_render_objects(scene, expand_pipe_arcs=False)],
+        "objects": [
+            _render_object(obj)
+            for obj in iter_render_objects(
+                scene,
+                expand_pipe_arcs=False,
+                expand_frustums=False,
+                expand_spherical_caps=False,
+            )
+        ],
     }
 
 
@@ -33,6 +43,14 @@ def _render_object(obj: dict) -> dict:
     elif obj["type"] == "cylinder":
         payload["radius"] = obj["radius"]
         payload["height"] = obj["height"]
+    elif obj["type"] == "frustum":
+        payload["vertices"], payload["indices"] = frustum_geometry(
+            obj["radius_bottom"], obj["radius_top"], obj["height"], obj["segments"]
+        )
+    elif obj["type"] == "spherical_cap":
+        payload["vertices"], payload["indices"] = spherical_cap_geometry(
+            obj["base_radius"], obj["height"], obj["segments"]
+        )
     elif obj["type"] == "hollow_frustum":
         payload["vertices"], payload["indices"] = hollow_frustum_geometry(
             obj["outer_bottom_radius"], obj["outer_top_radius"],

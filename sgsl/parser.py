@@ -293,6 +293,7 @@ def _expand_instance(
     parent_parameters: dict[str, float] | None = None,
     parent_scale: float = 1.0,
     parent_emissive: float | None = None,
+    parent_runtime_asset: str | None = None,
     path: str | None = None,
     depth: int = 0,
     mesh_group: str | None = None,
@@ -330,6 +331,7 @@ def _expand_instance(
         )
     instance_mirror = _normalize_mirror(instance.get("mirror"), instance["name"])
     world_scale = parent_scale * instance_scale
+    runtime_asset = component.get("runtime_asset") or parent_runtime_asset
     instance_emissive = parent_emissive
     if "emissive" in instance:
         instance_emissive = _evaluate_expression(instance["emissive"], expression_environment)
@@ -356,6 +358,7 @@ def _expand_instance(
                         parameter_values,
                         world_scale,
                         instance_emissive,
+                        runtime_asset,
                         instance_path,
                         depth + 1,
                         mesh_group,
@@ -371,6 +374,7 @@ def _expand_instance(
                     parameter_values,
                     world_scale,
                     instance_emissive,
+                    runtime_asset,
                     instance_path,
                     depth + 1,
                 )
@@ -385,6 +389,7 @@ def _expand_instance(
                     parameter_values,
                     world_scale,
                     instance_emissive,
+                    runtime_asset,
                     instance_path,
                     depth + 1,
                     mesh_group,
@@ -410,6 +415,8 @@ def _expand_instance(
         obj["name"] = f"{instance_path}.{obj['name']}"
         if mesh_group is not None:
             obj["mesh_group"] = mesh_group
+        if runtime_asset is not None:
+            obj["runtime_asset"] = runtime_asset
         expanded.append(obj)
 
     return expanded
@@ -460,6 +467,7 @@ def _expand_mesh_group(
     parameters: dict[str, float],
     parent_scale: float,
     parent_emissive: float | None,
+    parent_runtime_asset: str | None,
     path: str,
     depth: int,
 ) -> list[dict]:
@@ -485,6 +493,7 @@ def _expand_mesh_group(
                     parameters,
                     parent_scale,
                     parent_emissive,
+                    parent_runtime_asset,
                     path,
                     depth,
                     group_path,
@@ -509,6 +518,8 @@ def _expand_mesh_group(
         _scale_object_dimensions(obj, parent_scale)
         obj["name"] = f"{path}.{obj['name']}"
         obj["mesh_group"] = group_path
+        if parent_runtime_asset is not None:
+            obj["runtime_asset"] = parent_runtime_asset
         expanded.append(obj)
 
     return expanded

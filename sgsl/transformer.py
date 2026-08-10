@@ -139,6 +139,9 @@ class SGSLTransformer(Transformer):
     def param(self, items):
         return {"type": "param", "name": items[0], "value": items[1]}
 
+    def runtime_asset(self, items):
+        return {"type": "runtime_asset", "name": items[0]}
+
     def set_param(self, items):
         return ("parameter_overrides", (items[0], items[1]))
 
@@ -198,10 +201,16 @@ class SGSLTransformer(Transformer):
         parameters: list[dict] = []
         objects: list[dict] = []
         seen_object_names: set[str] = set()
+        runtime_asset = None
 
         for item in items[1:]:
             if item["type"] == "param":
                 parameters.append({"name": item["name"], "value": item["value"]})
+                continue
+            if item["type"] == "runtime_asset":
+                if runtime_asset is not None:
+                    raise ValueError(f"Duplicate runtime asset in component {name!r}")
+                runtime_asset = item["name"]
                 continue
             if item["name"] in seen_object_names:
                 raise ValueError(f"Duplicate object name {item['name']!r} in component {name!r}")
@@ -213,6 +222,7 @@ class SGSLTransformer(Transformer):
             "name": name,
             "parameters": parameters,
             "objects": objects,
+            "runtime_asset": runtime_asset,
         }
 
     def mesh(self, items):

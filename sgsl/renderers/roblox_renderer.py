@@ -123,6 +123,8 @@ def _set_transparency_lines() -> list[str]:
 def _scene_object_lines(scene: dict) -> list[str]:
     lines: list[str] = []
     for obj in scene["objects"]:
+        if obj.get("runtime_asset"):
+            continue
         red, green, blue = color_to_rgb(obj["color"])
         lines.extend(_render_object(obj, red, green, blue))
     return lines

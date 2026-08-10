@@ -45,6 +45,9 @@ component_statement: param
                    | instance
                    | repeat
                    | mesh
+                   | runtime_asset
+
+runtime_asset: "runtime_asset" NAME
 
 mesh: "mesh" NAME mesh_statement* "endmesh"
 

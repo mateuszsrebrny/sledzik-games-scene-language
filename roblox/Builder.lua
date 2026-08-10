@@ -1,5 +1,17 @@
 local Builder = {}
 
+-- Large generated scenes can contain thousands of primitive creations. Yield
+-- periodically so Roblox does not terminate the caller for exceeding the
+-- synchronous script execution budget.
+local primitiveCount = 0
+
+local function yieldAfterBatch()
+	primitiveCount += 1
+	if primitiveCount % 128 == 0 then
+		task.wait()
+	end
+end
+
 local function rotationCFrame(rotation)
 	rotation = rotation or Vector3.zero
 	return CFrame.Angles(math.rad(rotation.X), math.rad(rotation.Y), math.rad(rotation.Z))
@@ -13,6 +25,7 @@ local function applyCommon(part, parent, name, color, material)
 	part.TopSurface = Enum.SurfaceType.Smooth
 	part.BottomSurface = Enum.SurfaceType.Smooth
 	part.Parent = parent
+	yieldAfterBatch()
 	return part
 end
 

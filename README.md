@@ -254,6 +254,21 @@ into one GLB object; other primitives remain separate objects:
 python build_glb.py components/bottle.sgsl --component Bottle --output build/Bottle.glb
 ```
 
+For static scenery prefabs, ungrouped geometry can optionally be combined by
+material. Explicit `mesh` groups keep their existing behavior and remain
+separate contracts:
+
+```bash
+python build_glb.py components/city-assets/house-garden.sgsl \
+  --component HouseGarden \
+  --merge-materials \
+  --output build/HouseGarden.glb
+```
+
+This reduces mesh instances without merging materials. It is intended for
+static scenery, not runtime objects whose individual names or transforms are
+used by gameplay.
+
 Generate a Rojo-friendly ModuleScript:
 
 ```bash

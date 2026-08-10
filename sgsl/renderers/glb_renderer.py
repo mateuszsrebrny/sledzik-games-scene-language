@@ -16,15 +16,28 @@ from sgsl.pipe_arc_geometry import pipe_arc_geometry
 from sgsl.spherical_cap_geometry import spherical_cap_geometry
 
 
-def write(scene: dict, output_path: str | Path) -> Path:
+def write(
+    scene: dict,
+    output_path: str | Path,
+    *,
+    merge_ungrouped_materials: bool = False,
+) -> Path:
     groups: OrderedDict[str, list[dict]] = OrderedDict()
+    material_group_names: dict[tuple, str] = {}
     for obj in iter_render_objects(
         scene,
         expand_pipe_arcs=False,
         expand_frustums=False,
         expand_spherical_caps=False,
     ):
-        key = obj.get("mesh_group", obj["name"])
+        key = obj.get("mesh_group")
+        if key is None and merge_ungrouped_materials:
+            material_key = _material_key(obj)
+            key = material_group_names.get(material_key)
+            if key is None:
+                key = f"MaterialGroup_{len(material_group_names) + 1}"
+                material_group_names[material_key] = key
+        key = key or obj["name"]
         groups.setdefault(key, []).append(obj)
 
     binary = bytearray()

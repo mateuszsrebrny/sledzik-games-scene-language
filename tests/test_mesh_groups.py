@@ -79,6 +79,20 @@ class MeshGroupTests(unittest.TestCase):
         self.assertEqual([node["name"] for node in payload["nodes"]], ["Shell", "Water", "Cap", "Label"])
         self.assertEqual(len(payload["meshes"]), 4)
 
+    def test_glb_can_merge_ungrouped_geometry_by_material(self):
+        scene = parse_text(self.SOURCE)
+        with tempfile.TemporaryDirectory() as directory:
+            path = write(
+                scene,
+                Path(directory) / "Bottle.glb",
+                merge_ungrouped_materials=True,
+            )
+            payload = _read_glb_json(path)
+        self.assertEqual([node["name"] for node in payload["nodes"]], [
+            "Shell", "MaterialGroup_1", "MaterialGroup_2"
+        ])
+        self.assertEqual(len(payload["meshes"]), 3)
+
     def test_repository_bottle_fixture_exports_four_named_objects(self):
         fixture = Path(__file__).with_name("scenes") / "bottle_mesh.sgsl"
         with tempfile.TemporaryDirectory() as directory:

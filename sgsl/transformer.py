@@ -202,6 +202,21 @@ class SGSLTransformer(Transformer):
     def pipe_arc(self, items):
         return self._build_object("pipe_arc", items)
 
+    def profile_point(self, items):
+        return ("point", [items[0], items[1]])
+
+    def profile(self, items):
+        return ("profile", [item[1] for item in items])
+
+    def thickness(self, items):
+        return ("thickness", items[0])
+
+    def profile_revolve_statement(self, items):
+        return items[0]
+
+    def profile_revolve(self, items):
+        return self._build_object("profile_revolve", items)
+
     def component(self, items):
         name = items[0]
         parameters: list[dict] = []

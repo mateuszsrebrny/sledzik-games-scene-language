@@ -20,6 +20,7 @@ object: block
       | ring
       | spherical_cap
       | pipe_arc
+      | profile_revolve
 
 block: "block" NAME property*
 
@@ -40,6 +41,18 @@ ring: "ring" NAME property*
 spherical_cap: "sphericalCap" NAME property*
 
 pipe_arc: "pipeArc" NAME property*
+
+profile_revolve: "profileRevolve" NAME profile_revolve_statement*
+
+profile_revolve_statement: property
+                         | profile
+                         | thickness
+
+profile: "profile" profile_point+
+
+profile_point: "point" expression expression
+
+thickness: "thickness" expression
 
 component: "component" NAME component_statement*
 

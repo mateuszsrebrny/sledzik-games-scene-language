@@ -9,6 +9,7 @@ from sgsl.frustum_geometry import frustum_geometry
 from sgsl.hollow_frustum_geometry import hollow_frustum_geometry
 from sgsl.hollow_pipe_arc_geometry import hollow_pipe_arc_geometry
 from sgsl.pipe_arc_geometry import pipe_arc_geometry
+from sgsl.profile_revolve_geometry import profile_revolve_geometry
 from sgsl.spherical_cap_geometry import spherical_cap_geometry
 
 
@@ -74,6 +75,10 @@ def _render_object(obj: dict) -> dict:
     elif obj["type"] == "pipe_arc":
         payload["vertices"], payload["indices"] = pipe_arc_geometry(
             obj["pipe_radius"], obj["bend_radius"], obj["angle"], obj["segments"]
+        )
+    elif obj["type"] == "profile_revolve":
+        payload["vertices"], payload["indices"] = profile_revolve_geometry(
+            obj["profile"], obj["segments"], obj.get("thickness")
         )
     else:
         raise ValueError(f"Unsupported render object type: {obj['type']}")

@@ -549,6 +549,8 @@ def _resolve_component_parameters(
 
 
 def _evaluate_object_expressions(obj: dict, environment: dict[str, float]) -> None:
+    if obj.get("type") == "profile_revolve" and "anchor" not in obj:
+        obj["anchor"] = ["center", "bottom", "center"]
     if "at" in obj:
         obj["at"] = _evaluate_vector(obj["at"], environment)
     obj.setdefault("anchor", ["center", "center", "center"])
@@ -596,6 +598,13 @@ def _evaluate_object_expressions(obj: dict, environment: dict[str, float]) -> No
         obj["cross_angle"] = _evaluate_expression(obj["cross_angle"], environment)
     if "height" in obj:
         obj["height"] = _evaluate_expression(obj["height"], environment)
+    if "profile" in obj:
+        obj["profile"] = [
+            [_evaluate_expression(point[0], environment), _evaluate_expression(point[1], environment)]
+            for point in obj["profile"]
+        ]
+    if "thickness" in obj:
+        obj["thickness"] = _evaluate_expression(obj["thickness"], environment)
     if "segments" in obj:
         obj["segments"] = _evaluate_expression(obj["segments"], environment)
     if "transparency" in obj:
@@ -741,6 +750,10 @@ def _scale_object_dimensions(obj: dict, scale: float) -> None:
     ):
         if field in obj:
             obj[field] *= scale
+    if "profile" in obj:
+        obj["profile"] = [[height * scale, radius * scale] for height, radius in obj["profile"]]
+    if "thickness" in obj:
+        obj["thickness"] *= scale
 
 
 def _validate_scene(scene: dict) -> None:
@@ -855,6 +868,29 @@ def _validate_object(obj: dict) -> None:
         _validate_positive_integer(obj, "segments")
         if obj["angle"] == 0:
             raise SGSLValidationError(f"Pipe arc {obj['name']} has invalid angle 0; expected a non-zero angle")
+    elif object_type == "profile_revolve":
+        obj.setdefault("segments", 24)
+        _validate_required_fields(obj, ("at", "profile", "segments", "color"))
+        if len(obj["profile"]) < 2:
+            raise SGSLValidationError(f"Profile revolve {obj['name']} needs at least two profile points")
+        _validate_positive_integer(obj, "segments")
+        if obj["segments"] < 3:
+            raise SGSLValidationError(
+                f"Profile revolve {obj['name']} has invalid segments {obj['segments']}; expected at least 3"
+            )
+        previous_height = None
+        for height, radius in obj["profile"]:
+            if height < 0 or radius < 0:
+                raise SGSLValidationError(f"Profile revolve {obj['name']} has negative profile values")
+            if previous_height is not None and height <= previous_height:
+                raise SGSLValidationError(f"Profile revolve {obj['name']} heights must be strictly increasing")
+            previous_height = height
+        if "thickness" in obj:
+            _validate_positive_number(obj, "thickness")
+            if any(radius <= obj["thickness"] for _, radius in obj["profile"]):
+                raise SGSLValidationError(
+                    f"Profile revolve {obj['name']} thickness must be smaller than every profile radius"
+                )
     else:
         raise SGSLValidationError(f"Unsupported object type: {object_type}")
 
@@ -1048,6 +1084,11 @@ def _get_object_bounds(obj: dict) -> tuple[float, float, float]:
     if obj["type"] == "hollow_frustum":
         max_radius = max(obj["outer_bottom_radius"], obj["outer_top_radius"])
         return max_radius * 2, obj["height"], max_radius * 2
+
+    if obj["type"] == "profile_revolve":
+        max_radius = max(radius for _, radius in obj["profile"])
+        height = obj["profile"][-1][0] - obj["profile"][0][0]
+        return max_radius * 2, height, max_radius * 2
 
     max_radius = max(obj["radius_bottom"], obj["radius_top"])
     diameter = max_radius * 2

@@ -79,6 +79,8 @@ Supported object types:
 - `frustum`
 - `ring`
 - `pipeArc`
+- `hollowFrustum`
+- `profileRevolve`
 - `mesh` groups inside components
 
 Common properties:
@@ -127,6 +129,18 @@ Pipe arc properties:
 - `bendRadius value`
 - `angle degrees`
 - `segments integer`
+
+Profile revolve properties:
+- `profile` followed by `point height radius` entries
+- `segments integer` (optional, defaults to `24`)
+- `thickness value` (optional; inner radius is `outer radius - thickness`)
+
+`profileRevolve` rotates one height/radius profile around the Y axis. Its
+default anchor is `center bottom center`, so profile heights are absolute from
+the object's local base. HTML and GLB use one continuous mesh. Roblox output
+uses the same profile as the source of truth and emits one frustum fallback per
+profile span; `thickness` is intentionally ignored by the Part fallback because
+Roblox Parts cannot represent a hollow wall.
 
 Notes:
 - `rotate` uses Euler angles in degrees in `X Y Z` order.

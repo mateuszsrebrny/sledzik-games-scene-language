@@ -125,6 +125,9 @@ def _scene_object_lines(scene: dict) -> list[str]:
     for obj in scene["objects"]:
         if obj.get("runtime_asset"):
             continue
+        if obj["type"] == "marker":
+            lines.extend(_render_object(obj, 0, 0, 0))
+            continue
         red, green, blue = color_to_rgb(obj["color"])
         lines.extend(_render_object(obj, red, green, blue))
     return lines
@@ -155,6 +158,8 @@ def _render_object(obj: dict, red: int, green: int, blue: int) -> list[str]:
         fallback["radius_bottom"] = obj["outer_bottom_radius"]
         fallback["radius_top"] = obj["outer_top_radius"]
         return _render_frustum(fallback, red, green, blue)
+    if obj["type"] == "profile_revolve":
+        return _render_profile_revolve(obj, red, green, blue)
     if obj["type"] == "hollow_pipe_arc":
         return _render_hollow_pipe_arc(obj, red, green, blue)
     if obj["type"] == "spherical_cap":
@@ -192,6 +197,42 @@ def _render_hollow_pipe_arc(obj: dict, red: int, green: int, blue: int) -> list[
         segment["position"] = _transform_position(world_transform)
         segment["rotation"] = _transform_rotation(world_transform)
         lines.extend(_render_part(segment, red, green, blue))
+
+    return lines
+
+
+def _render_profile_revolve(obj: dict, red: int, green: int, blue: int) -> list[str]:
+    """Approximate a profile revolve with one generated frustum per profile span."""
+    profile = obj["profile"]
+    parent_transform = _make_transform(obj["position"], obj["rotation"])
+    lines: list[str] = []
+    thickness = obj.get("thickness")
+    profile_center = (profile[0][0] + profile[-1][0]) / 2
+
+    for index, ((bottom_y, bottom_radius), (top_y, top_radius)) in enumerate(zip(profile, profile[1:]), 1):
+        segment = dict(obj)
+        segment["type"] = "frustum"
+        segment["name"] = f"{obj['name']}_segment_{index:02d}"
+        segment["radius_bottom"] = bottom_radius
+        segment["radius_top"] = top_radius
+        segment["height"] = top_y - bottom_y
+        segment["segments"] = obj["segments"]
+        segment["position"] = _transform_position(
+            _multiply_transforms(
+                parent_transform,
+                _make_transform(
+                    [0.0, (bottom_y + top_y) / 2 - profile_center, 0.0],
+                    [0.0, 0.0, 0.0],
+                ),
+            )
+        )
+        segment["rotation"] = obj["rotation"]
+        if thickness is not None:
+            # Roblox Part fallback cannot represent an inner shell; the same
+            # profile still remains the single source of truth for its outer wall.
+            segment["radius_bottom"] = max(bottom_radius, 0.001)
+            segment["radius_top"] = max(top_radius, 0.001)
+        lines.extend(_render_frustum(segment, red, green, blue))
 
     return lines
 

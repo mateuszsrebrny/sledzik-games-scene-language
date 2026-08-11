@@ -324,7 +324,7 @@
           geometry.setAttribute("position", new THREE.Float32BufferAttribute(obj.vertices.flat(), 3));
           geometry.setIndex(obj.indices);
           geometry.computeVertexNormals();
-        } else if (obj.type === "hollow_frustum") {
+        } else if (obj.type === "hollow_frustum" || obj.type === "profile_revolve") {
           geometry = new THREE.BufferGeometry();
           geometry.setAttribute("position", new THREE.Float32BufferAttribute(obj.vertices.flat(), 3));
           geometry.setIndex(obj.indices);

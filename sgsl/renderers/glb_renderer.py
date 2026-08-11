@@ -13,6 +13,7 @@ from sgsl.primitives import iter_render_objects
 from sgsl.hollow_frustum_geometry import hollow_frustum_geometry
 from sgsl.hollow_pipe_arc_geometry import hollow_pipe_arc_geometry
 from sgsl.pipe_arc_geometry import pipe_arc_geometry
+from sgsl.profile_revolve_geometry import profile_revolve_geometry
 from sgsl.spherical_cap_geometry import spherical_cap_geometry
 
 
@@ -185,6 +186,8 @@ def _geometry(obj: dict) -> tuple[list[tuple[float, float, float]], list[int]]:
         return pipe_arc_geometry(
             obj["pipe_radius"], obj["bend_radius"], obj["angle"], obj["segments"]
         )
+    if obj["type"] == "profile_revolve":
+        return profile_revolve_geometry(obj["profile"], obj["segments"], obj.get("thickness"))
     raise SGSLValidationError(f"GLB renderer does not support {obj['type']!r}")
 
 

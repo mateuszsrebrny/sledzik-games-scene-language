@@ -62,11 +62,18 @@ def write(
                 )
 
         positions: list[tuple[float, float, float]] = []
+        colors: list[tuple[float, float, float, float]] = []
         indices: list[int] = []
         for obj in objects:
             local_positions, local_indices = _geometry(obj)
             base_index = len(positions)
             positions.extend(_transform_vertices(local_positions, obj["position"], obj["rotation"]))
+            red, green, blue = color_to_rgb(obj["color"])
+            alpha = 1.0 - obj["transparency"]
+            colors.extend(
+                (red / 255, green / 255, blue / 255, alpha)
+                for _ in local_positions
+            )
             indices.extend(base_index + index for index in local_indices)
 
         position_bytes = b"".join(struct.pack("<3f", *position) for position in positions)
@@ -82,6 +89,18 @@ def write(
                 "type": "VEC3",
                 "min": mins,
                 "max": maxs,
+            }
+        )
+
+        color_bytes = b"".join(struct.pack("<4f", *color) for color in colors)
+        color_view = _append_buffer(binary, color_bytes, buffer_views, target=34962)
+        color_accessor = len(accessors)
+        accessors.append(
+            {
+                "bufferView": color_view,
+                "componentType": 5126,
+                "count": len(colors),
+                "type": "VEC4",
             }
         )
 
@@ -107,7 +126,7 @@ def write(
                 "name": _short_name(group_name),
                 "primitives": [
                     {
-                        "attributes": {"POSITION": position_accessor},
+                        "attributes": {"POSITION": position_accessor, "COLOR_0": color_accessor},
                         "indices": index_accessor,
                         "material": material_index,
                     }

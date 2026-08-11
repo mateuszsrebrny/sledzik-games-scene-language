@@ -11,6 +11,7 @@ statement: object
 import_stmt: "import" ESCAPED_STRING
 
 object: block
+      | marker
       | wedge
       | cylinder
       | frustum
@@ -21,6 +22,8 @@ object: block
       | pipe_arc
 
 block: "block" NAME property*
+
+marker: "marker" NAME marker_property*
 
 wedge: "wedge" NAME property*
 
@@ -107,6 +110,9 @@ property: at
         | material
         | transparency
         | emissive
+
+marker_property: at
+               | rotate
 
 at: "at" expression expression expression
 

@@ -752,7 +752,9 @@ def _validate_scene(scene: dict) -> None:
 
 def _validate_object(obj: dict) -> None:
     object_type = obj.get("type")
-    if object_type in ("block", "wedge"):
+    if object_type == "marker":
+        _validate_required_fields(obj, ("at",))
+    elif object_type in ("block", "wedge"):
         _validate_required_fields(obj, ("at", "size", "color"))
         _validate_size_triplet(obj, "size")
     elif object_type == "cylinder":
@@ -986,7 +988,7 @@ def _resolve_scene(scene: dict) -> None:
 
 def _resolve_position(obj: dict) -> list[float]:
     at_x, at_y, at_z = obj["at"]
-    if obj["type"] == "pipe_arc":
+    if obj["type"] in ("marker", "pipe_arc"):
         return [at_x, at_y, at_z]
 
     size_x, size_y, size_z = _get_object_bounds(obj)
@@ -1017,6 +1019,8 @@ def _resolve_position(obj: dict) -> list[float]:
 
 
 def _get_object_bounds(obj: dict) -> tuple[float, float, float]:
+    if obj["type"] == "marker":
+        return 0.0, 0.0, 0.0
     if obj["type"] in ("block", "wedge"):
         size_x, size_y, size_z = obj["size"]
         return size_x, size_y, size_z

@@ -54,6 +54,15 @@ function Builder.makeWedge(parent, name, size, position, color, material, rotati
 	return applyCommon(part, parent, name, color, material)
 end
 
+function Builder.makeMarker(parent, name, position, rotation)
+	local marker = Instance.new("Folder")
+	marker.Name = name
+	marker:SetAttribute("MarkerPosition", position)
+	marker:SetAttribute("MarkerRotation", rotation or Vector3.zero)
+	marker.Parent = parent
+	return marker
+end
+
 function Builder.makeSteppedFrustum(parent, name, bottomRadius, topRadius, height, position, color, sliceCount, material, rotation)
 	sliceCount = math.max(tonumber(sliceCount) or 4, 1)
 	material = material or Enum.Material.SmoothPlastic

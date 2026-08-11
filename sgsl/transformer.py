@@ -151,6 +151,9 @@ class SGSLTransformer(Transformer):
     def property(self, items):
         return items[0]
 
+    def marker_property(self, items):
+        return items[0]
+
     def instance_property(self, items):
         return items[0]
 
@@ -171,6 +174,9 @@ class SGSLTransformer(Transformer):
 
     def block(self, items):
         return self._build_object("block", items)
+
+    def marker(self, items):
+        return self._build_object("marker", items)
 
     def wedge(self, items):
         return self._build_object("wedge", items)

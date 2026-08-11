@@ -28,6 +28,13 @@ def render(scene: dict) -> dict:
 
 
 def _render_object(obj: dict) -> dict:
+    if obj["type"] == "marker":
+        return {
+            "type": "marker",
+            "name": obj["name"],
+            "position": obj["position"],
+            "rotation": obj["rotation"],
+        }
     payload = {
         "type": obj["type"],
         "name": obj["name"],

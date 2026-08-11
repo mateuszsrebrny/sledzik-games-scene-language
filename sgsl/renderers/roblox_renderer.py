@@ -136,6 +136,15 @@ def _indent_lines(lines: list[str], spaces: int = 4) -> list[str]:
 
 
 def _render_object(obj: dict, red: int, green: int, blue: int) -> list[str]:
+    if obj["type"] == "marker":
+        return [
+            "do",
+            f"    Builder.makeMarker(sceneFolder, {obj['name']!r}, "
+            f"Vector3.new({obj['position'][0]}, {obj['position'][1]}, {obj['position'][2]}), "
+            f"Vector3.new({obj['rotation'][0]}, {obj['rotation'][1]}, {obj['rotation'][2]}))",
+            "end",
+            "",
+        ]
     if obj["type"] == "frustum":
         return _render_frustum(obj, red, green, blue)
     if obj["type"] == "hollow_frustum":

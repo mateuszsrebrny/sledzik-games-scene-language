@@ -23,6 +23,7 @@ def write(
     merge_ungrouped_materials: bool = False,
 ) -> Path:
     groups: OrderedDict[str, list[dict]] = OrderedDict()
+    markers: list[dict] = []
     material_group_names: dict[tuple, str] = {}
     for obj in iter_render_objects(
         scene,
@@ -30,6 +31,9 @@ def write(
         expand_frustums=False,
         expand_spherical_caps=False,
     ):
+        if obj["type"] == "marker":
+            markers.append(obj)
+            continue
         key = obj.get("mesh_group")
         if key is None and merge_ungrouped_materials:
             material_key = _material_key(obj)
@@ -110,6 +114,13 @@ def write(
             }
         )
         nodes.append({"name": _short_name(group_name), "mesh": mesh_index})
+
+    for marker in markers:
+        nodes.append({
+            "name": _short_name(marker["name"]),
+            "translation": marker["position"],
+            "rotation": _quaternion_from_euler(marker["rotation"]),
+        })
 
     payload = {
         "asset": {"version": "2.0", "generator": "SGSL"},
@@ -273,3 +284,17 @@ def _material(obj: dict, name: str) -> dict:
 
 def _short_name(name: str) -> str:
     return name.rsplit(".", 1)[-1]
+
+
+def _quaternion_from_euler(rotation: list[float]) -> list[float]:
+    """Convert SGSL's XYZ Euler degrees to a glTF quaternion."""
+    rx, ry, rz = (math.radians(value) * 0.5 for value in rotation)
+    cx, sx = math.cos(rx), math.sin(rx)
+    cy, sy = math.cos(ry), math.sin(ry)
+    cz, sz = math.cos(rz), math.sin(rz)
+    return [
+        sx * cy * cz - cx * sy * sz,
+        cx * sy * cz + sx * cy * sz,
+        cx * cy * sz - sx * sy * cz,
+        cx * cy * cz + sx * sy * sz,
+    ]

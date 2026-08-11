@@ -284,6 +284,18 @@
       sceneStats.textContent = `${payload.objects.length} object(s)`;
 
       for (const obj of payload.objects) {
+        if (obj.type === "marker") {
+          if (new URLSearchParams(location.search).get("markers") !== "1") {
+            continue;
+          }
+          const axes = new THREE.AxesHelper(0.8);
+          axes.position.set(...obj.position);
+          const [mrx, mry, mrz] = obj.rotation.map(THREE.MathUtils.degToRad);
+          axes.rotation.set(mrx, mry, mrz);
+          axes.name = obj.name;
+          previewGroup.add(axes);
+          continue;
+        }
         if (obj.transparency >= 1) {
           continue;
         }

@@ -11,6 +11,7 @@ from sgsl.hollow_pipe_arc_geometry import hollow_pipe_arc_geometry
 from sgsl.pipe_arc_geometry import pipe_arc_geometry
 from sgsl.profile_revolve_geometry import profile_revolve_geometry
 from sgsl.spherical_cap_geometry import spherical_cap_geometry
+from sgsl.sphere_geometry import sphere_geometry
 
 
 def render(scene: dict) -> dict:
@@ -59,6 +60,8 @@ def _render_object(obj: dict) -> dict:
         payload["vertices"], payload["indices"] = spherical_cap_geometry(
             obj["base_radius"], obj["height"], obj["segments"]
         )
+    elif obj["type"] == "sphere":
+        payload["vertices"], payload["indices"] = sphere_geometry(obj["radius"], obj["segments"])
     elif obj["type"] == "hollow_frustum":
         payload["vertices"], payload["indices"] = hollow_frustum_geometry(
             obj["outer_bottom_radius"], obj["outer_top_radius"],

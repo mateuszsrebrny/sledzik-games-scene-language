@@ -199,6 +199,9 @@ class SGSLTransformer(Transformer):
     def spherical_cap(self, items):
         return self._build_object("spherical_cap", items)
 
+    def sphere(self, items):
+        return self._build_object("sphere", items)
+
     def pipe_arc(self, items):
         return self._build_object("pipe_arc", items)
 

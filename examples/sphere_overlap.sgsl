@@ -1,0 +1,14 @@
+scene SphereOverlap
+
+# The rear sphere must be occluded by the opaque front sphere.
+sphere Front
+    at 0 0 0
+    radius 2
+    segments 24
+    color #4f9f3f
+
+sphere Rear
+    at 1.5 0 1.2
+    radius 2
+    segments 24
+    color #438e37

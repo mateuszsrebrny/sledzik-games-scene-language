@@ -319,7 +319,7 @@
           geometry.computeVertexNormals();
         } else if (obj.type === "cylinder") {
           geometry = new THREE.CylinderGeometry(obj.radius, obj.radius, obj.height, obj.segments || 32);
-        } else if (obj.type === "frustum" || obj.type === "spherical_cap") {
+        } else if (obj.type === "frustum" || obj.type === "spherical_cap" || obj.type === "sphere") {
           geometry = new THREE.BufferGeometry();
           geometry.setAttribute("position", new THREE.Float32BufferAttribute(obj.vertices.flat(), 3));
           geometry.setIndex(obj.indices);
@@ -342,6 +342,7 @@
           color: obj.color,
           transparent: obj.transparency > 0,
           opacity: 1 - obj.transparency,
+          depthTest: true,
           depthWrite: obj.transparency <= 0,
         };
         let material;

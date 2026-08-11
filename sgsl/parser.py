@@ -861,6 +861,15 @@ def _validate_object(obj: dict) -> None:
         _validate_positive_number(obj, "base_radius")
         _validate_positive_number(obj, "height")
         _validate_positive_integer(obj, "segments")
+    elif object_type == "sphere":
+        obj.setdefault("segments", 24)
+        _validate_required_fields(obj, ("at", "radius", "segments", "color"))
+        _validate_positive_number(obj, "radius")
+        _validate_positive_integer(obj, "segments")
+        if obj["segments"] < 3:
+            raise SGSLValidationError(
+                f"Sphere {obj['name']} has invalid segments {obj['segments']}; expected at least 3"
+            )
     elif object_type == "pipe_arc":
         _validate_required_fields(obj, ("at", "pipe_radius", "bend_radius", "angle", "segments", "color"))
         _validate_positive_number(obj, "pipe_radius")
@@ -1072,6 +1081,10 @@ def _get_object_bounds(obj: dict) -> tuple[float, float, float]:
     if obj["type"] == "spherical_cap":
         diameter = obj["base_radius"] * 2
         return diameter, obj["height"], diameter
+
+    if obj["type"] == "sphere":
+        diameter = obj["radius"] * 2
+        return diameter, diameter, diameter
 
     if obj["type"] == "pipe_arc":
         diameter = 2 * (obj["bend_radius"] + obj["pipe_radius"])

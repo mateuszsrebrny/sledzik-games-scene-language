@@ -164,6 +164,8 @@ def _render_object(obj: dict, red: int, green: int, blue: int) -> list[str]:
         return _render_hollow_pipe_arc(obj, red, green, blue)
     if obj["type"] == "spherical_cap":
         return _render_spherical_cap(obj, red, green, blue)
+    if obj["type"] == "sphere":
+        return _render_sphere(obj, red, green, blue)
     if obj["type"] == "ring":
         return _render_ring(obj, red, green, blue)
     if obj["type"] == "pipe_arc":
@@ -345,6 +347,31 @@ def _render_spherical_cap(obj: dict, red: int, green: int, blue: int) -> list[st
     lines: list[str] = []
     for segment in _expand_spherical_cap(obj):
         lines.extend(_render_frustum(segment, red, green, blue))
+    return lines
+
+
+def _render_sphere(obj: dict, red: int, green: int, blue: int) -> list[str]:
+    """Approximate a sphere with stacked Roblox frustums."""
+    bands = max(3, obj["segments"] // 2)
+    band_height = 2 * obj["radius"] / bands
+    bottom_y = obj["position"][1] - obj["radius"]
+    lines: list[str] = []
+    for index in range(bands):
+        lower = -math.pi / 2 + math.pi * index / bands
+        upper = -math.pi / 2 + math.pi * (index + 1) / bands
+        band = dict(obj)
+        band["type"] = "frustum"
+        band["name"] = f"{obj['name']}_band_{index + 1:02d}"
+        band["radius_bottom"] = obj["radius"] * math.cos(lower)
+        band["radius_top"] = obj["radius"] * math.cos(upper)
+        band["height"] = band_height
+        band["segments"] = obj["segments"]
+        band["position"] = [
+            obj["position"][0],
+            bottom_y + band_height * (index + 0.5),
+            obj["position"][2],
+        ]
+        lines.extend(_render_frustum(band, red, green, blue))
     return lines
 
 

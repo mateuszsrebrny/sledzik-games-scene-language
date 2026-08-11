@@ -15,6 +15,7 @@ from sgsl.hollow_pipe_arc_geometry import hollow_pipe_arc_geometry
 from sgsl.pipe_arc_geometry import pipe_arc_geometry
 from sgsl.profile_revolve_geometry import profile_revolve_geometry
 from sgsl.spherical_cap_geometry import spherical_cap_geometry
+from sgsl.sphere_geometry import sphere_geometry
 
 
 def write(
@@ -189,6 +190,8 @@ def _geometry(obj: dict) -> tuple[list[tuple[float, float, float]], list[int]]:
         return frustum_geometry(obj["radius_bottom"], obj["radius_top"], obj["height"], obj["segments"])
     if obj["type"] == "spherical_cap":
         return spherical_cap_geometry(obj["base_radius"], obj["height"], obj["segments"])
+    if obj["type"] == "sphere":
+        return sphere_geometry(obj["radius"], obj["segments"])
     if obj["type"] == "hollow_frustum":
         return hollow_frustum_geometry(
             obj["outer_bottom_radius"], obj["outer_top_radius"],
@@ -295,6 +298,7 @@ def _material(obj: dict, name: str) -> dict:
             "roughnessFactor": roughness_by_material.get(obj["material"], 0.65),
         },
         "doubleSided": True,
+        "alphaMode": "OPAQUE",
     }
     if alpha < 1:
         material["alphaMode"] = "BLEND"

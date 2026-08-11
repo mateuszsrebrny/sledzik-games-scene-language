@@ -19,6 +19,7 @@ object: block
       | hollow_pipe_arc
       | ring
       | spherical_cap
+      | sphere
       | pipe_arc
       | profile_revolve
 
@@ -39,6 +40,8 @@ hollow_pipe_arc: "hollowPipeArc" NAME property*
 ring: "ring" NAME property*
 
 spherical_cap: "sphericalCap" NAME property*
+
+sphere: "sphere" NAME property*
 
 pipe_arc: "pipeArc" NAME property*
 

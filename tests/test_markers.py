@@ -47,7 +47,7 @@ class MarkerTests(unittest.TestCase):
         for actual, expected in zip(payload["objects"][0]["rotation"], [0.0, 45.0, 90.0]):
             self.assertAlmostEqual(actual, expected)
 
-    def test_glb_exports_marker_as_meshless_node(self):
+    def test_glb_exports_marker_as_importable_transparent_mesh_node(self):
         with tempfile.TemporaryDirectory() as directory:
             output = write_glb(parse_text(self.SOURCE), Path(directory) / "markers.glb")
             data = output.read_bytes()
@@ -57,5 +57,11 @@ class MarkerTests(unittest.TestCase):
         marker_nodes = [node for node in payload["nodes"] if node["name"] == "Grip"]
 
         self.assertEqual(len(marker_nodes), 1)
-        self.assertNotIn("mesh", marker_nodes[0])
+        self.assertIn("mesh", marker_nodes[0])
         self.assertEqual(marker_nodes[0]["translation"], [10.0, 4.4, 30.0])
+        self.assertEqual(marker_nodes[0]["extras"], {"sgslType": "marker"})
+        marker_mesh = payload["meshes"][marker_nodes[0]["mesh"]]
+        marker_material = payload["materials"][marker_mesh["primitives"][0]["material"]]
+        self.assertEqual(marker_mesh["name"], "SGSLMarker")
+        self.assertEqual(marker_material["alphaMode"], "BLEND")
+        self.assertEqual(marker_material["pbrMetallicRoughness"]["baseColorFactor"][3], 0.0)

@@ -63,6 +63,13 @@ function Builder.makeMarker(parent, name, position, rotation)
 	return marker
 end
 
+function Builder.makeRuntimeAssetMarker(parent, name, assetName, position, rotation, scale)
+	local marker = Builder.makeMarker(parent, name, position, rotation)
+	marker:SetAttribute("RuntimeAsset", assetName)
+	marker:SetAttribute("RuntimeAssetScale", scale or 1)
+	return marker
+end
+
 function Builder.makeSteppedFrustum(parent, name, bottomRadius, topRadius, height, position, color, sliceCount, material, rotation)
 	sliceCount = math.max(tonumber(sliceCount) or 4, 1)
 	material = material or Enum.Material.SmoothPlastic

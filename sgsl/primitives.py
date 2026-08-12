@@ -16,6 +16,8 @@ def iter_render_objects(
 
     while queue:
         obj = queue.popleft()
+        if obj["type"] == "runtime_asset_instance":
+            continue
         if obj["type"] == "spherical_cap" and expand_spherical_caps:
             queue.extend(_expand_spherical_cap(obj))
         elif obj["type"] == "frustum" and expand_frustums:

@@ -123,6 +123,19 @@ def _set_transparency_lines() -> list[str]:
 def _scene_object_lines(scene: dict) -> list[str]:
     lines: list[str] = []
     for obj in scene["objects"]:
+        if obj["type"] == "runtime_asset_instance":
+            lines.extend(
+                [
+                    "do",
+                    f"    Builder.makeRuntimeAssetMarker(sceneFolder, {obj['name']!r}, {obj['asset']!r}, "
+                    f"Vector3.new({obj['position'][0]}, {obj['position'][1]}, {obj['position'][2]}), "
+                    f"Vector3.new({obj['rotation'][0]}, {obj['rotation'][1]}, {obj['rotation'][2]}), "
+                    f"{obj['scale']})",
+                    "end",
+                    "",
+                ]
+            )
+            continue
         if obj.get("runtime_asset"):
             continue
         if obj["type"] == "marker":

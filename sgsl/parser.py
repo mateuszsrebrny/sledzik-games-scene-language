@@ -347,6 +347,18 @@ def _expand_instance(
     instance_path = f"{path}.{instance['name']}" if path else instance["name"]
 
     expanded: list[dict] = []
+    if component.get("runtime_asset") is not None and parent_runtime_asset is None:
+        expanded.append(
+            {
+                "type": "runtime_asset_instance",
+                "name": instance_path,
+                "asset": component["runtime_asset"],
+                "at": _transform_position(world_transform),
+                "position": _transform_position(world_transform),
+                "rotation": _transform_rotation(world_transform),
+                "scale": world_scale,
+            }
+        )
     for template in component["objects"]:
         if template["type"] == "component_repeat":
             for repeated_instance in _materialize_repeat(template, parameter_values):
@@ -765,6 +777,11 @@ def _validate_scene(scene: dict) -> None:
 
 def _validate_object(obj: dict) -> None:
     object_type = obj.get("type")
+    if object_type == "runtime_asset_instance":
+        _validate_required_fields(obj, ("at", "asset", "scale"))
+        _validate_positive_number(obj, "scale")
+        _validate_rotation(obj)
+        return
     if object_type == "marker":
         _validate_required_fields(obj, ("at",))
     elif object_type in ("block", "wedge"):
@@ -1033,7 +1050,7 @@ def _resolve_scene(scene: dict) -> None:
 
 def _resolve_position(obj: dict) -> list[float]:
     at_x, at_y, at_z = obj["at"]
-    if obj["type"] in ("marker", "pipe_arc"):
+    if obj["type"] in ("marker", "runtime_asset_instance", "pipe_arc"):
         return [at_x, at_y, at_z]
 
     size_x, size_y, size_z = _get_object_bounds(obj)

@@ -3,7 +3,14 @@ import tempfile
 from pathlib import Path
 from textwrap import dedent
 
-from preview_server import build_preview_payload, load_default_source, resolve_library_paths
+from preview_server import (
+    build_preview_payload,
+    list_scene_paths,
+    load_default_source,
+    resolve_library_paths,
+    resolve_scene_path,
+    resolve_scene_root,
+)
 from sgsl.parser import SGSLValidationError
 
 
@@ -134,6 +141,57 @@ class PreviewServerTests(unittest.TestCase):
     def test_rejects_missing_default_source(self):
         with self.assertRaisesRegex(ValueError, "Default preview source is not a file"):
             load_default_source("missing-preview.sgsl")
+
+    def test_lists_sgsl_files_recursively_with_normalized_relative_paths(self):
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            (root / "components" / "city").mkdir(parents=True)
+            (root / "preview.sgsl").write_text("scene Preview\n", encoding="utf-8")
+            (root / "components" / "city" / "house.sgsl").write_text("component House\n", encoding="utf-8")
+            (root / "ignored.txt").write_text("ignored\n", encoding="utf-8")
+
+            scenes = list_scene_paths(root)
+
+        self.assertEqual(scenes, ["components/city/house.sgsl", "preview.sgsl"])
+
+    def test_resolves_scene_inside_configured_root(self):
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            scene = root / "components" / "house.sgsl"
+            scene.parent.mkdir()
+            scene.write_text("component House\n", encoding="utf-8")
+
+            resolved = resolve_scene_path(root, "components/house.sgsl")
+
+        self.assertEqual(resolved, scene.resolve())
+
+    def test_rejects_scene_path_escaping_configured_root(self):
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            parent = Path(temporary_directory)
+            root = parent / "root"
+            root.mkdir()
+            (parent / "outside.sgsl").write_text("scene Outside\n", encoding="utf-8")
+
+            with self.assertRaisesRegex(ValueError, "escapes"):
+                resolve_scene_path(root, "../outside.sgsl")
+
+    def test_rejects_non_sgsl_scene(self):
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            (root / "notes.txt").write_text("not a scene\n", encoding="utf-8")
+
+            with self.assertRaisesRegex(ValueError, "SGSL scene file was not found"):
+                resolve_scene_path(root, "notes.txt")
+
+    def test_uses_default_source_directory_as_implicit_scene_root(self):
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            source = root / "preview.sgsl"
+            source.write_text("scene Preview\n", encoding="utf-8")
+
+            resolved = resolve_scene_root(None, str(source))
+
+        self.assertEqual(resolved, root.resolve())
 
 
 if __name__ == "__main__":

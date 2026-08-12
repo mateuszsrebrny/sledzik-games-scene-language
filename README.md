@@ -243,11 +243,24 @@ The live preview server can load a project-specific entry scene into the editor:
 
 ```bash
 python preview_server.py \
+  --root path/to \
   --default-source path/to/preview.sgsl \
   --library "path/to/**/*.sgsl"
 ```
 
-Without `--default-source`, the editor loads `examples/primitives.sgsl`.
+The preview sidebar lists every `.sgsl` file below `--root`. Selecting a file
+stores its relative path in the `?scene=` URL parameter and reloads it from disk
+for every render, so switching scenes does not require a server restart. The
+server rejects absolute paths and paths escaping the configured root. If
+`--root` is omitted, the directory containing `--default-source` is used.
+
+Use the refresh button in the sidebar to discover files created after the
+server started. Files containing only components may report a parser error until
+component-only automatic preview wrappers are implemented.
+
+Without `--default-source`, the editor loads `examples/primitives.sgsl`. Without
+both `--root` and `--default-source`, the file browser is empty while the live
+editor remains available.
 
 Generate Roblox Lua:
 

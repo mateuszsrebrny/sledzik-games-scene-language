@@ -38,9 +38,110 @@
 
     #app {
       display: grid;
-      grid-template-columns: minmax(320px, 420px) 1fr;
+      grid-template-columns: 250px minmax(320px, 420px) 1fr;
       width: 100vw;
       height: 100vh;
+    }
+
+    #app.browserCollapsed {
+      grid-template-columns: 42px minmax(320px, 420px) 1fr;
+    }
+
+    #browserPanel {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      padding: 12px;
+      color: var(--text);
+      background: #11151c;
+      border-right: 1px solid var(--panel-border);
+    }
+
+    #browserHeader {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    #browserHeader h2 {
+      margin: 0;
+      font-size: 14px;
+    }
+
+    #browserHeader button,
+    #refreshScenes {
+      width: 32px;
+      height: 32px;
+      padding: 0;
+    }
+
+    #sceneSearch {
+      width: 100%;
+      margin-bottom: 10px;
+      border: 1px solid #39475f;
+      border-radius: 6px;
+      padding: 8px 9px;
+      color: var(--text);
+      background: #0f131a;
+      outline: none;
+    }
+
+    #sceneSearch:focus {
+      border-color: var(--accent);
+    }
+
+    #sceneBrowserActions {
+      display: flex;
+      gap: 6px;
+    }
+
+    #sceneList {
+      flex: 1;
+      min-height: 0;
+      overflow: auto;
+    }
+
+    .sceneDirectory {
+      margin: 12px 6px 5px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+      overflow-wrap: anywhere;
+    }
+
+    .sceneFile {
+      display: block;
+      width: 100%;
+      border: 0;
+      border-radius: 4px;
+      padding: 6px 8px;
+      color: var(--text);
+      background: transparent;
+      text-align: left;
+      font-size: 12px;
+      overflow-wrap: anywhere;
+    }
+
+    .sceneFile:hover {
+      background: #20293a;
+    }
+
+    .sceneFile.selected {
+      color: #0f172a;
+      background: var(--accent);
+    }
+
+    #app.browserCollapsed #browserPanel {
+      padding: 8px 5px;
+    }
+
+    #app.browserCollapsed #browserHeader h2,
+    #app.browserCollapsed #sceneSearch,
+    #app.browserCollapsed #refreshScenes,
+    #app.browserCollapsed #sceneList {
+      display: none;
     }
 
     #editorPanel {
@@ -175,9 +276,20 @@
 
       #app {
         grid-template-columns: 1fr;
-        grid-template-rows: minmax(280px, 42vh) minmax(320px, 58vh);
+        grid-template-rows: auto minmax(280px, 42vh) minmax(320px, 58vh);
         height: auto;
         min-height: 100vh;
+      }
+
+      #app.browserCollapsed {
+        grid-template-columns: 1fr;
+        grid-template-rows: 42px minmax(280px, 42vh) minmax(320px, 58vh);
+      }
+
+      #browserPanel {
+        max-height: 240px;
+        border-right: 0;
+        border-bottom: 1px solid var(--panel-border);
       }
 
       #editorPanel {
@@ -193,6 +305,18 @@
 </head>
 <body>
   <div id="app">
+    <nav id="browserPanel" aria-label="SGSL files">
+      <div id="browserHeader">
+        <h2>Files</h2>
+        <div id="sceneBrowserActions">
+          <button id="refreshScenes" title="Refresh file list" aria-label="Refresh file list">↻</button>
+          <button id="toggleBrowser" title="Collapse file browser" aria-label="Collapse file browser">‹</button>
+        </div>
+      </div>
+      <input id="sceneSearch" type="search" placeholder="Search files" aria-label="Search SGSL files">
+      <div id="sceneList"></div>
+    </nav>
+
     <section id="editorPanel">
       <div id="toolbar">
         <div id="titleBlock">
@@ -222,6 +346,11 @@
     import { OrbitControls } from "./vendor/OrbitControls.js";
 
     const source = document.getElementById("source");
+    const app = document.getElementById("app");
+    const sceneList = document.getElementById("sceneList");
+    const sceneSearch = document.getElementById("sceneSearch");
+    const refreshScenes = document.getElementById("refreshScenes");
+    const toggleBrowser = document.getElementById("toggleBrowser");
     const status = document.getElementById("status");
     const sceneName = document.getElementById("sceneName");
     const sceneStats = document.getElementById("sceneStats");
@@ -257,6 +386,9 @@
     scene.add(sun);
 
     let renderTimer = null;
+    let availableScenes = [];
+    let selectedScene = new URLSearchParams(location.search).get("scene");
+    let sourceMatchesSelectedFile = false;
 
     function clearPreview() {
       while (previewGroup.children.length > 0) {
@@ -400,7 +532,9 @@
         response = await fetch("/api/preview", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ source: text }),
+          body: JSON.stringify(sourceMatchesSelectedFile && selectedScene
+            ? { scene: selectedScene }
+            : { source: text }),
         });
       } catch (error) {
         try {
@@ -455,6 +589,12 @@
           throw new Error(`HTTP ${response.status}`);
         }
         source.value = await response.text();
+        selectedScene = null;
+        sourceMatchesSelectedFile = false;
+        const url = new URL(location.href);
+        url.searchParams.delete("scene");
+        history.pushState({}, "", url);
+        renderSceneList();
         await renderSource();
         setStatus(`Loaded example from ${sourceName}.`);
       } catch (error) {
@@ -465,6 +605,70 @@
       }
     }
 
+    function renderSceneList() {
+      const query = sceneSearch.value.trim().toLowerCase();
+      const filtered = availableScenes.filter((path) => path.toLowerCase().includes(query));
+      sceneList.replaceChildren();
+      let previousDirectory = null;
+      for (const path of filtered) {
+        const separator = path.lastIndexOf("/");
+        const directory = separator >= 0 ? path.slice(0, separator) : "/";
+        const filename = separator >= 0 ? path.slice(separator + 1) : path;
+        if (directory !== previousDirectory) {
+          const heading = document.createElement("div");
+          heading.className = "sceneDirectory";
+          heading.textContent = directory;
+          sceneList.appendChild(heading);
+          previousDirectory = directory;
+        }
+        const button = document.createElement("button");
+        button.className = `sceneFile${path === selectedScene ? " selected" : ""}`;
+        button.textContent = filename;
+        button.title = path;
+        button.addEventListener("click", () => selectScene(path));
+        sceneList.appendChild(button);
+      }
+    }
+
+    async function refreshSceneList() {
+      try {
+        const response = await fetch("/api/scenes", { cache: "no-store" });
+        const payload = await response.json();
+        if (!response.ok) {
+          throw new Error(payload.error || `HTTP ${response.status}`);
+        }
+        availableScenes = Array.isArray(payload.scenes) ? payload.scenes : [];
+        renderSceneList();
+      } catch (error) {
+        availableScenes = [];
+        renderSceneList();
+        setStatus(`Could not load SGSL file list: ${error}`, true);
+      }
+    }
+
+    async function selectScene(path, { updateHistory = true } = {}) {
+      setStatus(`Loading ${path}...`);
+      try {
+        const response = await fetch(`/api/source?scene=${encodeURIComponent(path)}`, { cache: "no-store" });
+        if (!response.ok) {
+          const payload = await response.json().catch(() => ({}));
+          throw new Error(payload.error || `HTTP ${response.status}`);
+        }
+        source.value = await response.text();
+        selectedScene = path;
+        sourceMatchesSelectedFile = true;
+        if (updateHistory) {
+          const url = new URL(location.href);
+          url.searchParams.set("scene", path);
+          history.pushState({}, "", url);
+        }
+        renderSceneList();
+        await renderSource();
+      } catch (error) {
+        setStatus(`Could not load ${path}: ${error}`, true);
+      }
+    }
+
     function onResize() {
       const { clientWidth, clientHeight } = viewer;
       camera.aspect = clientWidth / clientHeight;
@@ -472,12 +676,36 @@
       renderer.setSize(clientWidth, clientHeight);
     }
 
-    source.addEventListener("input", scheduleRender);
+    source.addEventListener("input", () => {
+      sourceMatchesSelectedFile = false;
+      scheduleRender();
+    });
+    sceneSearch.addEventListener("input", renderSceneList);
+    refreshScenes.addEventListener("click", refreshSceneList);
+    toggleBrowser.addEventListener("click", () => {
+      const collapsed = app.classList.toggle("browserCollapsed");
+      toggleBrowser.textContent = collapsed ? "›" : "‹";
+      toggleBrowser.title = collapsed ? "Expand file browser" : "Collapse file browser";
+      window.setTimeout(onResize, 0);
+    });
     loadExample.addEventListener("click", loadExampleSource);
     renderNow.addEventListener("click", renderSource);
     window.addEventListener("resize", onResize);
+    window.addEventListener("popstate", async () => {
+      const path = new URLSearchParams(location.search).get("scene");
+      if (path) {
+        await selectScene(path, { updateHistory: false });
+      } else {
+        await loadExampleSource();
+      }
+    });
 
-    await loadExampleSource();
+    await refreshSceneList();
+    if (selectedScene) {
+      await selectScene(selectedScene, { updateHistory: false });
+    } else {
+      await loadExampleSource();
+    }
 
     function animate() {
       controls.update();

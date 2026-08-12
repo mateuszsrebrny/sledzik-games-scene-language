@@ -136,11 +136,14 @@ def write(
         )
         nodes.append({"name": _short_name(group_name), "mesh": mesh_index})
 
+    marker_mesh = _append_marker_mesh(binary, buffer_views, accessors, meshes, materials) if markers else None
     for marker in markers:
         nodes.append({
             "name": _short_name(marker["name"]),
+            "mesh": marker_mesh,
             "translation": marker["position"],
             "rotation": _quaternion_from_euler(marker["rotation"]),
+            "extras": {"sgslType": "marker"},
         })
 
     payload = {
@@ -169,6 +172,69 @@ def write(
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(glb)
     return path
+
+
+def _append_marker_mesh(binary, buffer_views, accessors, meshes, materials) -> int:
+    # Roblox's 3D Importer discards empty glTF nodes. Give every SGSL marker a
+    # shared microscopic transparent cube so its name and transform survive as
+    # an imported descendant without producing visible scene geometry.
+    positions, indices = _block_geometry([0.01, 0.01, 0.01])
+    position_bytes = b"".join(struct.pack("<3f", *position) for position in positions)
+    position_view = _append_buffer(binary, position_bytes, buffer_views, target=34962)
+    position_accessor = len(accessors)
+    accessors.append({
+        "bufferView": position_view,
+        "componentType": 5126,
+        "count": len(positions),
+        "type": "VEC3",
+        "min": [min(position[axis] for position in positions) for axis in range(3)],
+        "max": [max(position[axis] for position in positions) for axis in range(3)],
+    })
+
+    colors = [(1.0, 1.0, 1.0, 0.0) for _ in positions]
+    color_bytes = b"".join(struct.pack("<4f", *color) for color in colors)
+    color_view = _append_buffer(binary, color_bytes, buffer_views, target=34962)
+    color_accessor = len(accessors)
+    accessors.append({
+        "bufferView": color_view,
+        "componentType": 5126,
+        "count": len(colors),
+        "type": "VEC4",
+    })
+
+    index_bytes = b"".join(struct.pack("<I", index) for index in indices)
+    index_view = _append_buffer(binary, index_bytes, buffer_views, target=34963)
+    index_accessor = len(accessors)
+    accessors.append({
+        "bufferView": index_view,
+        "componentType": 5125,
+        "count": len(indices),
+        "type": "SCALAR",
+        "min": [min(indices)],
+        "max": [max(indices)],
+    })
+
+    material_index = len(materials)
+    materials.append({
+        "name": "SGSLMarkerMaterial",
+        "pbrMetallicRoughness": {
+            "baseColorFactor": [1.0, 1.0, 1.0, 0.0],
+            "metallicFactor": 0,
+            "roughnessFactor": 1,
+        },
+        "doubleSided": True,
+        "alphaMode": "BLEND",
+    })
+    mesh_index = len(meshes)
+    meshes.append({
+        "name": "SGSLMarker",
+        "primitives": [{
+            "attributes": {"POSITION": position_accessor, "COLOR_0": color_accessor},
+            "indices": index_accessor,
+            "material": material_index,
+        }],
+    })
+    return mesh_index
 
 
 def _append_buffer(binary: bytearray, data: bytes, views: list[dict], *, target: int) -> int:

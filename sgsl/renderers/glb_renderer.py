@@ -350,12 +350,16 @@ def _material(obj: dict, name: str) -> dict:
     alpha = 1.0 - obj["transparency"]
     roughness_by_material = {
         "asphalt": 0.95,
+        "brick": 0.9,
         "cobblestone": 0.9,
         "concrete": 0.8,
+        "fabric": 1.0,
+        "grass": 1.0,
         "glass": 0.2,
         "metal": 0.32,
         "pavement": 0.85,
         "smoothPlastic": 0.65,
+        "woodPlanks": 0.9,
     }
     material = {
         "name": f"{name}Material",

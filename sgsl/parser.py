@@ -1028,13 +1028,17 @@ def _validate_material(obj: dict) -> None:
     supported = {
         "asphalt",
         "auto",
+        "brick",
         "cobblestone",
         "concrete",
+        "fabric",
         "glass",
+        "grass",
         "metal",
         "neon",
         "pavement",
         "smoothPlastic",
+        "woodPlanks",
     }
     if material not in supported:
         choices = ", ".join(sorted(supported))

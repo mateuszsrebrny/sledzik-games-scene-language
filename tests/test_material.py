@@ -81,10 +81,14 @@ class MaterialTests(unittest.TestCase):
     def test_maps_city_materials_to_native_roblox_materials(self):
         for material, roblox_name in (
             ("asphalt", "Asphalt"),
+            ("brick", "Brick"),
             ("pavement", "Pavement"),
             ("concrete", "Concrete"),
             ("cobblestone", "Cobblestone"),
+            ("fabric", "Fabric"),
+            ("grass", "Grass"),
             ("metal", "Metal"),
+            ("woodPlanks", "WoodPlanks"),
         ):
             scene = parse_text(
                 dedent(

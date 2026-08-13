@@ -1031,6 +1031,7 @@ def _validate_material(obj: dict) -> None:
         "cobblestone",
         "concrete",
         "glass",
+        "metal",
         "neon",
         "pavement",
         "smoothPlastic",

@@ -84,6 +84,7 @@ class MaterialTests(unittest.TestCase):
             ("pavement", "Pavement"),
             ("concrete", "Concrete"),
             ("cobblestone", "Cobblestone"),
+            ("metal", "Metal"),
         ):
             scene = parse_text(
                 dedent(

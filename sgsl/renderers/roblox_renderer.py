@@ -402,6 +402,7 @@ def _material_name(obj: dict) -> str:
         "concrete": "Concrete",
         "smoothPlastic": "SmoothPlastic",
         "glass": "Glass",
+        "metal": "Metal",
         "neon": "Neon",
         "pavement": "Pavement",
     }

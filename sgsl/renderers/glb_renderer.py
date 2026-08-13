@@ -353,6 +353,7 @@ def _material(obj: dict, name: str) -> dict:
         "cobblestone": 0.9,
         "concrete": 0.8,
         "glass": 0.2,
+        "metal": 0.32,
         "pavement": 0.85,
         "smoothPlastic": 0.65,
     }
@@ -360,7 +361,7 @@ def _material(obj: dict, name: str) -> dict:
         "name": f"{name}Material",
         "pbrMetallicRoughness": {
             "baseColorFactor": [red / 255, green / 255, blue / 255, alpha],
-            "metallicFactor": 0,
+            "metallicFactor": 1 if obj["material"] == "metal" else 0,
             "roughnessFactor": roughness_by_material.get(obj["material"], 0.65),
         },
         "doubleSided": True,

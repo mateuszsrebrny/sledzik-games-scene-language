@@ -63,12 +63,16 @@ def write(
                 )
 
         positions: list[tuple[float, float, float]] = []
+        normals: list[tuple[float, float, float]] = []
         colors: list[tuple[float, float, float, float]] = []
         indices: list[int] = []
+        exports_normals = all(obj["type"] == "sphere" for obj in objects)
         for obj in objects:
             local_positions, local_indices = _geometry(obj)
             base_index = len(positions)
             positions.extend(_transform_vertices(local_positions, obj["position"], obj["rotation"]))
+            if exports_normals:
+                normals.extend(_transform_directions(_sphere_normals(local_positions), obj["rotation"]))
             red, green, blue = color_to_rgb(obj["color"])
             alpha = 1.0 - obj["transparency"]
             colors.extend(
@@ -92,6 +96,20 @@ def write(
                 "max": maxs,
             }
         )
+
+        normal_accessor = None
+        if exports_normals:
+            normal_bytes = b"".join(struct.pack("<3f", *normal) for normal in normals)
+            normal_view = _append_buffer(binary, normal_bytes, buffer_views, target=34962)
+            normal_accessor = len(accessors)
+            accessors.append(
+                {
+                    "bufferView": normal_view,
+                    "componentType": 5126,
+                    "count": len(normals),
+                    "type": "VEC3",
+                }
+            )
 
         color_bytes = b"".join(struct.pack("<4f", *color) for color in colors)
         color_view = _append_buffer(binary, color_bytes, buffer_views, target=34962)
@@ -122,12 +140,15 @@ def write(
         material_index = len(materials)
         materials.append(_material(objects[0], _short_name(group_name)))
         mesh_index = len(meshes)
+        attributes = {"POSITION": position_accessor, "COLOR_0": color_accessor}
+        if normal_accessor is not None:
+            attributes["NORMAL"] = normal_accessor
         meshes.append(
             {
                 "name": _short_name(group_name),
                 "primitives": [
                     {
-                        "attributes": {"POSITION": position_accessor, "COLOR_0": color_accessor},
+                        "attributes": attributes,
                         "indices": index_accessor,
                         "material": material_index,
                     }
@@ -327,6 +348,21 @@ def _transform_vertices(vertices, position, rotation):
     matrix = _rotation_matrix(rotation)
     return [
         tuple(position[row] + sum(matrix[row][column] * vertex[column] for column in range(3)) for row in range(3))
+        for vertex in vertices
+    ]
+
+
+def _transform_directions(directions, rotation):
+    matrix = _rotation_matrix(rotation)
+    return [
+        tuple(sum(matrix[row][column] * direction[column] for column in range(3)) for row in range(3))
+        for direction in directions
+    ]
+
+
+def _sphere_normals(vertices):
+    return [
+        tuple(component / math.sqrt(sum(value * value for value in vertex)) for component in vertex)
         for vertex in vertices
     ]
 

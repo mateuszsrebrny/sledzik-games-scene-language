@@ -4,7 +4,7 @@ import unittest
 from textwrap import dedent
 from pathlib import Path
 
-from sgsl.parser import SGSLValidationError, parse_text
+from sgsl.parser import SGSLValidationError, parse_file, parse_text
 from sgsl.renderers.html_renderer import render as render_html
 from sgsl.renderers.glb_renderer import write as write_glb
 from sgsl.renderers.roblox_renderer import render as render_roblox
@@ -60,6 +60,42 @@ class SphereTests(unittest.TestCase):
             json_length = int.from_bytes(data[12:16], "little")
             document = json.loads(data[20 : 20 + json_length])
             self.assertEqual(document["materials"][0]["alphaMode"], "OPAQUE")
+
+    def test_surface_contains_no_duplicate_or_degenerate_triangles(self):
+        vertices, indices = sphere_geometry(2, 24)
+        seen_index_triangles = set()
+        seen_position_triangles = set()
+        for offset in range(0, len(indices), 3):
+            triangle = tuple(indices[offset : offset + 3])
+            normalized_indices = tuple(sorted(triangle))
+            normalized_positions = tuple(
+                sorted(tuple(round(value, 9) for value in vertices[index]) for index in triangle)
+            )
+
+            self.assertEqual(len(set(normalized_positions)), 3)
+            self.assertNotIn(normalized_indices, seen_index_triangles)
+            self.assertNotIn(normalized_positions, seen_position_triangles)
+            seen_index_triangles.add(normalized_indices)
+            seen_position_triangles.add(normalized_positions)
+
+    def test_standalone_glb_has_one_primitive_with_smooth_normals(self):
+        fixture = Path(__file__).with_name("scenes") / "sphere.sgsl"
+        with tempfile.TemporaryDirectory() as directory:
+            output = write_glb(parse_file(fixture), Path(directory) / "sphere.glb")
+            data = output.read_bytes()
+            json_length = int.from_bytes(data[12:16], "little")
+            document = json.loads(data[20 : 20 + json_length])
+
+        self.assertEqual(len(document["nodes"]), 1)
+        self.assertEqual(len(document["meshes"]), 1)
+        self.assertEqual(document["nodes"][0]["mesh"], 0)
+        self.assertEqual(len(document["meshes"][0]["primitives"]), 1)
+        attributes = document["meshes"][0]["primitives"][0]["attributes"]
+        self.assertIn("NORMAL", attributes)
+        self.assertEqual(
+            document["accessors"][attributes["NORMAL"]]["count"],
+            document["accessors"][attributes["POSITION"]]["count"],
+        )
 
     def test_mesh_normals_face_outward(self):
         vertices, indices = sphere_geometry(2, 12)

@@ -1,0 +1,7 @@
+scene Sphere
+
+sphere Ball
+    at 0 0 0
+    radius 2
+    segments 24
+    color green

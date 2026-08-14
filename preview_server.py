@@ -4,6 +4,7 @@ import argparse
 import glob
 import json
 import os
+import re
 import traceback
 from functools import partial
 from http import HTTPStatus
@@ -12,7 +13,7 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qs, urlparse
 
-from sgsl.parser import SGSLValidationError, parse_text_with_library
+from sgsl.parser import SGSLValidationError, find_entry_component_names, parse_text_with_library
 from sgsl.renderers.html_renderer import render as render_html
 
 
@@ -29,6 +30,39 @@ def build_preview_payload(
 ) -> dict[str, Any]:
     scene = parse_text_with_library(source, library_paths, base_dir=base_dir)
     return render_html(scene)
+
+
+def component_preview_source(source: str, component_names: tuple[str, ...], scene_name: str) -> str:
+    """Wrap component-only source for the read-only preview browser."""
+    if not component_names:
+        return source
+    instances = "\n".join(
+        f"instance Preview{index} {name}"
+        for index, name in enumerate(component_names, start=1)
+    )
+    return f"scene {scene_name}\n\n{source.rstrip()}\n\n{instances}\n"
+
+
+def select_preview_components(scene_path: Path, component_names: tuple[str, ...]) -> tuple[str, ...]:
+    if len(component_names) <= 1:
+        return component_names
+    expected = re.sub(r"[^A-Za-z0-9]", "", scene_path.stem).lower()
+    for name in component_names:
+        if re.sub(r"[^A-Za-z0-9]", "", name).lower() == expected:
+            return (name,)
+    # Component files commonly define helpers first and their public asset last.
+    return (component_names[-1],)
+
+
+def prepare_selected_source(source: str, scene_path: Path) -> str:
+    if re.search(r"(?m)^scene\s+[A-Za-z_][A-Za-z0-9_]*\s*$", source):
+        return source
+    component_names = select_preview_components(
+        scene_path,
+        find_entry_component_names(scene_path),
+    )
+    scene_name = "Preview_" + re.sub(r"[^A-Za-z0-9_]", "_", scene_path.stem)
+    return component_preview_source(source, component_names, scene_name)
 
 
 class PreviewRequestHandler(SimpleHTTPRequestHandler):
@@ -58,7 +92,11 @@ class PreviewRequestHandler(SimpleHTTPRequestHandler):
         if parsed.path == "/api/source":
             try:
                 scene_path = self._selected_scene_path(parsed.query)
-                self._write_text(scene_path.read_text(encoding="utf-8"))
+                source = prepare_selected_source(
+                    scene_path.read_text(encoding="utf-8"),
+                    scene_path,
+                )
+                self._write_text(source)
             except (OSError, ValueError) as exc:
                 self._write_json({"error": str(exc)}, status=HTTPStatus.BAD_REQUEST)
             return
@@ -81,14 +119,23 @@ class PreviewRequestHandler(SimpleHTTPRequestHandler):
 
         try:
             source, selected_scene = self._extract_preview_request(raw_body, content_type)
+            preview_base_dir = self.library_base_dir
             if selected_scene is not None:
                 if self.scene_root is None:
                     raise ValueError("Scene browsing is not configured for this preview server.")
-                source = resolve_scene_path(self.scene_root, selected_scene).read_text(encoding="utf-8")
+                scene_path = resolve_scene_path(self.scene_root, selected_scene)
+                source = prepare_selected_source(
+                    scene_path.read_text(encoding="utf-8"),
+                    scene_path,
+                )
+                # Component files use imports relative to their own directory.
+                # Keeping that base directory avoids collisions with same-named
+                # entry scenes elsewhere in the project library.
+                preview_base_dir = scene_path.parent
             payload = build_preview_payload(
                 source,
                 self.library_paths,
-                base_dir=self.library_base_dir,
+                base_dir=preview_base_dir,
             )
         except SGSLValidationError as exc:
             traceback.print_exc()

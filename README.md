@@ -255,8 +255,9 @@ server rejects absolute paths and paths escaping the configured root. If
 `--root` is omitted, the directory containing `--default-source` is used.
 
 Use the refresh button in the sidebar to discover files created after the
-server started. Files containing only components may report a parser error until
-component-only automatic preview wrappers are implemented.
+server started. Files containing only components are automatically wrapped in a
+temporary preview scene when selected. The source file itself is never
+modified; the wrapper is used only by the browser and editor render request.
 
 Without `--default-source`, the editor loads `examples/primitives.sgsl`. Without
 both `--root` and `--default-source`, the file browser is empty while the live

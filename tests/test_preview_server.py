@@ -5,11 +5,15 @@ from textwrap import dedent
 
 from preview_server import (
     build_preview_payload,
+    component_preview_source,
+    find_entry_component_names,
     list_scene_paths,
     load_default_source,
+    prepare_selected_source,
     resolve_library_paths,
     resolve_scene_path,
     resolve_scene_root,
+    select_preview_components,
 )
 from sgsl.parser import SGSLValidationError
 
@@ -33,6 +37,88 @@ class PreviewServerTests(unittest.TestCase):
         self.assertEqual(len(payload["objects"]), 1)
         self.assertEqual(payload["objects"][0]["name"], "Floor")
         self.assertEqual(payload["objects"][0]["color"], "#d2d2d2")
+
+    def test_wraps_component_only_source_with_a_preview_scene(self):
+        source = "component Marker\n    block Dot\n        size 1 1 1\n"
+        wrapped = component_preview_source(source, ("Marker",), "Preview_marker")
+
+        self.assertTrue(wrapped.startswith("scene Preview_marker\n"))
+        self.assertIn("instance Preview1 Marker", wrapped)
+
+    def test_selects_file_named_public_component_over_helper_components(self):
+        self.assertEqual(
+            select_preview_components(
+                Path("factory-hall.sgsl"),
+                ("WallFragment", "FactoryWindow", "FactoryHall"),
+            ),
+            ("FactoryHall",),
+        )
+
+    def test_selects_last_component_when_filename_has_no_exact_match(self):
+        self.assertEqual(
+            select_preview_components(
+                Path("asset.sgsl"),
+                ("Helper", "PublicAsset"),
+            ),
+            ("PublicAsset",),
+        )
+
+    def test_finds_only_components_declared_by_selected_file(self):
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            imported = root / "shared.sgsl"
+            selected = root / "selected.sgsl"
+            imported.write_text("component Shared\n", encoding="utf-8")
+            selected.write_text(
+                'import "shared.sgsl"\ncomponent Selected\n',
+                encoding="utf-8",
+            )
+
+            self.assertEqual(find_entry_component_names(selected), ("Selected",))
+
+    def test_prepares_component_file_for_preview_without_editing_it(self):
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            selected = Path(temporary_directory) / "house.sgsl"
+            original = "component House\n    block Wall\n        size 2 2 2\n"
+            selected.write_text(original, encoding="utf-8")
+
+            prepared = prepare_selected_source(selected.read_text(encoding="utf-8"), selected)
+
+            self.assertIn("scene Preview_house", prepared)
+            self.assertIn("instance Preview1 House", prepared)
+            self.assertEqual(selected.read_text(encoding="utf-8"), original)
+
+    def test_component_preview_resolves_imports_from_selected_file_directory(self):
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            helper = root / "helper.sgsl"
+            selected = root / "selected.sgsl"
+            helper.write_text(
+                "component Helper\n    block Dot\n        at 0 0 0\n        size 1 1 1\n        color gray\n",
+                encoding="utf-8",
+            )
+            selected.write_text(
+                'import "helper.sgsl"\ncomponent Selected\n    instance Part Helper\n',
+                encoding="utf-8",
+            )
+            source = prepare_selected_source(selected.read_text(encoding="utf-8"), selected)
+
+            payload = build_preview_payload(
+                source,
+                (helper, selected),
+                base_dir=selected.parent,
+            )
+
+        self.assertEqual(payload["scene"], "Preview_selected")
+        self.assertEqual([obj["name"] for obj in payload["objects"]], ["Preview1.Part.Dot"])
+
+    def test_keeps_existing_scene_source_unchanged(self):
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            selected = Path(temporary_directory) / "preview.sgsl"
+            original = "scene Existing\n"
+            selected.write_text(original, encoding="utf-8")
+
+            self.assertEqual(prepare_selected_source(original, selected), original)
 
     def test_builds_preview_with_an_allowed_import(self):
         with tempfile.TemporaryDirectory() as temporary_directory:

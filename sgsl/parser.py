@@ -59,6 +59,19 @@ def parse_component_file(path: str | Path, component_name: str) -> dict:
     return scene
 
 
+def find_entry_component_names(path: str | Path) -> tuple[str, ...]:
+    """Return components declared directly by an SGSL file."""
+    entry = Path(path).expanduser().resolve()
+    raw = _load_import_graph(entry, require_entry_scene=False)
+    names = [
+        statement["name"]
+        for statement in raw["statements"]
+        if statement["type"] == "component_definition"
+        and Path(statement["_source_path"]).resolve() == entry
+    ]
+    return tuple(names)
+
+
 def parse_text_with_library(
     source: str,
     library_paths: list[str | Path] | tuple[str | Path, ...],

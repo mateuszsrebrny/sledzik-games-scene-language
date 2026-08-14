@@ -3,12 +3,25 @@ start: scene
 scene: "scene" NAME statement*
 
 statement: object
+         | asset_definition
          | component
          | instance
          | repeat
          | import_stmt
 
 import_stmt: "import" ESCAPED_STRING
+
+asset_definition: "asset" NAME asset_property*
+
+asset_property: roblox_name
+              | roblox_id
+              | bounds
+
+roblox_name: "robloxName" ESCAPED_STRING
+
+roblox_id: "robloxId" expression
+
+bounds: "bounds" expression expression expression
 
 object: block
       | marker

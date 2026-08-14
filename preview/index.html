@@ -428,6 +428,37 @@
           previewGroup.add(axes);
           continue;
         }
+        if (obj.type === "runtime_asset") {
+          const bounds = obj.bounds || [2, 2, 2];
+          const scale = Number(obj.scale || 1);
+          const geometry = new THREE.BoxGeometry(
+            bounds[0] * scale,
+            bounds[1] * scale,
+            bounds[2] * scale,
+          );
+          const material = new THREE.MeshBasicMaterial({
+            color: 0xf59e0b,
+            transparent: true,
+            opacity: 0.28,
+            depthTest: true,
+            depthWrite: false,
+            wireframe: true,
+          });
+          const mesh = new THREE.Mesh(geometry, material);
+          mesh.position.set(...obj.position);
+          const [rx, ry, rz] = obj.rotation.map(THREE.MathUtils.degToRad);
+          mesh.rotation.set(rx, ry, rz);
+          mesh.name = obj.name;
+          previewGroup.add(mesh);
+
+          const pivotSize = Math.max(...bounds) * scale * 0.35;
+          const axes = new THREE.AxesHelper(Math.max(pivotSize, 0.5));
+          axes.position.set(...obj.position);
+          axes.rotation.set(rx, ry, rz);
+          axes.name = `${obj.name}.Pivot`;
+          previewGroup.add(axes);
+          continue;
+        }
         if (obj.transparency >= 1) {
           continue;
         }

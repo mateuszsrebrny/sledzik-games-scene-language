@@ -253,8 +253,29 @@ def _expand_scene(raw_scene: dict) -> dict:
     seen_instance_names: set[str] = set()
 
     for statement in raw_scene.get("statements", []):
-        if statement["type"] != "component_definition":
+        if statement["type"] not in ("component_definition", "asset_definition"):
             continue
+        if statement["type"] == "asset_definition":
+            declaration = copy.deepcopy(statement)
+            if "roblox_name" not in statement:
+                raise SGSLValidationError(
+                    f"Asset {statement['name']!r} requires robloxName for runtime lookup."
+                )
+            if "bounds" not in statement:
+                raise SGSLValidationError(
+                    f"Asset {statement['name']!r} requires bounds for preview and validation."
+                )
+            declaration["bounds"] = _evaluate_vector(declaration["bounds"], {})
+            if "roblox_id" in declaration:
+                declaration["roblox_id"] = _evaluate_expression(declaration["roblox_id"], {})
+            statement = {
+                "type": "component_definition",
+                "name": declaration["name"],
+                "parameters": [],
+                "objects": [],
+                "runtime_asset": declaration["roblox_name"],
+                "asset_definition": declaration,
+            }
         previous = components.get(statement["name"])
         if previous is not None:
             previous_path = previous.get("_source_path", "<input>")
@@ -267,7 +288,7 @@ def _expand_scene(raw_scene: dict) -> dict:
 
     for statement in raw_scene.get("statements", []):
         statement_type = statement["type"]
-        if statement_type == "component_definition":
+        if statement_type in ("component_definition", "asset_definition"):
             continue
 
         if statement_type == "component_repeat":
@@ -279,6 +300,7 @@ def _expand_scene(raw_scene: dict) -> dict:
             continue
 
         if statement_type == "component_instance":
+            statement = _normalize_asset_instance_order(statement, components)
             if statement["name"] in seen_instance_names:
                 raise SGSLValidationError(f"Duplicate instance name {statement['name']!r}.")
             seen_instance_names.add(statement["name"])
@@ -291,6 +313,20 @@ def _expand_scene(raw_scene: dict) -> dict:
         "scene": raw_scene["scene"],
         "objects": objects,
     }
+
+
+def _normalize_asset_instance_order(statement: dict, components: dict[str, dict]) -> dict:
+    """Accept the asset-oriented `instance AssetName InstanceName` spelling.
+
+    Existing SGSL uses `instance InstanceName ComponentName`. The alternate
+    spelling is unambiguous when the first token is a known component and the
+    second token is not.
+    """
+    if statement["component"] not in components and statement["name"] in components:
+        normalized = copy.deepcopy(statement)
+        normalized["name"], normalized["component"] = normalized["component"], normalized["name"]
+        return normalized
+    return statement
 
 
 def _evaluate_top_level_object(obj: dict) -> dict:
@@ -345,6 +381,7 @@ def _expand_instance(
     instance_mirror = _normalize_mirror(instance.get("mirror"), instance["name"])
     world_scale = parent_scale * instance_scale
     runtime_asset = component.get("runtime_asset") or parent_runtime_asset
+    asset_definition = component.get("asset_definition")
     instance_emissive = parent_emissive
     if "emissive" in instance:
         instance_emissive = _evaluate_expression(instance["emissive"], expression_environment)
@@ -370,6 +407,20 @@ def _expand_instance(
                 "position": _transform_position(world_transform),
                 "rotation": _transform_rotation(world_transform),
                 "scale": world_scale,
+                **(
+                    {
+                        "asset_symbol": asset_definition["name"],
+                        "roblox_name": asset_definition["roblox_name"],
+                        "bounds": asset_definition["bounds"],
+                        **(
+                            {"roblox_id": asset_definition["roblox_id"]}
+                            if "roblox_id" in asset_definition
+                            else {}
+                        ),
+                    }
+                    if asset_definition is not None
+                    else {}
+                ),
             }
         )
     for template in component["objects"]:
@@ -793,6 +844,8 @@ def _validate_object(obj: dict) -> None:
     if object_type == "runtime_asset_instance":
         _validate_required_fields(obj, ("at", "asset", "scale"))
         _validate_positive_number(obj, "scale")
+        if "bounds" in obj:
+            _validate_size_triplet(obj, "bounds")
         _validate_rotation(obj)
         return
     if object_type == "marker":

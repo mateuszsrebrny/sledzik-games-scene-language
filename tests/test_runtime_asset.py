@@ -1,6 +1,8 @@
 from sgsl.parser import parse_text
 from sgsl.renderers.html_renderer import render as render_html
 from sgsl.renderers.roblox_renderer import render as render_roblox
+from sgsl.renderers.glb_renderer import write as write_glb
+import json
 
 
 SOURCE = """
@@ -68,3 +70,61 @@ instance Neighborhood Row
 
     html = render_html(scene)
     assert len(html["objects"]) == 1
+
+
+def test_asset_declaration_uses_runtime_asset_pipeline_and_html_placeholder():
+    scene = parse_text(
+        '''
+scene ExternalAssetPreview
+
+asset TownFountain
+    robloxName "TownFountain"
+    robloxId 123456789
+    bounds 8 5 8
+
+instance TownFountain Fountain01
+    at 1 2 3
+    rotate 0 45 0
+    scale 1.2
+'''
+    )
+
+    placement = scene["objects"][0]
+    assert placement["name"] == "Fountain01"
+    assert placement["asset"] == "TownFountain"
+    assert placement["asset_symbol"] == "TownFountain"
+    assert placement["roblox_name"] == "TownFountain"
+    assert placement["roblox_id"] == 123456789
+    assert placement["bounds"] == [8.0, 5.0, 8.0]
+
+    html_object = render_html(scene)["objects"][0]
+    assert html_object["type"] == "runtime_asset"
+    assert html_object["bounds"] == [8.0, 5.0, 8.0]
+    assert html_object["position"] == [1.0, 2.0, 3.0]
+
+    output = render_roblox(scene, mode="module")
+    assert "RuntimeAssetWorldPivot" not in output
+    assert "Vector3.new(8.0, 5.0, 8.0)" in output
+    assert "'TownFountain', 123456789.0" in output
+
+
+def test_glb_writes_shared_runtime_asset_manifest(tmp_path):
+    scene = parse_text(
+        '''
+scene RuntimeAssetManifest
+
+asset Oak
+    robloxName "OakTree01"
+    bounds 5 11 5
+
+instance Oak Tree01
+    at 10 0 20
+'''
+    )
+    output = write_glb(scene, tmp_path / "scene.glb")
+    manifest = json.loads(output.with_suffix(".manifest.json").read_text(encoding="utf-8"))
+
+    assert manifest["version"] == 1
+    assert manifest["scene"] == "RuntimeAssetManifest"
+    assert manifest["runtimeAssets"][0]["asset"] == "OakTree01"
+    assert manifest["runtimeAssets"][0]["bounds"] == [5.0, 11.0, 5.0]

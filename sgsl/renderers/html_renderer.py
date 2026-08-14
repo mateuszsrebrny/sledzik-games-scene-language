@@ -24,12 +24,30 @@ def render(scene: dict) -> dict:
                 expand_pipe_arcs=False,
                 expand_frustums=False,
                 expand_spherical_caps=False,
+                include_runtime_assets=True,
             )
+            if obj["type"] != "runtime_asset_instance" or "bounds" in obj
         ],
     }
 
 
 def _render_object(obj: dict) -> dict:
+    if obj["type"] == "runtime_asset_instance":
+        payload = {
+            "type": "runtime_asset",
+            "name": obj["name"],
+            "asset": obj["asset"],
+            "position": obj["position"],
+            "rotation": obj["rotation"],
+            "scale": obj["scale"],
+            "bounds": obj.get("bounds", [2.0, 2.0, 2.0]),
+            "robloxName": obj.get("roblox_name", obj["asset"]),
+        }
+        if "asset_symbol" in obj:
+            payload["assetSymbol"] = obj["asset_symbol"]
+        if "roblox_id" in obj:
+            payload["robloxId"] = obj["roblox_id"]
+        return payload
     if obj["type"] == "marker":
         return {
             "type": "marker",

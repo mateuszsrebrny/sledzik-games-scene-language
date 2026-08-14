@@ -10,6 +10,7 @@ def iter_render_objects(
     expand_pipe_arcs: bool = True,
     expand_frustums: bool = True,
     expand_spherical_caps: bool = True,
+    include_runtime_assets: bool = False,
 ) -> list[dict]:
     objects: list[dict] = []
     queue = deque(scene["objects"])
@@ -17,6 +18,8 @@ def iter_render_objects(
     while queue:
         obj = queue.popleft()
         if obj["type"] == "runtime_asset_instance":
+            if include_runtime_assets:
+                objects.append(obj)
             continue
         if obj["type"] == "spherical_cap" and expand_spherical_caps:
             queue.extend(_expand_spherical_cap(obj))

@@ -124,13 +124,21 @@ def _scene_object_lines(scene: dict) -> list[str]:
     lines: list[str] = []
     for obj in scene["objects"]:
         if obj["type"] == "runtime_asset_instance":
+            optional_args = []
+            if "bounds" in obj:
+                optional_args.append(
+                    f"Vector3.new({obj['bounds'][0]}, {obj['bounds'][1]}, {obj['bounds'][2]})"
+                )
+                optional_args.append(repr(obj.get("asset_symbol", obj["asset"])))
+                if "roblox_id" in obj:
+                    optional_args.append(str(obj["roblox_id"]))
             lines.extend(
                 [
                     "do",
                     f"    Builder.makeRuntimeAssetMarker(sceneFolder, {obj['name']!r}, {obj['asset']!r}, "
                     f"Vector3.new({obj['position'][0]}, {obj['position'][1]}, {obj['position'][2]}), "
                     f"Vector3.new({obj['rotation'][0]}, {obj['rotation'][1]}, {obj['rotation'][2]}), "
-                    f"{obj['scale']})",
+                    f"{obj['scale']}" + (", " + ", ".join(optional_args) if optional_args else "") + ")",
                     "end",
                     "",
                 ]

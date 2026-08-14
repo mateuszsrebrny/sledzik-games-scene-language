@@ -16,6 +16,7 @@ from sgsl.pipe_arc_geometry import pipe_arc_geometry
 from sgsl.profile_revolve_geometry import profile_revolve_geometry
 from sgsl.spherical_cap_geometry import spherical_cap_geometry
 from sgsl.sphere_geometry import sphere_geometry
+from sgsl.runtime_assets import write_manifest
 
 
 def write(
@@ -192,6 +193,7 @@ def write(
     path = Path(output_path)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(glb)
+    write_manifest(scene, path.with_suffix(".manifest.json"))
     return path
 
 

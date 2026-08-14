@@ -63,10 +63,20 @@ function Builder.makeMarker(parent, name, position, rotation)
 	return marker
 end
 
-function Builder.makeRuntimeAssetMarker(parent, name, assetName, position, rotation, scale)
+function Builder.makeRuntimeAssetMarker(parent, name, assetName, position, rotation, scale, bounds, assetSymbol, robloxId)
 	local marker = Builder.makeMarker(parent, name, position, rotation)
 	marker:SetAttribute("RuntimeAsset", assetName)
 	marker:SetAttribute("RuntimeAssetScale", scale or 1)
+	if bounds then
+		marker:SetAttribute("RuntimeAssetBounds", bounds)
+	end
+	if assetSymbol then
+		marker:SetAttribute("RuntimeAssetSymbol", assetSymbol)
+		marker:SetAttribute("RuntimeAssetWorldPivot", true)
+	end
+	if robloxId then
+		marker:SetAttribute("RuntimeAssetRobloxId", robloxId)
+	end
 	return marker
 end
 

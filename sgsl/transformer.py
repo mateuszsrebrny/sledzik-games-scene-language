@@ -142,6 +142,27 @@ class SGSLTransformer(Transformer):
     def runtime_asset(self, items):
         return {"type": "runtime_asset", "name": items[0]}
 
+    def roblox_name(self, items):
+        return ("roblox_name", items[0])
+
+    def roblox_id(self, items):
+        return ("roblox_id", items[0])
+
+    def bounds(self, items):
+        return ("bounds", list(items))
+
+    def asset_property(self, items):
+        return items[0]
+
+    def asset_definition(self, items):
+        name = items[0]
+        data = {"type": "asset_definition", "name": name}
+        for key, value in items[1:]:
+            if key in data:
+                raise ValueError(f"Duplicate property {key!r} in asset {name!r}")
+            data[key] = value
+        return data
+
     def set_param(self, items):
         return ("parameter_overrides", (items[0], items[1]))
 

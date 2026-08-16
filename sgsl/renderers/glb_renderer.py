@@ -199,9 +199,16 @@ def write(
 
 def _append_marker_mesh(binary, buffer_views, accessors, meshes, materials) -> int:
     # Roblox's 3D Importer discards empty glTF nodes. Give every SGSL marker a
-    # shared microscopic transparent cube so its name and transform survive as
-    # an imported descendant without producing visible scene geometry.
-    positions, indices = _block_geometry([0.01, 0.01, 0.01])
+    # shared transparent cube so its name and transform survive as an imported
+    # descendant without producing visible scene geometry (it stays fully
+    # transparent via the material alpha below, and Roblox-side code also
+    # forces Transparency to 1 explicitly). The cube used to be 0.01 studs -
+    # small enough that Roblox's importer appeared to lose or corrupt the
+    # node's rotation (and sometimes position) when decomposing its transform
+    # matrix on import, even though the exported glTF node data is correct.
+    # Bumped up well past that precision cliff; still tiny relative to any
+    # real scene geometry.
+    positions, indices = _block_geometry([0.3, 0.3, 0.3])
     position_bytes = b"".join(struct.pack("<3f", *position) for position in positions)
     position_view = _append_buffer(binary, position_bytes, buffer_views, target=34962)
     position_accessor = len(accessors)

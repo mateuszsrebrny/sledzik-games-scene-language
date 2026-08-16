@@ -86,8 +86,10 @@ class SphereTests(unittest.TestCase):
             json_length = int.from_bytes(data[12:16], "little")
             document = json.loads(data[20 : 20 + json_length])
 
-        self.assertEqual(len(document["nodes"]), 1)
-        self.assertEqual(len(document["meshes"]), 1)
+        # One node/mesh for the sphere itself, plus the content-version
+        # marker every exported GLB now carries (see glb_renderer.write).
+        self.assertEqual(len(document["nodes"]), 2)
+        self.assertEqual(len(document["meshes"]), 2)
         self.assertEqual(document["nodes"][0]["mesh"], 0)
         self.assertEqual(len(document["meshes"][0]["primitives"]), 1)
         attributes = document["meshes"][0]["primitives"][0]["attributes"]

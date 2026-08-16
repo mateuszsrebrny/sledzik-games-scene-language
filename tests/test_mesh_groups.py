@@ -76,8 +76,8 @@ class MeshGroupTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             path = write(scene, Path(directory) / "Bottle.glb")
             payload = _read_glb_json(path)
-        self.assertEqual([node["name"] for node in payload["nodes"]], ["Shell", "Water", "Cap", "Label"])
-        self.assertEqual(len(payload["meshes"]), 4)
+        self.assertEqual(_mesh_node_names(payload), ["Shell", "Water", "Cap", "Label"])
+        self.assertEqual(len(payload["meshes"]), 5)
 
     def test_glb_can_merge_ungrouped_geometry_by_material(self):
         scene = parse_text(self.SOURCE)
@@ -88,16 +88,16 @@ class MeshGroupTests(unittest.TestCase):
                 merge_ungrouped_materials=True,
             )
             payload = _read_glb_json(path)
-        self.assertEqual([node["name"] for node in payload["nodes"]], [
+        self.assertEqual(_mesh_node_names(payload), [
             "Shell", "MaterialGroup_1", "MaterialGroup_2"
         ])
-        self.assertEqual(len(payload["meshes"]), 3)
+        self.assertEqual(len(payload["meshes"]), 4)
 
     def test_repository_bottle_fixture_exports_four_named_objects(self):
         fixture = Path(__file__).with_name("scenes") / "bottle_mesh.sgsl"
         with tempfile.TemporaryDirectory() as directory:
             payload = _read_glb_json(write(parse_file(fixture), Path(directory) / "Bottle.glb"))
-        self.assertEqual([node["name"] for node in payload["nodes"]], ["Shell", "Water", "Cap", "Label"])
+        self.assertEqual(_mesh_node_names(payload), ["Shell", "Water", "Cap", "Label"])
 
     def test_rejects_multiple_materials_in_one_mesh(self):
         source = self.SOURCE.replace("color white", "color red", 1)
@@ -133,6 +133,16 @@ class MeshGroupTests(unittest.TestCase):
             scene = parse_component_file(path, "Bottle")
             self.assertEqual(scene["scene"], "Bottle")
             self.assertEqual(scene["objects"][0]["mesh_group"], "Bottle.Shell")
+
+
+def _mesh_node_names(payload: dict) -> list[str]:
+    # Every exported GLB also carries a content-version marker node
+    # (SGSLVersion_<hash>); these tests are about the real geometry nodes,
+    # so exclude it rather than pin down its content-dependent name.
+    return [
+        node["name"] for node in payload["nodes"]
+        if not node["name"].startswith("SGSLVersion_")
+    ]
 
 
 def _read_glb_json(path: Path) -> dict:

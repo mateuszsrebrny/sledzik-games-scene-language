@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 import struct
@@ -158,7 +159,10 @@ def write(
         )
         nodes.append({"name": _short_name(group_name), "mesh": mesh_index})
 
-    marker_mesh = _append_marker_mesh(binary, buffer_views, accessors, meshes, materials) if markers else None
+    # Always materialize the shared marker mesh: the content-version marker
+    # below needs it even for components that author no semantic markers of
+    # their own (e.g. SixPackBasket).
+    marker_mesh = _append_marker_mesh(binary, buffer_views, accessors, meshes, materials)
     for marker in markers:
         nodes.append({
             "name": _short_name(marker["name"]),
@@ -167,6 +171,27 @@ def write(
             "rotation": _quaternion_from_euler(marker["rotation"]),
             "extras": {"sgslType": "marker"},
         })
+
+    # Content-version marker: a hash of everything that determines the
+    # imported prefab's visible geometry and named-part transforms (raw
+    # vertex/index/color buffers plus node names/hierarchy/transforms,
+    # including the semantic markers above). Exported the same way as any
+    # other SGSL marker so Roblox's 3D Importer keeps it as a named
+    # descendant. Runtime asset validation reads this name back and refuses
+    # to start if it doesn't match the version recorded for the currently
+    # checked-out .sgsl sources, catching a Studio import that was never
+    # refreshed after the source changed instead of running with silently
+    # stale geometry.
+    content_hash = hashlib.sha256(
+        bytes(binary) + json.dumps(nodes, sort_keys=True).encode("utf-8")
+    ).hexdigest()[:10]
+    nodes.append({
+        "name": f"SGSLVersion_{content_hash}",
+        "mesh": marker_mesh,
+        "translation": [0.0, 0.0, 0.0],
+        "rotation": [0.0, 0.0, 0.0, 1.0],
+        "extras": {"sgslType": "version"},
+    })
 
     payload = {
         "asset": {"version": "2.0", "generator": "SGSL"},
@@ -194,6 +219,7 @@ def write(
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(glb)
     write_manifest(scene, path.with_suffix(".manifest.json"))
+    path.with_suffix(".version").write_text(content_hash + "\n", encoding="utf-8")
     return path
 
 

@@ -34,15 +34,6 @@ local function markerCFrame(instance)
 		or CFrame.new())
 end
 
-local function findMarker(root, markerName)
-	for _, descendant in ipairs(root:GetDescendants()) do
-		if ImportedAssetNames.matches(descendant.Name, markerName) then
-			return descendant
-		end
-	end
-	return nil
-end
-
 local function findNamedPart(root, name)
 	for _, descendant in ipairs(root:GetDescendants()) do
 		if descendant:IsA("BasePart") and descendant.Name == name then
@@ -66,36 +57,15 @@ local function collectPlacementMarkers(root)
 	return markers
 end
 
-local function createMissingAssetPlaceholder(placement, assetName, targetCFrame, scale)
-	local bounds = placement:GetAttribute("RuntimeAssetBounds")
-	if typeof(bounds) ~= "Vector3" then
-		bounds = Vector3.new(2, 2, 2)
-	end
-	local placeholder = Instance.new("Part")
-	placeholder.Name = placement.Name
-	placeholder.Size = bounds * scale
-	placeholder.CFrame = targetCFrame
-	placeholder.Anchored = true
-	placeholder.CanCollide = false
-	placeholder.CanTouch = false
-	placeholder.CanQuery = false
-	placeholder.Transparency = 0.55
-	placeholder.Color = Color3.fromRGB(245, 158, 11)
-	placeholder.Material = Enum.Material.Neon
-	placeholder:SetAttribute("MissingRuntimeAsset", assetName)
-	placeholder.Parent = placement.Parent
-	warn("Missing runtime asset " .. tostring(assetName) .. "; using bounds placeholder")
-	return placeholder
-end
-
 -- Roblox's 3D Importer corrupts a marker node's imported CFrame (both
 -- position and rotation), even with a marker mesh-size fix applied. Real
--- baked mesh geometry imports reliably, so a Placement marker cannot always
--- be trusted as-is. `resolveSourceCFrame(assetName, clone)`, if provided, is
--- tried first for each asset and lets the caller derive the source-space
--- placement CFrame from a real anchor part plus a known fixed offset
--- instead; returning nil/false falls back to trusting the clone's own
--- Placement marker.
+-- baked mesh geometry imports reliably, so a Placement marker is never
+-- trusted as-is: `resolveSourceCFrame(assetName, clone)` must derive the
+-- source-space placement CFrame for every asset `resolveAsset` can return -
+-- from a real anchor part plus a known fixed offset, or (if the marker
+-- happens to be authored at identity) that fixed value directly. An asset
+-- with no working override fails materialization loudly instead of quietly
+-- trusting an import that's known to be unreliable.
 function RuntimeAssetMaterializer.materialize(root, resolveAsset, resolveSourceCFrame)
 	local materialized = {}
 	for index, placement in ipairs(collectPlacementMarkers(root)) do
@@ -107,9 +77,9 @@ function RuntimeAssetMaterializer.materialize(root, resolveAsset, resolveSourceC
 		end
 		local scale = placement:GetAttribute("RuntimeAssetScale") or 1
 		if not source or not source:IsA("Model") then
-			table.insert(materialized, createMissingAssetPlaceholder(placement, assetName, targetCFrame, scale))
-			placement:Destroy()
-			continue
+			error("Runtime asset " .. tostring(assetName) .. " is required by " .. placement.Name
+				.. " but is missing from ReplicatedStorage/SGSLAssets - import it, or register it in "
+				.. "the server's asset validation so a missing import fails at startup instead of here", 2)
 		end
 
 		local clone = source:Clone()
@@ -125,12 +95,10 @@ function RuntimeAssetMaterializer.materialize(root, resolveAsset, resolveSourceC
 		else
 			local sourceCFrame = resolveSourceCFrame and resolveSourceCFrame(assetName, clone) or nil
 			if not sourceCFrame then
-				local sourcePlacement = findMarker(clone, "Placement")
-				sourceCFrame = sourcePlacement and markerCFrame(sourcePlacement)
-			end
-			if not sourceCFrame then
 				clone:Destroy()
-				error("Runtime asset " .. assetName .. " is missing a Placement marker", 2)
+				error("Runtime asset " .. tostring(assetName) .. " has no resolveSourceCFrame override - "
+					.. "its imported Placement marker can't be trusted, so a source-space transform must "
+					.. "be supplied for it (see MarkerOffsets.lua and scripts/generate_marker_offsets.py)", 2)
 			end
 			clone:PivotTo(targetCFrame * sourceCFrame:Inverse() * clone:GetPivot())
 		end

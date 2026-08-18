@@ -301,3 +301,35 @@ def _transform_rotation(transform: list[list[float]]) -> list[float]:
 def _rotate_vector(vector: list[float], rotation: list[float]) -> list[float]:
     matrix = _rotation_matrix(rotation)
     return [sum(matrix[row][column] * vector[column] for column in range(3)) for row in range(3)]
+
+
+def invert_transform(transform: list[list[float]]) -> list[list[float]]:
+    """Inverse of a rigid (rotation + translation) 4x4 transform."""
+    rotation = [[transform[row][column] for column in range(3)] for row in range(3)]
+    position = [transform[row][3] for row in range(3)]
+    transposed = [[rotation[column][row] for column in range(3)] for row in range(3)]
+    inverse_position = [
+        -sum(transposed[row][column] * position[column] for column in range(3))
+        for row in range(3)
+    ]
+    return [
+        [transposed[0][0], transposed[0][1], transposed[0][2], inverse_position[0]],
+        [transposed[1][0], transposed[1][1], transposed[1][2], inverse_position[1]],
+        [transposed[2][0], transposed[2][1], transposed[2][2], inverse_position[2]],
+        [0.0, 0.0, 0.0, 1.0],
+    ]
+
+
+def relative_transform(
+    anchor_position: list[float],
+    anchor_rotation: list[float],
+    target_position: list[float],
+    target_rotation: list[float],
+) -> list[list[float]]:
+    """The 4x4 transform of `target` expressed in `anchor`'s local space, i.e.
+    the CFrame to multiply onto anchor's own (runtime-resolved) CFrame to
+    reach target. Both inputs use the same absolute-within-component
+    position/rotation shape iter_render_objects produces."""
+    anchor_transform = _make_transform(anchor_position, anchor_rotation)
+    target_transform = _make_transform(target_position, target_rotation)
+    return _multiply_transforms(invert_transform(anchor_transform), target_transform)

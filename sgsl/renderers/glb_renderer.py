@@ -20,12 +20,17 @@ from sgsl.sphere_geometry import sphere_geometry
 from sgsl.runtime_assets import write_manifest
 
 
-def write(
+def _mesh_groups(
     scene: dict,
-    output_path: str | Path,
     *,
-    merge_ungrouped_materials: bool = False,
-) -> Path:
+    merge_ungrouped_materials: bool,
+) -> tuple[OrderedDict[str, list[dict]], list[dict]]:
+    """Split a scene into the mesh nodes write() exports, plus its markers.
+
+    One entry per exported glTF mesh node, keyed by the node's (possibly
+    qualified) name; every object in the list is baked into that node's single
+    combined vertex buffer.
+    """
     groups: OrderedDict[str, list[dict]] = OrderedDict()
     markers: list[dict] = []
     material_group_names: dict[tuple, str] = {}
@@ -47,6 +52,58 @@ def write(
                 material_group_names[material_key] = key
         key = key or obj["name"]
         groups.setdefault(key, []).append(obj)
+    return groups, markers
+
+
+def mesh_node_bounds(
+    scene: dict,
+    *,
+    merge_ungrouped_materials: bool = False,
+) -> OrderedDict[str, dict]:
+    """Axis-aligned bounds, in component-local space, of every exported mesh node.
+
+    write() bakes each object's position and rotation into its node's vertex
+    data and emits the node itself with no transform of its own. Roblox's 3D
+    Importer then places the resulting MeshPart's CFrame at the *centre of
+    those vertices' bounding box* - which is only the same as the authored
+    `at` position when the geometry happens to be centred on it. Anything that
+    needs to predict where an imported part will actually sit (deriving a
+    marker offset against it, for instance) has to measure the geometry rather
+    than read the node, so expose that measurement here next to the code whose
+    behaviour it mirrors.
+
+    Keys are short node names, matching the glTF node names write() emits.
+    Each value is {"min": [x, y, z], "max": [...], "center": [...], "size": [...]}.
+    """
+    groups, _ = _mesh_groups(scene, merge_ungrouped_materials=merge_ungrouped_materials)
+    bounds: OrderedDict[str, dict] = OrderedDict()
+    for group_name, objects in groups.items():
+        low = [math.inf] * 3
+        high = [-math.inf] * 3
+        for obj in objects:
+            local_positions, _ = _geometry(obj)
+            for vertex in _transform_vertices(local_positions, obj["position"], obj["rotation"]):
+                for axis in range(3):
+                    low[axis] = min(low[axis], vertex[axis])
+                    high[axis] = max(high[axis], vertex[axis])
+        if any(math.isinf(value) for value in low):
+            continue
+        bounds[_short_name(group_name)] = {
+            "min": list(low),
+            "max": list(high),
+            "center": [(low[axis] + high[axis]) / 2.0 for axis in range(3)],
+            "size": [high[axis] - low[axis] for axis in range(3)],
+        }
+    return bounds
+
+
+def write(
+    scene: dict,
+    output_path: str | Path,
+    *,
+    merge_ungrouped_materials: bool = False,
+) -> Path:
+    groups, markers = _mesh_groups(scene, merge_ungrouped_materials=merge_ungrouped_materials)
 
     binary = bytearray()
     buffer_views: list[dict] = []

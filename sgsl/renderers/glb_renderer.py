@@ -105,6 +105,7 @@ def write(
 ) -> Path:
     groups, markers = _mesh_groups(scene, merge_ungrouped_materials=merge_ungrouped_materials)
 
+    names = _NameAllocator()
     binary = bytearray()
     buffer_views: list[dict] = []
     accessors: list[dict] = []
@@ -214,7 +215,7 @@ def write(
                 ],
             }
         )
-        nodes.append({"name": _short_name(group_name), "mesh": mesh_index})
+        nodes.append({"name": names.take(_short_name(group_name)), "mesh": mesh_index})
 
     # Always materialize the shared marker mesh: the content-version marker
     # below needs it even for components that author no semantic markers of
@@ -222,7 +223,7 @@ def write(
     marker_mesh = _append_marker_mesh(binary, buffer_views, accessors, meshes, materials)
     for marker in markers:
         nodes.append({
-            "name": _short_name(marker["name"]),
+            "name": names.take(_short_name(marker["name"])),
             "mesh": marker_mesh,
             "translation": marker["position"],
             "rotation": _quaternion_from_euler(marker["rotation"]),
@@ -505,6 +506,33 @@ def _material(obj: dict, name: str) -> dict:
         strength = obj["emissive"]
         material["emissiveFactor"] = [min(1.0, red / 255 * strength), min(1.0, green / 255 * strength), min(1.0, blue / 255 * strength)]
     return material
+
+
+class _NameAllocator:
+    """Hands out unique glTF node names, first-come keeps the bare one.
+
+    Two objects can share a short name legitimately - a `repeat`'s inner block
+    is named once and instantiated many times - and Roblox happily imports
+    duplicate siblings, so the collision is silent until something needs to
+    address one of them and FindFirstChild returns an arbitrary match. SixPack's
+    basket exported 28 nodes all called "Body"; GutterSystem exported two each
+    of TopPipe, TopConnector, FunnelConnector, CollectionFunnel, FunnelTopRing
+    and eight Surfaces, and the funnel names are gated by name at runtime.
+
+    The first use keeps the name unchanged so existing exact-name lookups and
+    required-part contracts keep working; later ones get _2, _3, ... Anything
+    matching these by prefix or substring keeps matching.
+    """
+
+    def __init__(self) -> None:
+        self._counts: dict[str, int] = {}
+
+    def take(self, name: str) -> str:
+        count = self._counts.get(name, 0) + 1
+        self._counts[name] = count
+        if count == 1:
+            return name
+        return f"{name}_{count}"
 
 
 def _short_name(name: str) -> str:

@@ -1,3 +1,4 @@
+import json
 import unittest
 from textwrap import dedent
 
@@ -94,3 +95,58 @@ class MeshNodeBoundsTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class NodeNameUniquenessTests(unittest.TestCase):
+    SOURCE = dedent(
+        """
+        scene S
+        component Slat
+            block Body
+                at 0 0 0
+                size 1 1 1
+                color white
+
+        component Crate
+            instance SlatA Slat
+                at 0 0 0
+            instance SlatB Slat
+                at 2 0 0
+            instance SlatC Slat
+                at 4 0 0
+
+            marker Grip
+                at 0 1 0
+
+        instance Crate Crate
+        """
+    ).strip() + "\n"
+
+    def _node_names(self):
+        import struct
+        import tempfile
+        from pathlib import Path
+
+        from sgsl.renderers.glb_renderer import write
+
+        scene = parse_text(self.SOURCE)
+        with tempfile.TemporaryDirectory() as directory:
+            path = write(scene, Path(directory) / "Crate.glb")
+            data = Path(path).read_bytes()
+        length, = struct.unpack_from("<I", data, 12)
+        return [node["name"] for node in json.loads(data[20:20 + length])["nodes"]]
+
+    def test_gives_every_node_a_unique_name(self):
+        names = self._node_names()
+
+        self.assertEqual(len(names), len(set(names)), names)
+
+    def test_leaves_the_first_use_of_a_name_untouched(self):
+        # Existing exact-name lookups and required-part contracts point at the
+        # bare name, so only the later collisions may be renamed.
+        names = self._node_names()
+
+        self.assertIn("Body", names)
+        self.assertIn("Body_2", names)
+        self.assertIn("Body_3", names)
+        self.assertIn("Grip", names)

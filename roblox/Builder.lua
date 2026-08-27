@@ -75,7 +75,9 @@ function Builder.makeRuntimeAssetMarker(parent, name, assetName, position, rotat
 		marker:SetAttribute("RuntimeAssetWorldPivot", true)
 	end
 	if robloxId then
-		marker:SetAttribute("RuntimeAssetRobloxId", robloxId)
+		-- Keep catalog IDs as metadata strings; Roblox/Lune numeric attributes can
+		-- truncate large IDs even though runtime lookup uses robloxName.
+		marker:SetAttribute("RuntimeAssetRobloxId", tostring(robloxId))
 	end
 	return marker
 end

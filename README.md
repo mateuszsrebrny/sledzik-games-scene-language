@@ -12,6 +12,7 @@ Current scope:
 
 Not in scope right now:
 - Automatic publishing of generated assets to Roblox
+- Downloading Roblox assets from the Marketplace at runtime
 
 ## Requirements
 
@@ -141,6 +142,50 @@ the object's local base. HTML and GLB use one continuous mesh. Roblox output
 uses the same profile as the source of truth and emits one frustum fallback per
 profile span; `thickness` is intentionally ignored by the Part fallback because
 Roblox Parts cannot represent a hollow wall.
+
+## Roblox Runtime Assets
+
+SGSL can describe the placement of a Roblox-owned model without baking its
+geometry into the generated HTML or GLB output. Define an asset once, then
+place it with an ordinary `instance`:
+
+```sgsl
+asset TownFountain
+    robloxName "TownFountain"
+    robloxId 108345250318109
+    bounds 8 5 8
+
+component Shop
+    instance Fountain TownFountain
+        at 20 0 -15
+        rotate 0 45 0
+        scale 1.2
+```
+
+The name after `asset` is a local SGSL symbol. `robloxName` is the only
+runtime lookup key. `robloxId` is optional catalog metadata and is never used
+to download anything from the Marketplace. `bounds` is authoring data for
+preview, layout validation, and missing-asset placeholders; it does not resize
+the Roblox model.
+
+Runtime asset instances preserve their authored `at`, `rotate`, and uniform
+`scale`. A consuming Roblox pipeline should scale the clone first and then
+apply the final world pivot, so the model's `WorldPivot` matches the SGSL
+transform. Set the model pivot deliberately in Studio.
+
+HTML renders a bounds placeholder and pivot marker. GLB export omits external
+geometry and writes a sibling `.manifest.json` containing runtime asset
+instances, including legacy `runtime_asset` component placements.
+
+The Roblox side resolves models from the project's asset registry and uses its
+existing materializer to clone, scale, and position them. It never performs a
+Marketplace lookup. A missing model should be reported by the consuming
+project's validation/materialization layer and may use the bounds placeholder
+while developing.
+
+`runtime_asset <Name>` remains available for reusable imported prefab
+components. Prefer `asset` when the external model is represented directly by
+an SGSL asset symbol.
 
 Notes:
 - `rotate` uses Euler angles in degrees in `X Y Z` order.

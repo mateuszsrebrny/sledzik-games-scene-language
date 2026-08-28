@@ -106,6 +106,7 @@ instance_property: at
                  | rotate
                  | scale
                  | mirror
+                 | anchor
                  | emissive
                  | set_param
 

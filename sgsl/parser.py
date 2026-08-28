@@ -382,6 +382,11 @@ def _expand_instance(
     world_scale = parent_scale * instance_scale
     runtime_asset = component.get("runtime_asset") or parent_runtime_asset
     asset_definition = component.get("asset_definition")
+    instance_anchor = _resolve_instance_anchor(instance, asset_definition)
+    if instance_anchor != ["center", "center", "center"]:
+        instance_at = _apply_anchor_offset(
+            instance_at, instance_anchor, asset_definition["bounds"], instance_scale
+        )
     instance_emissive = parent_emissive
     if "emissive" in instance:
         instance_emissive = _evaluate_expression(instance["emissive"], expression_environment)
@@ -1041,27 +1046,93 @@ def _validate_positive_integer(obj: dict, field: str) -> None:
     obj[field] = int(value)
 
 
-def _validate_anchor(obj: dict) -> None:
-    anchor = obj.setdefault("anchor", ["center", "center", "center"])
+def _resolve_instance_anchor(instance: dict, asset_definition: dict | None) -> list[str]:
+    """Anchor for an `instance`, defaulting to the centre it has always used.
+
+    Only an instance of an `asset` can carry one. Every other instance is a
+    component - a subtree of primitives, each already anchored on its own terms
+    - and there is no single box to measure it by, so an anchor there would
+    have to invent a bounding box and would silently mean something different
+    from the same word on a `block`.
+    """
+    anchor = instance.get("anchor")
+    if anchor is None:
+        return ["center", "center", "center"]
+
+    anchor = [str(value) for value in anchor]
+    if asset_definition is None or "bounds" not in asset_definition:
+        raise SGSLValidationError(
+            f"Instance {instance['name']!r} has an anchor, but anchors are only supported on "
+            "instances of an `asset`, which declare `bounds` for the anchor to measure against."
+        )
+    _validate_anchor_values(anchor, f"Instance {instance['name']}")
+    return anchor
+
+
+def _apply_anchor_offset(
+    at: list[float],
+    anchor: list[str],
+    bounds: list[float],
+    scale: float,
+) -> list[float]:
+    """Move `at` from the anchored face of the asset's bounds to its centre.
+
+    An `asset` placement is resolved onto the imported Model's pivot, and a
+    Roblox Model with no PrimaryPart pivots about the centre of its bounding
+    box - so `at 0 0 0` buries the bottom half of a model in the ground. This
+    is what `anchor center bottom center` on a cylinder already does, made
+    available to an imported model, whose declared `bounds` are the only thing
+    SGSL knows about its extent.
+
+    Scaled by the instance's own scale and not the world scale: the offset is
+    expressed in the parent's frame, and the parent transform applies the
+    parent's scale to it afterwards.
+    """
+    size_x, size_y, size_z = (value * scale for value in bounds)
+    at_x, at_y, at_z = at
+
+    if anchor[0] == "left":
+        at_x += size_x / 2
+    elif anchor[0] == "right":
+        at_x -= size_x / 2
+
+    if anchor[1] == "bottom":
+        at_y += size_y / 2
+    elif anchor[1] == "top":
+        at_y -= size_y / 2
+
+    if anchor[2] == "front":
+        at_z += size_z / 2
+    elif anchor[2] == "back":
+        at_z -= size_z / 2
+
+    return [at_x, at_y, at_z]
+
+
+def _validate_anchor_values(anchor: list[str], subject: str) -> None:
     allowed_x = {"left", "center", "right"}
     allowed_y = {"bottom", "center", "top"}
     allowed_z = {"front", "center", "back"}
 
     if len(anchor) != 3:
-        raise SGSLValidationError(f"Block {obj['name']} must have exactly 3 anchor values")
-
+        raise SGSLValidationError(f"{subject} must have exactly 3 anchor values")
     if anchor[0] not in allowed_x:
         raise SGSLValidationError(
-            f"Block {obj['name']} has invalid X anchor {anchor[0]!r}; expected left, center, or right"
+            f"{subject} has invalid X anchor {anchor[0]!r}; expected left, center, or right"
         )
     if anchor[1] not in allowed_y:
         raise SGSLValidationError(
-            f"Block {obj['name']} has invalid Y anchor {anchor[1]!r}; expected bottom, center, or top"
+            f"{subject} has invalid Y anchor {anchor[1]!r}; expected bottom, center, or top"
         )
     if anchor[2] not in allowed_z:
         raise SGSLValidationError(
-            f"Block {obj['name']} has invalid Z anchor {anchor[2]!r}; expected front, center, or back"
+            f"{subject} has invalid Z anchor {anchor[2]!r}; expected front, center, or back"
         )
+
+
+def _validate_anchor(obj: dict) -> None:
+    anchor = obj.setdefault("anchor", ["center", "center", "center"])
+    _validate_anchor_values(anchor, f"Block {obj['name']}")
 
 
 def _validate_rotation(obj: dict) -> None:

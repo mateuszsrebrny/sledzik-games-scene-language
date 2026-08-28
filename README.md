@@ -173,6 +173,31 @@ Runtime asset instances preserve their authored `at`, `rotate`, and uniform
 apply the final world pivot, so the model's `WorldPivot` matches the SGSL
 transform. Set the model pivot deliberately in Studio.
 
+An asset instance also accepts `anchor`, the same three words a `block` or a
+`cylinder` takes, measured against the asset's declared `bounds`:
+
+```sgsl
+    instance Fountain TownFountain
+        at 20 0 -15
+        scale 2.552
+        anchor center bottom center
+```
+
+This exists because the pivot is where an asset placement lands, and a Roblox
+Model with no `PrimaryPart` pivots about the centre of its bounding box - so
+`at 20 0 -15` puts the bottom half of the model underground. Authoring geometry
+never has this problem, because a `cylinder` can say `anchor center bottom
+center` and an imported model had no equivalent; now it does. The offset is
+half the anchored dimension of `bounds` times the instance's own `scale`, so
+widening the asset or rescaling the instance carries it along instead of
+stranding a hand-computed number.
+
+The default is `center center center`, which is what every placement did
+before, so existing scenes are unaffected. `anchor` is rejected on an instance
+of an ordinary component: a component is a subtree of primitives that are each
+anchored on their own terms, with no single box to measure, so the same word
+there would quietly mean something other than it does on a `block`.
+
 HTML renders a bounds placeholder and pivot marker. GLB export omits external
 geometry and writes a sibling `.manifest.json` containing runtime asset
 instances, including legacy `runtime_asset` component placements.

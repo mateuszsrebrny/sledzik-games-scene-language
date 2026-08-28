@@ -128,3 +128,109 @@ instance Oak Tree01
     assert manifest["scene"] == "RuntimeAssetManifest"
     assert manifest["runtimeAssets"][0]["asset"] == "OakTree01"
     assert manifest["runtimeAssets"][0]["bounds"] == [5.0, 11.0, 5.0]
+
+
+ANCHOR_SOURCE_TEMPLATE = """
+scene AnchoredAsset
+
+asset TownFountain
+    robloxName "Water fountain"
+    robloxId 123456789
+    bounds 8 5 8
+
+instance Fountain01 TownFountain
+    at 10 0 -4
+    scale 2
+{anchor}
+"""
+
+
+def _anchored(anchor: str | None):
+    line = f"    anchor {anchor}" if anchor else ""
+    scene = parse_text(ANCHOR_SOURCE_TEMPLATE.format(anchor=line))
+    return scene["objects"][0]
+
+
+def test_asset_instance_defaults_to_the_centre_it_always_used():
+    # The default has to stay bit-for-bit what it was, because every existing
+    # placement in every scene relies on it.
+    assert _anchored(None)["position"] == [10.0, 0.0, -4.0]
+    assert _anchored("center center center")["position"] == [10.0, 0.0, -4.0]
+
+
+def test_asset_instance_anchor_bottom_lifts_by_half_its_scaled_height():
+    # An `asset` is resolved onto the imported Model's pivot, and a Roblox
+    # Model with no PrimaryPart pivots about its bounding box centre - so
+    # without this the bottom half of the model stands underground.
+    # bounds Y 5 * scale 2 / 2 = 5.
+    assert _anchored("center bottom center")["position"] == [10.0, 5.0, -4.0]
+    assert _anchored("center top center")["position"] == [10.0, -5.0, -4.0]
+
+
+def test_asset_instance_anchors_on_every_axis():
+    # bounds X and Z are 8, scale 2, so half is 8 on both.
+    assert _anchored("left center center")["position"] == [18.0, 0.0, -4.0]
+    assert _anchored("right center center")["position"] == [2.0, 0.0, -4.0]
+    assert _anchored("center center front")["position"] == [10.0, 0.0, 4.0]
+    assert _anchored("center center back")["position"] == [10.0, 0.0, -12.0]
+
+
+def test_asset_instance_anchor_composes_with_an_enclosing_scale():
+    # The offset is expressed in the parent's frame, so the parent transform
+    # scales it afterwards: 5 (own) * 3 (parent) = 15, on top of the parent's
+    # own scaling of the instance position.
+    scene = parse_text(
+        """
+scene NestedAnchoredAsset
+
+asset TownFountain
+    robloxName "Water fountain"
+    bounds 8 5 8
+
+component Square
+    instance Fountain TownFountain
+        at 0 0 0
+        scale 2
+        anchor center bottom center
+
+instance Square Plaza
+    at 0 0 0
+    scale 3
+"""
+    )
+    placement = scene["objects"][0]
+    assert placement["position"] == [0.0, 15.0, 0.0]
+    assert placement["scale"] == 6.0
+
+
+def test_anchor_on_a_plain_component_instance_is_refused():
+    # A component is a subtree of primitives that are each anchored on their
+    # own terms; there is no single box to measure, so the same word would
+    # quietly mean something else than it does on a block.
+    import pytest
+
+    with pytest.raises(Exception) as excinfo:
+        parse_text(
+            """
+scene AnchoredComponent
+
+component Box
+    block Body
+        at 0 0 0
+        size 2 2 2
+        color gray
+
+instance Box Box01
+    at 0 0 0
+    anchor center bottom center
+"""
+        )
+    assert "only supported on instances of an `asset`" in str(excinfo.value)
+
+
+def test_asset_instance_rejects_an_unknown_anchor_word():
+    import pytest
+
+    with pytest.raises(Exception) as excinfo:
+        _anchored("center middle center")
+    assert "invalid Y anchor" in str(excinfo.value)

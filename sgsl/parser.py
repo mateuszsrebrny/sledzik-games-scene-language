@@ -432,6 +432,7 @@ def _expand_instance(
                         "asset_symbol": asset_definition["name"],
                         "roblox_name": asset_definition["roblox_name"],
                         "bounds": asset_definition["bounds"],
+                        "anchor": instance_anchor,
                         **(
                             {"roblox_id": asset_definition["roblox_id"]}
                             if "roblox_id" in asset_definition

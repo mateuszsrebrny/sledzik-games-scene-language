@@ -63,12 +63,18 @@ function Builder.makeMarker(parent, name, position, rotation)
 	return marker
 end
 
-function Builder.makeRuntimeAssetMarker(parent, name, assetName, position, rotation, scale, bounds, assetSymbol, robloxId)
+function Builder.makeRuntimeAssetMarker(parent, name, assetName, position, rotation, scale, bounds, assetSymbol, robloxId, anchor)
 	local marker = Builder.makeMarker(parent, name, position, rotation)
 	marker:SetAttribute("RuntimeAsset", assetName)
 	marker:SetAttribute("RuntimeAssetScale", scale or 1)
 	if bounds then
 		marker:SetAttribute("RuntimeAssetBounds", bounds)
+	end
+	if anchor then
+		-- Which face of the declared bounds `position` was measured from. The
+		-- materializer needs it because it aligns the model's *measured* face
+		-- with that face, rather than trusting the model to fill the box.
+		marker:SetAttribute("RuntimeAssetAnchor", anchor)
 	end
 	if assetSymbol then
 		marker:SetAttribute("RuntimeAssetSymbol", assetSymbol)

@@ -307,3 +307,46 @@ asset TownFountain
 
     assert placement("instance Fountain01 TownFountain")["position"] == [1.0, 4.5, 3.0]
     assert placement("instance TownFountain Fountain01")["position"] == [1.0, 4.5, 3.0]
+
+
+def test_asset_instance_carries_its_anchor_into_the_scene():
+    # The anchor offset is baked into `position` at generation time, but the
+    # runtime needs the word as well: it fits the import inside the declared
+    # bounds, and a uniform fit leaves the model short of the box on at least
+    # two axes, so it has to know which face to re-seat against.
+    assert _anchored("center bottom center")["anchor"] == ["center", "bottom", "center"]
+    assert _anchored(None)["anchor"] == ["center", "center", "center"]
+
+
+def test_roblox_renderer_passes_the_anchor_to_the_marker():
+    scene = parse_text(ANCHOR_SOURCE_TEMPLATE.format(anchor="    anchor center bottom center"))
+    marker = next(
+        line for line in render_roblox(scene, mode="module").splitlines()
+        if "makeRuntimeAssetMarker" in line
+    )
+    assert "'center,bottom,center'" in marker
+
+
+def test_a_missing_roblox_id_keeps_the_anchor_in_its_own_argument_slot():
+    # roblox_id is optional and sits between the asset symbol and the anchor.
+    # Dropping the argument rather than passing nil would slide the anchor
+    # string into the id's place, where Builder would store it as the catalog
+    # id and the runtime would anchor on nothing.
+    scene = parse_text(
+        """
+scene NoId
+
+asset PlainAsset
+    robloxName "PlainAsset"
+    bounds 8 5 8
+
+instance Thing PlainAsset
+    at 0 0 0
+    anchor center bottom center
+"""
+    )
+    marker = next(
+        line for line in render_roblox(scene, mode="module").splitlines()
+        if "makeRuntimeAssetMarker" in line
+    )
+    assert marker.rstrip().endswith("nil, 'center,bottom,center')")

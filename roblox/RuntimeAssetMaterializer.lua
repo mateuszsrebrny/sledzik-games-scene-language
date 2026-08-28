@@ -57,6 +57,87 @@ local function collectPlacementMarkers(root)
 	return markers
 end
 
+-- `bounds` on an `asset` declares the box the asset occupies in the scene, and
+-- this is where that becomes true rather than merely stated. Model:ScaleTo is a
+-- multiplier on the model's *own* size, so a scale computed against a declared
+-- size is only right if the declaration happens to match the import - and
+-- nothing checked that it did. The preview renderer draws the declared box, so
+-- a wrong declaration looked correct in preview and arrived oversized in
+-- Roblox, which is exactly how the town fountain grew past the square it stands
+-- on.
+--
+-- So measure the import and fit it inside the box instead. Uniform, because
+-- ScaleTo is uniform: the tightest axis wins, and the asset can never exceed
+-- what SGSL declared for it.
+-- Measured from the BaseParts rather than with Model:GetExtentsSize, for the
+-- same reason placeBottleOnSurface stopped using Model:GetBoundingBox: a
+-- model's own box counts every part in it, and an imported asset's marker
+-- placeholders sit wherever Studio's importer left them - which once inflated a
+-- bottle past 100 studs. A part's box is turned into world axes by projecting
+-- its half-size through the absolute values of its rotation, so a rotated part
+-- contributes the space it really takes up.
+local function measureExtents(model)
+	local minimum, maximum = nil, nil
+	for _, part in ipairs(model:GetDescendants()) do
+		if part:IsA("BasePart") then
+			local cframe, size = part.CFrame, part.Size
+			local right, up, look = cframe.RightVector, cframe.UpVector, cframe.LookVector
+			local reach = Vector3.new(
+				math.abs(right.X) * size.X + math.abs(up.X) * size.Y + math.abs(look.X) * size.Z,
+				math.abs(right.Y) * size.X + math.abs(up.Y) * size.Y + math.abs(look.Y) * size.Z,
+				math.abs(right.Z) * size.X + math.abs(up.Z) * size.Y + math.abs(look.Z) * size.Z
+			) / 2
+			local position = cframe.Position
+			minimum = minimum and minimum:Min(position - reach) or (position - reach)
+			maximum = maximum and maximum:Max(position + reach) or (position + reach)
+		end
+	end
+	if not minimum then
+		return nil
+	end
+	return maximum - minimum
+end
+RuntimeAssetMaterializer.measureExtents = measureExtents
+
+-- Uniform, because Model:ScaleTo is uniform: the tightest axis wins, so the
+-- asset fills the box on that axis and can never exceed it on any.
+local function fitScale(measured, box)
+	return math.min(box.X / measured.X, box.Y / measured.Y, box.Z / measured.Z)
+end
+RuntimeAssetMaterializer.fitScale = fitScale
+
+local function fitToBounds(clone, box, assetName, placementName)
+	local measured = measureExtents(clone)
+	if not measured or measured.X <= 0 or measured.Y <= 0 or measured.Z <= 0 then
+		error("Runtime asset " .. tostring(assetName) .. " placed by " .. placementName
+			.. " has no measurable extents to fit into its declared bounds", 2)
+	end
+
+	local fit = fitScale(measured, box)
+	clone:ScaleTo(fit)
+	return measured * fit
+end
+
+-- The declared box is centred on the placement, because SGSL already moved
+-- `at` from the anchored face to the centre when it generated the marker. A
+-- uniform fit leaves the model short of the box on at least two axes, so an
+-- anchored face has to be re-seated against what the model actually measures -
+-- otherwise `anchor bottom` leaves a fitted model hovering above the ground by
+-- half the slack.
+local function anchorOffset(anchor, box, measured)
+	local slack = (box - measured) / 2
+	local names = {}
+	for value in string.gmatch(tostring(anchor or ""), "[^,]+") do
+		table.insert(names, value)
+	end
+
+	local x = (names[1] == "left" and -slack.X) or (names[1] == "right" and slack.X) or 0
+	local y = (names[2] == "bottom" and -slack.Y) or (names[2] == "top" and slack.Y) or 0
+	local z = (names[3] == "front" and -slack.Z) or (names[3] == "back" and slack.Z) or 0
+	return Vector3.new(x, y, z)
+end
+RuntimeAssetMaterializer.anchorOffset = anchorOffset
+
 -- Roblox's 3D Importer corrupts a marker node's imported CFrame (both
 -- position and rotation), even with a marker mesh-size fix applied. Real
 -- baked mesh geometry imports reliably, so a Placement marker is never
@@ -86,12 +167,24 @@ function RuntimeAssetMaterializer.materialize(root, resolveAsset, resolveSourceC
 		clone.Name = placement.Name
 		clone.Parent = placement.Parent
 		AssetRegistry.stripVersionMarker(clone)
-		if scale ~= 1 then
+
+		local bounds = placement:GetAttribute("RuntimeAssetBounds")
+		local anchor = placement:GetAttribute("RuntimeAssetAnchor")
+		local fitted = nil
+		if typeof(bounds) == "Vector3" then
+			fitted = fitToBounds(clone, bounds * scale, assetName, placement.Name)
+		elseif scale ~= 1 then
 			clone:ScaleTo(scale)
 		end
 
 		if placement:GetAttribute("RuntimeAssetWorldPivot") then
 			clone:PivotTo(targetCFrame)
+			if fitted then
+				-- targetCFrame is the centre of the declared box, so the model's
+				-- own pivot now sits there too. Slide it along the box's axes
+				-- until the anchored faces meet.
+				clone:PivotTo(clone:GetPivot() * CFrame.new(anchorOffset(anchor, bounds * scale, fitted)))
+			end
 		else
 			local sourceCFrame = resolveSourceCFrame and resolveSourceCFrame(assetName, clone) or nil
 			if not sourceCFrame then

@@ -130,8 +130,13 @@ def _scene_object_lines(scene: dict) -> list[str]:
                     f"Vector3.new({obj['bounds'][0]}, {obj['bounds'][1]}, {obj['bounds'][2]})"
                 )
                 optional_args.append(repr(obj.get("asset_symbol", obj["asset"])))
-                if "roblox_id" in obj:
-                    optional_args.append(str(obj["roblox_id"]))
+                # `nil` rather than a dropped argument: the anchor follows, and
+                # a conditional slot in the middle would silently shift it into
+                # the roblox id's place for an asset that declares no id.
+                optional_args.append(
+                    str(obj["roblox_id"]) if "roblox_id" in obj else "nil"
+                )
+                optional_args.append(repr(",".join(obj.get("anchor", ["center"] * 3))))
             lines.extend(
                 [
                     "do",

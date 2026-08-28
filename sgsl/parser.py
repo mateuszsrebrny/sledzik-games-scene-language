@@ -292,6 +292,7 @@ def _expand_scene(raw_scene: dict) -> dict:
             continue
 
         if statement_type == "component_repeat":
+            statement = _normalize_asset_instance_order(statement, components)
             for repeated_instance in _materialize_repeat(statement, {}):
                 if repeated_instance["name"] in seen_instance_names:
                     raise SGSLValidationError(f"Duplicate instance name {repeated_instance['name']!r}.")
@@ -300,6 +301,10 @@ def _expand_scene(raw_scene: dict) -> dict:
             continue
 
         if statement_type == "component_instance":
+            # Also normalized inside _expand_instance, which is what covers
+            # nested instances. It is repeated here because the duplicate-name
+            # check below reads the name before expansion, and for the
+            # asset-first spelling the un-normalized name is the asset's.
             statement = _normalize_asset_instance_order(statement, components)
             if statement["name"] in seen_instance_names:
                 raise SGSLValidationError(f"Duplicate instance name {statement['name']!r}.")
@@ -320,7 +325,8 @@ def _normalize_asset_instance_order(statement: dict, components: dict[str, dict]
 
     Existing SGSL uses `instance InstanceName ComponentName`. The alternate
     spelling is unambiguous when the first token is a known component and the
-    second token is not.
+    second token is not, and applying it is idempotent: after a swap the
+    component token names a known component, so the condition no longer holds.
     """
     if statement["component"] not in components and statement["name"] in components:
         normalized = copy.deepcopy(statement)
@@ -352,6 +358,15 @@ def _expand_instance(
             f"Component expansion exceeded maximum nesting depth of {_MAX_COMPONENT_DEPTH}. "
             "Possible recursive component reference."
         )
+
+    # Both spellings are accepted everywhere an instance can appear. This used
+    # to be normalized only for top-level statements, so `instance TownFountain
+    # Fountain01` worked in a scene and failed inside a component with
+    # "references unknown component 'Fountain01'" - a message that points at
+    # the instance name and says nothing about the word order being the
+    # problem. Nested instances are the common case for assets, since a scene
+    # is usually a handful of layout components.
+    instance = _normalize_asset_instance_order(instance, components)
 
     component_name = instance["component"]
     try:
@@ -430,6 +445,11 @@ def _expand_instance(
         )
     for template in component["objects"]:
         if template["type"] == "component_repeat":
+            # Before materializing, not after: the index is suffixed onto the
+            # first token, so an unswapped asset-first repeat would number the
+            # asset's own name and then look for a component under the
+            # instance's.
+            template = _normalize_asset_instance_order(template, components)
             for repeated_instance in _materialize_repeat(template, parameter_values):
                 expanded.extend(
                     _expand_instance(

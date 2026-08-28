@@ -234,3 +234,76 @@ def test_asset_instance_rejects_an_unknown_anchor_word():
     with pytest.raises(Exception) as excinfo:
         _anchored("center middle center")
     assert "invalid Y anchor" in str(excinfo.value)
+
+
+def test_asset_first_spelling_works_inside_a_component():
+    # `instance AssetName InstanceName` was normalized only for top-level
+    # statements, so the identical line inside a component failed with
+    # "references unknown component 'Fountain01'" - a message naming the
+    # instance and saying nothing about word order. Nested is the common case:
+    # a scene is usually a handful of layout components.
+    scene = parse_text(
+        """
+scene NestedAssetSpelling
+
+asset TownFountain
+    robloxName "Water fountain"
+    bounds 8 5 8
+
+component Square
+    instance TownFountain Fountain01
+        at 1 2 3
+
+instance Plaza Square
+    at 10 0 0
+"""
+    )
+    placement = scene["objects"][0]
+    assert placement["name"] == "Plaza.Fountain01"
+    assert placement["asset_symbol"] == "TownFountain"
+    assert placement["position"] == [11.0, 2.0, 3.0]
+
+
+def test_asset_first_spelling_survives_a_repeat():
+    scene = parse_text(
+        """
+scene RepeatedAssetSpelling
+
+asset TownFountain
+    robloxName "Water fountain"
+    bounds 8 5 8
+
+component Row
+    repeat TownFountain Fountain
+        count 2
+        at 0 0 0
+        step 4 0 0
+
+instance Street Row
+    at 0 0 0
+"""
+    )
+    names = [obj["name"] for obj in scene["objects"]]
+    assert names == ["Street.Fountain01", "Street.Fountain02"]
+    assert [obj["position"][0] for obj in scene["objects"]] == [0.0, 4.0]
+
+
+def test_both_spellings_still_agree_at_the_top_level():
+    def placement(source_line: str):
+        scene = parse_text(
+            f"""
+scene TopLevelSpelling
+
+asset TownFountain
+    robloxName "Water fountain"
+    bounds 8 5 8
+
+{source_line}
+    at 1 2 3
+    anchor center bottom center
+"""
+        )
+        return scene["objects"][0]
+
+    assert placement("instance Fountain01 TownFountain")["position"] == [1.0, 4.5, 3.0]
+    assert placement("instance TownFountain Fountain01")["position"] == [1.0, 4.5, 3.0]

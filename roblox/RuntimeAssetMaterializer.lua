@@ -34,6 +34,30 @@ local function markerCFrame(instance)
 		or CFrame.new())
 end
 
+-- SGSL gives every marker (Placement, Grip, WorkerPoint, ...) a small
+-- placeholder mesh so Roblox's importer keeps it as a real descendant
+-- instead of discarding an empty node - see glb_renderer.py's
+-- _append_marker_mesh. Nothing here ever hid it: this module locates a
+-- nested SGSLMarker (findNestedMarker, above) to read its CFrame, but never
+-- to hide it, unlike the bucket/bottle/six-pack construction paths that
+-- each do their own `isInsideToolMarker`-style check. Every asset placed
+-- through `materialize` - Pump, PumpMirrored, GutterSystem, every
+-- HouseGarden variant - carries at least one such marker (GutterSystem's
+-- own Placement marker is explicitly authored, per V0Game.server.lua's own
+-- comment on it), so each left a small visible cube on its clone. Same fix
+-- as the six-pack's (de29dfd), generalized to the one place all of these
+-- assets actually get built, so no future asset needs its own copy of it.
+local function hideMarkerMeshes(clone)
+	for _, descendant in ipairs(clone:GetDescendants()) do
+		if descendant:IsA("BasePart") and ImportedAssetNames.matches(descendant.Name, "SGSLMarker") then
+			descendant.Transparency = 1
+			descendant.CanCollide = false
+			descendant.CanTouch = false
+			descendant.CanQuery = false
+		end
+	end
+end
+
 local function findNamedPart(root, name)
 	for _, descendant in ipairs(root:GetDescendants()) do
 		if descendant:IsA("BasePart") and descendant.Name == name then
@@ -167,6 +191,7 @@ function RuntimeAssetMaterializer.materialize(root, resolveAsset, resolveSourceC
 		clone.Name = placement.Name
 		clone.Parent = placement.Parent
 		AssetRegistry.stripVersionMarker(clone)
+		hideMarkerMeshes(clone)
 
 		local bounds = placement:GetAttribute("RuntimeAssetBounds")
 		local anchor = placement:GetAttribute("RuntimeAssetAnchor")

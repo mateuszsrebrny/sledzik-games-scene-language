@@ -9,6 +9,7 @@ from pathlib import Path
 
 from sgsl.colors import color_to_rgb, resolve_color
 from sgsl.frustum_geometry import frustum_geometry
+from sgsl.mesh_orientation import orient_outward
 from sgsl.parser import SGSLValidationError
 from sgsl.primitives import iter_render_objects
 from sgsl.hollow_frustum_geometry import hollow_frustum_geometry
@@ -434,7 +435,7 @@ def _cylinder_geometry(radius: float, height: float, segments: int = 24):
         next_bottom, next_top = 2 + next_index * 2, 3 + next_index * 2
         indices.extend([bottom, next_top, top, bottom, next_bottom, next_top])
         indices.extend([0, next_bottom, bottom, 1, top, next_top])
-    return vertices, indices
+    return vertices, orient_outward(vertices, indices)
 
 
 def _transform_vertices(vertices, position, rotation):

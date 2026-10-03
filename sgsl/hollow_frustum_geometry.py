@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import math
 
+from sgsl.mesh_orientation import orient_outward
+
 
 def hollow_frustum_geometry(
     outer_bottom_radius,
@@ -48,9 +50,12 @@ def hollow_frustum_geometry(
     if not is_full:
         # Close the two radial ends while leaving the axial top and bottom
         # rims intact. This produces an open trough for a 180 degree sweep.
-        for index in (0, ring_count - 1):
-            ob, ot = outer_bottom + index, outer_top + index
-            ib, it = inner_bottom + index, inner_top + index
-            indices.extend((ob, ot, it, ob, it, ib))
+        # The ends face opposite ways, so they take opposite windings - the
+        # same order for both left one of them facing into the wall.
+        first, last = 0, ring_count - 1
+        ob, ot, ib, it = outer_bottom + first, outer_top + first, inner_bottom + first, inner_top + first
+        indices.extend((ob, ot, it, ob, it, ib))
+        ob, ot, ib, it = outer_bottom + last, outer_top + last, inner_bottom + last, inner_top + last
+        indices.extend((ob, it, ot, ob, ib, it))
 
-    return vertices, indices
+    return vertices, orient_outward(vertices, indices)

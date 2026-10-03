@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import math
 
+from sgsl.mesh_orientation import orient_outward
+
 
 def profile_revolve_geometry(
     profile: list[tuple[float, float]],
@@ -75,4 +77,4 @@ def profile_revolve_geometry(
             indices.extend((outer_bottom + index, inner_bottom + next_index, outer_bottom + next_index))
             indices.extend((outer_bottom + index, inner_bottom + index, inner_bottom + next_index))
 
-    return vertices, indices
+    return vertices, orient_outward(vertices, indices)

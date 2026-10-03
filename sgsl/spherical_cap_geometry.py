@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import math
 
+from sgsl.mesh_orientation import orient_outward
+
 
 def spherical_cap_geometry(
     base_radius: float,
@@ -52,4 +54,4 @@ def spherical_cap_geometry(
         next_index = (index + 1) % segments
         indices.extend((last_ring + index, last_ring + next_index, top_center))
 
-    return vertices, indices
+    return vertices, orient_outward(vertices, indices)

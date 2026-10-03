@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import math
 
+from sgsl.mesh_orientation import orient_outward
+
 
 def pipe_arc_geometry(
     pipe_radius: float,
@@ -67,4 +69,4 @@ def pipe_arc_geometry(
         indices.extend((start_center, next_cross, cross_index))
         indices.extend((end_center, last_ring + cross_index, last_ring + next_cross))
 
-    return vertices, indices
+    return vertices, orient_outward(vertices, indices)

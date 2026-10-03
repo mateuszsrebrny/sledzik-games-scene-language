@@ -232,6 +232,7 @@ Language docs:
 - [Instance mirroring](docs/MIRROR.md)
 - [Emissive materials](docs/EMISSIVE.md)
 - [Mesh groups and GLB export](docs/MESH_GROUPS.md)
+- [Mesh orientation (triangle winding)](docs/MESH_ORIENTATION.md)
 
 Components may contain instances of other components. For example:
 

@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import math
 
+from sgsl.mesh_orientation import orient_outward
+
 
 def frustum_geometry(
     bottom_radius: float,
@@ -33,4 +35,4 @@ def frustum_geometry(
         indices.extend((bottom_center, bottom_next, bottom))
         indices.extend((top_center, top, top_next))
 
-    return vertices, indices
+    return vertices, orient_outward(vertices, indices)

@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import math
 
+from sgsl.mesh_orientation import orient_outward
+
 
 def hollow_pipe_arc_geometry(
     outer_radius,
@@ -60,11 +62,19 @@ def hollow_pipe_arc_geometry(
         indices.extend((first_outer, next_first_outer, next_first_inner, first_outer, next_first_inner, first_inner))
         indices.extend((last_outer, last_inner, next_last_inner, last_outer, next_last_inner, next_last_outer))
 
-    for outer, inner in ((0, cross_count), (segments * ring_size, segments * ring_size + cross_count)):
+    # The two path ends face opposite ways, so they take opposite windings -
+    # the same order for both left one of them facing into the pipe wall.
+    for outer, inner, reverse in (
+        (0, cross_count, False),
+        (segments * ring_size, segments * ring_size + cross_count, True),
+    ):
         for cross_index in range(segments):
             next_cross = cross_index + 1
             outer_a, outer_b = outer + cross_index, outer + next_cross
             inner_a, inner_b = inner + cross_index, inner + next_cross
-            indices.extend((outer_a, inner_a, inner_b, outer_a, inner_b, outer_b))
+            if reverse:
+                indices.extend((outer_a, inner_b, inner_a, outer_a, outer_b, inner_b))
+            else:
+                indices.extend((outer_a, inner_a, inner_b, outer_a, inner_b, outer_b))
 
-    return vertices, indices
+    return vertices, orient_outward(vertices, indices)
